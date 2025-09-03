@@ -1,19 +1,30 @@
-import { apiKeyService } from "../apiKeyService";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
 // Mock the Tauri invoke function
-jest.mock("@tauri-apps/api/core", () => ({
-  invoke: jest.fn(),
-}));
+const mockInvoke = vi.fn();
+
+vi.mock("@tauri-apps/api/core", async () => {
+  const actual = await vi.importActual("@tauri-apps/api/core");
+  return {
+    ...actual,
+    invoke: mockInvoke,
+  };
+});
 
 describe("apiKeyService", () => {
-  beforeEach(() => {
+  // Dynamic import to avoid hoisting issues
+  let apiKeyService: typeof import("../apiKeyService").apiKeyService;
+
+  beforeEach(async () => {
     // Clear all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    
+    // Dynamically import the service after mocks are set up
+    apiKeyService = (await import("../apiKeyService")).apiKeyService;
   });
 
   describe("addApiKey", () => {
     it("should call the add_api_key command with the correct parameters", async () => {
-      const mockInvoke = require("@tauri-apps/api/core").invoke;
       mockInvoke.mockResolvedValue(true);
 
       const apiKeyData = {
@@ -24,6 +35,7 @@ describe("apiKeyService", () => {
 
       const result = await apiKeyService.addApiKey(apiKeyData);
 
+      expect(result.success).toBe(true);
       expect(mockInvoke).toHaveBeenCalledWith("add_api_key", {
         apiKey: expect.objectContaining({
           name: "Test API Key",
@@ -31,11 +43,9 @@ describe("apiKeyService", () => {
           platform: "test-platform",
         }),
       });
-      expect(result).toBe(true);
     });
 
     it("should handle errors gracefully", async () => {
-      const mockInvoke = require("@tauri-apps/api/core").invoke;
       mockInvoke.mockRejectedValue(new Error("Test error"));
 
       const apiKeyData = {
@@ -45,13 +55,24 @@ describe("apiKeyService", () => {
 
       const result = await apiKeyService.addApiKey(apiKeyData);
 
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
+    });
+    
+    it("should validate input and return error for invalid data", async () => {
+      const apiKeyData = {
+        name: "", // Invalid: empty name
+        keyValue: "test-key-value",
+      };
+
+      const result = await apiKeyService.addApiKey(apiKeyData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("API Key名称不能为空");
     });
   });
 
   describe("listApiKeys", () => {
     it("should call the list_api_keys command and return the result", async () => {
-      const mockInvoke = require("@tauri-apps/api/core").invoke;
       const mockKeys = [
         {
           id: "1",
@@ -65,17 +86,16 @@ describe("apiKeyService", () => {
 
       const result = await apiKeyService.listApiKeys();
 
+      expect(result.data).toEqual(mockKeys);
       expect(mockInvoke).toHaveBeenCalledWith("list_api_keys");
-      expect(result).toEqual(mockKeys);
     });
 
     it("should return an empty array on error", async () => {
-      const mockInvoke = require("@tauri-apps/api/core").invoke;
       mockInvoke.mockRejectedValue(new Error("Test error"));
 
       const result = await apiKeyService.listApiKeys();
 
-      expect(result).toEqual([]);
+      expect(result.data).toEqual([]);
     });
   });
 });

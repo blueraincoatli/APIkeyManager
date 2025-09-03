@@ -4,15 +4,18 @@ interface RadialMenuProps {
   apiKey: ApiKey;
   onClose: () => void;
   onCopy: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDetails: () => void;
 }
 
-export function RadialMenu({ apiKey, onClose, onCopy }: RadialMenuProps) {
+export function RadialMenu({ apiKey: _apiKey, onClose, onCopy, onEdit, onDelete, onDetails }: RadialMenuProps) {
   // 径向菜单选项
   const menuOptions = [
     { id: "copy", label: "复制", icon: "📋", action: onCopy },
-    { id: "edit", label: "编辑", icon: "✏️", action: () => console.log("编辑") },
-    { id: "delete", label: "删除", icon: "🗑️", action: () => console.log("删除") },
-    { id: "details", label: "详情", icon: "ℹ️", action: () => console.log("详情") },
+    { id: "edit", label: "编辑", icon: "✏️", action: onEdit },
+    { id: "delete", label: "删除", icon: "🗑️", action: onDelete },
+    { id: "details", label: "详情", icon: "ℹ️", action: onDetails },
   ];
 
   // 处理选项点击

@@ -13,11 +13,21 @@ export function KeyManager() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const keys = await apiKeyService.listApiKeys();
-      const groups = await groupService.listGroups();
+      const keysResult = await apiKeyService.listApiKeys();
+      const groupsResult = await groupService.listGroups();
       
-      setApiKeys(keys);
-      setGroups(groups);
+      if (!keysResult.error) {
+        setApiKeys(keysResult.data);
+      }
+      
+      if (!groupsResult.error) {
+        setGroups(groupsResult.data);
+      }
+      
+      if (keysResult.error || groupsResult.error) {
+        const errorMsg = [keysResult.error, groupsResult.error].filter(Boolean).join("; ");
+        console.error("获取数据失败:", errorMsg);
+      }
     } catch (error) {
       console.error("获取数据失败:", error);
     } finally {
@@ -32,18 +42,24 @@ export function KeyManager() {
 
   // 复制API Key到剪贴板
   const copyToClipboard = async (keyValue: string) => {
-    await clipboardService.copyToClipboard(keyValue);
-    // 可以添加一些用户反馈，比如显示"已复制"提示
+    const result = await clipboardService.copyToClipboard(keyValue);
+    if (result) {
+      // 显示成功提示
+      alert("已复制到剪贴板");
+    } else {
+      alert("复制失败");
+    }
   };
 
   // 删除API Key
   const deleteApiKey = async (id: string) => {
     if (window.confirm("确定要删除这个API Key吗？")) {
-      const success = await apiKeyService.deleteApiKey(id);
-      if (success) {
-        fetchData(); // 重新加载数据
+      const result = await apiKeyService.deleteApiKey(id);
+      if (result.success) {
+        // 优化：只更新相关数据而不是重新获取所有数据
+        setApiKeys(prev => prev.filter(key => key.id !== id));
       } else {
-        alert("删除失败");
+        alert("删除失败: " + (result.error || "未知错误"));
       }
     }
   };

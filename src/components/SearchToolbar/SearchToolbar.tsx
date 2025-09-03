@@ -29,7 +29,8 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
     }
 
     const results = await searchService.searchKeys(term);
-    setSearchResults(results);
+    // 修复类型错误：需要访问results.data
+    setSearchResults(results.data);
   };
 
   // 处理键盘事件
@@ -49,6 +50,21 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
   const showRadial = (key: ApiKey) => {
     setSelectedKey(key);
     setShowRadialMenu(true);
+  };
+
+  // 编辑API Key（占位符功能）
+  const editApiKey = () => {
+    console.log("编辑API Key");
+  };
+
+  // 删除API Key（占位符功能）
+  const deleteApiKey = () => {
+    console.log("删除API Key");
+  };
+
+  // 查看API Key详情（占位符功能）
+  const viewApiKeyDetails = () => {
+    console.log("查看API Key详情");
   };
 
   return (
@@ -142,6 +158,9 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
             copyToClipboard(selectedKey);
             setShowRadialMenu(false);
           }}
+          onEdit={editApiKey}
+          onDelete={deleteApiKey}
+          onDetails={viewApiKeyDetails}
         />
       )}
     </div>
