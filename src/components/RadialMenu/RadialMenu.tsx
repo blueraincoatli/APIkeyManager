@@ -35,8 +35,8 @@ export function RadialMenu({ apiKey: _apiKey, onClose, onCopy, onEdit, onDelete,
       {/* 径向菜单 */}
       <div className="relative w-64 h-64">
         {menuOptions.map((option, index) => {
-          // 计算选项位置（圆形排列）
-          const angle = (index * 90) - 45; // 从右上角开始，逆时针排列
+          // 计算选项位置（沿弧线排列，水平排列文字）
+          const angle = (index * 45) - 90; // 从顶部开始，顺时针排列
           const radius = 100; // 半径
           const x = radius * Math.cos(angle * Math.PI / 180);
           const y = radius * Math.sin(angle * Math.PI / 180);
@@ -45,14 +45,16 @@ export function RadialMenu({ apiKey: _apiKey, onClose, onCopy, onEdit, onDelete,
             <button
               key={option.id}
               onClick={() => handleOptionClick(option.action)}
-              className="absolute flex flex-col items-center justify-center w-20 h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 transition-all duration-200 hover:scale-110 hover:bg-white/90 dark:hover:bg-gray-700/90"
+              className="absolute flex flex-col items-center justify-center w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full shadow-lg border border-white/30 dark:border-gray-700/30 transition-all duration-200 hover:scale-105 hover:bg-white/90 dark:hover:bg-gray-700/90 text-sm font-medium text-gray-700 dark:text-gray-300"
               style={{
-                left: `calc(50% + ${x}px - 40px)`,
-                top: `calc(50% + ${y}px - 40px)`,
+                left: `calc(50% + ${x}px - 32px)`,
+                top: `calc(50% + ${y}px - 32px)`,
               }}
             >
-              <span className="text-2xl mb-1">{option.icon}</span>
-              <span className="text-xs text-gray-700 dark:text-gray-300">{option.label}</span>
+              <span className="flex flex-col items-center">
+                <span className="text-lg">{option.icon}</span>
+                <span className="text-xs mt-1">{option.label}</span>
+              </span>
             </button>
           );
         })}

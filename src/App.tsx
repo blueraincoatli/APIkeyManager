@@ -1,10 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { KeyManager } from "./components/KeyManager/KeyManager";
 import { SmartClipboard } from "./components/SmartClipboard/SmartClipboard";
+import { FloatingToolbar } from "./components/FloatingToolbar/FloatingToolbar";
+import { FloatingToolbarDemo } from "./components/FloatingToolbarDemo";
 import "./App.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
+
+  // 注册全局快捷键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+K 快捷键显示浮动工具条
+      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        setShowFloatingToolbar(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
@@ -46,6 +65,16 @@ function App() {
                 智能剪贴板
               </button>
               <button
+                onClick={() => setActiveTab("floating-toolbar-demo")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  activeTab === "floating-toolbar-demo"
+                    ? "bg-gray-200 dark:bg-gray-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                浮动工具条演示
+              </button>
+              <button
                 onClick={() => setActiveTab("settings")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "settings"
@@ -85,6 +114,8 @@ function App() {
 
         {activeTab === "smart-clipboard" && <SmartClipboard />}
 
+        {activeTab === "floating-toolbar-demo" && <FloatingToolbarDemo />}
+
         {activeTab === "settings" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold mb-4">设置</h2>
@@ -121,6 +152,10 @@ function App() {
           </div>
         )}
       </main>
+
+      {showFloatingToolbar && (
+        <FloatingToolbar onClose={() => setShowFloatingToolbar(false)} />
+      )}
     </div>
   );
 }
