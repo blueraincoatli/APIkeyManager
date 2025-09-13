@@ -3,6 +3,7 @@ import { AnalyzedKey } from "../../types/apiKey";
 import { smartClipboardService } from "../../services/smartClipboardService";
 import { clipboardService } from "../../services/clipboardService";
 import { useClipboard } from "../../hooks/useClipboard";
+import { logSecureError, OperationContext } from "../../services/secureLogging";
 
 export function SmartClipboard() {
   const [clipboardText, setClipboardText] = useState("");
@@ -26,7 +27,7 @@ export function SmartClipboard() {
       const keys = await smartClipboardService.analyzeText(clipboardText);
       setAnalyzedKeys(keys);
     } catch (error) {
-      console.error("分析文本失败:", error);
+      logSecureError(OperationContext.CLIPBOARD_ANALYZE, error);
     } finally {
       setIsAnalyzing(false);
     }
@@ -46,7 +47,7 @@ export function SmartClipboard() {
         alert("API Key导入失败！");
       }
     } catch (error) {
-      console.error("导入API Key失败:", error);
+      logSecureError(OperationContext.CLIPBOARD_ANALYZE, error, { operation: 'import_keys' });
       alert("API Key导入失败！");
     }
   };

@@ -1,5 +1,6 @@
 import { ApiKey } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
+import { logSecureError, getUserFriendlyErrorMessage, OperationContext } from "./secureLogging";
 
 // 搜索服务
 export const searchService = {
@@ -15,8 +16,8 @@ export const searchService = {
       const result = await invoke("search_api_keys", { keyword });
       return { data: result as ApiKey[], error: undefined };
     } catch (error) {
-      console.error("搜索API Key失败:", error);
-      return { data: [], error: error instanceof Error ? error.message : "未知错误" };
+      logSecureError(OperationContext.API_KEY_SEARCH, error);
+      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH) };
     }
   },
 

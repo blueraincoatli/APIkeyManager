@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { logSecureError } from '../services/secureLogging';
+import { OperationContext } from '../services/secureLogging';
 
 interface AdaptiveThemeResult {
   backgroundColor: string;
@@ -62,7 +64,7 @@ export function useAdaptiveTheme(elementRef?: React.RefObject<HTMLDivElement | n
         setIsDarkBackground(false);
       }
     } catch (error) {
-      console.error('Background analysis failed:', error);
+      logSecureError(OperationContext.THEME_ANALYSIS, error, { component: 'useAdaptiveTheme' });
       // 使用默认主题
       setBackgroundColor("rgba(30, 32, 71, 0.85)");
       setTextColor("#ffffff");

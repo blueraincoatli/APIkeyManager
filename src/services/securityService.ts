@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { logSecureError, OperationContext } from "./secureLogging";
 
 // 安全服务
 export const securityService = {
@@ -8,7 +9,7 @@ export const securityService = {
       // 调用Tauri后端命令
       return await invoke("set_master_password", { password });
     } catch (error) {
-      console.error("设置主密码失败:", error);
+      logSecureError(OperationContext.MASTER_PASSWORD_SET, error);
       return false;
     }
   },
@@ -19,7 +20,7 @@ export const securityService = {
       // 调用Tauri后端命令
       return await invoke("verify_master_password", { password });
     } catch (error) {
-      console.error("验证主密码失败:", error);
+      logSecureError(OperationContext.MASTER_PASSWORD_VERIFY, error);
       return false;
     }
   },
@@ -30,7 +31,7 @@ export const securityService = {
       // 调用Tauri后端命令
       return await invoke("encrypt_key", { key });
     } catch (error) {
-      console.error("加密API Key失败:", error);
+      logSecureError(OperationContext.KEY_ENCRYPTION, error);
       return "";
     }
   },
@@ -41,7 +42,7 @@ export const securityService = {
       // 调用Tauri后端命令
       return await invoke("decrypt_key", { encryptedKey });
     } catch (error) {
-      console.error("解密API Key失败:", error);
+      logSecureError(OperationContext.KEY_DECRYPTION, error);
       return "";
     }
   },
