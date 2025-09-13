@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useApiKeys } from "../../hooks/useApiKey";
@@ -6,7 +6,7 @@ import { useClipboard } from "../../hooks/useClipboard";
 import { formatDateTime } from "../../utils/helpers";
 import { VirtualList } from "../VirtualScroll/VirtualList";
 
-export function KeyManager() {
+const KeyManagerComponent = () => {
   const { apiKeys, groups, loading, refetch } = useApiKeys();
   const { isCopying, copyToClipboard } = useClipboard();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -16,8 +16,8 @@ export function KeyManager() {
     refetch();
   }, []);
 
-  // 复制API Key到剪贴板
-  const handleCopyToClipboard = async (keyValue: string) => {
+  // 复制API Key到剪贴板 - 使用useCallback避免重渲染
+  const handleCopyToClipboard = useCallback(async (keyValue: string) => {
     const result = await copyToClipboard(keyValue);
     if (result) {
       // 显示成功提示
@@ -25,10 +25,10 @@ export function KeyManager() {
     } else {
       alert("复制失败");
     }
-  };
+  }, [copyToClipboard]);
 
-  // 删除API Key
-  const deleteApiKey = async (id: string) => {
+  // 删除API Key - 使用useCallback避免重渲染
+  const deleteApiKey = useCallback(async (id: string) => {
     if (window.confirm("确定要删除这个API Key吗？")) {
       const result = await apiKeyService.deleteApiKey(id);
       if (result.success) {
@@ -38,16 +38,26 @@ export function KeyManager() {
         alert("删除失败: " + (result.error || "未知错误"));
       }
     }
-  };
+  }, []);
 
-  // 过滤API Keys
-  const filteredKeys = selectedGroup
-    ? apiKeys.filter(key => key.groupId === selectedGroup)
-    : apiKeys;
+  // 过滤API Keys - 使用useMemo避免重复计算
+  const filteredKeys = useMemo(() => {
+    return selectedGroup
+      ? apiKeys.filter(key => key.groupId === selectedGroup)
+      : apiKeys;
+  }, [apiKeys, selectedGroup]);
 
-  // 渲染单个API Key项
-  const renderApiKeyItem = (key: ApiKey, index: number) => {
-    const group = groups.find(g => g.id === key.groupId);
+  // 创建分组查找Map以提高性能
+  const groupMap = useMemo(() => {
+    return groups.reduce((map, group) => {
+      map.set(group.id, group);
+      return map;
+    }, new Map<string, typeof groups[0]>());
+  }, [groups]);
+
+  // 渲染单个API Key项 - 使用useCallback和groupMap优化性能
+  const renderApiKeyItem = useCallback((key: ApiKey, index: number) => {
+    const group = key.groupId ? groupMap.get(key.groupId) : undefined;
 
     return (
       <div className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
@@ -101,10 +111,39 @@ export function KeyManager() {
         </div>
       </div>
     );
-  };
+  }, [groupMap, handleCopyToClipboard, isCopying, deleteApiKey]);
 
   // 计算项目高度（大约64px每行）
   const getItemHeight = () => 64;
+
+  // 渲染分组筛选按钮 - 使用useMemo优化
+  const groupFilterButtons = useMemo(() => (
+    <div className="flex flex-wrap gap-2">
+      <button
+        onClick={() => setSelectedGroup(null)}
+        className={`px-3 py-1 rounded-full text-sm ${
+          selectedGroup === null
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+        }`}
+      >
+        全部
+      </button>
+      {groups.map(group => (
+        <button
+          key={group.id}
+          onClick={() => setSelectedGroup(group.id)}
+          className={`px-3 py-1 rounded-full text-sm ${
+            selectedGroup === group.id
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+          }`}
+        >
+          {group.name}
+        </button>
+      ))}
+    </div>
+  ), [groups, selectedGroup]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -117,31 +156,7 @@ export function KeyManager() {
 
       {/* 分组筛选 */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedGroup(null)}
-            className={`px-3 py-1 rounded-full text-sm ${
-              selectedGroup === null
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-          >
-            全部
-          </button>
-          {groups.map(group => (
-            <button
-              key={group.id}
-              onClick={() => setSelectedGroup(group.id)}
-              className={`px-3 py-1 rounded-full text-sm ${
-                selectedGroup === group.id
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              {group.name}
-            </button>
-          ))}
-        </div>
+        {groupFilterButtons}
       </div>
 
       {/* API Keys列表 - 使用虚拟滚动 */}
@@ -181,4 +196,7 @@ export function KeyManager() {
       )}
     </div>
   );
-}
+};
+
+// 使用memo包装组件以避免不必要的重渲染
+export const KeyManager = memo(KeyManagerComponent);
