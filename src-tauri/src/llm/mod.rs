@@ -79,7 +79,7 @@ async fn analyze_with_ollama(text: &str) -> Result<Vec<AnalyzedKey>, Box<dyn std
         .await?;
     
     if res.status().is_success() {
-        let response_text = res.text().await?;
+        let _response_text = res.text().await?;
         // 解析JSON响应
         // 这里简化处理，实际应该解析完整的响应
         Ok(vec![])

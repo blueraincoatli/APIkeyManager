@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnalyzedKey } from "../../types/apiKey";
 import { smartClipboardService } from "../../services/smartClipboardService";
 import { clipboardService } from "../../services/clipboardService";
@@ -9,7 +9,7 @@ export function SmartClipboard() {
   const [analyzedKeys, setAnalyzedKeys] = useState<AnalyzedKey[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [ollamaStatus, setOllamaStatus] = useState<boolean | null>(null);
-  const { isCopying: isGettingClipboard, copyError: getClipboardError, copyToClipboard: getClipboardContent } = useClipboard();
+  const { isCopying: isGettingClipboard, copyError: getClipboardError } = useClipboard();
 
   // 检查Ollama服务状态
   const checkOllama = async () => {
@@ -52,9 +52,9 @@ export function SmartClipboard() {
   };
 
   // 初始化时检查Ollama状态
-  useState(() => {
+  useEffect(() => {
     checkOllama();
-  });
+  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">

@@ -1,14 +1,15 @@
 use tauri::State;
-use crate::{database::{api_key::{ApiKey, insert_api_key, update_api_key, delete_api_key, get_all_api_keys, search_api_keys}, DatabaseError}, AppState};
+use crate::{database::api_key::ApiKey, AppState};
+use crate::database::api_key::{insert_api_key, update_api_key, delete_api_key as delete_api_key_db, get_all_api_keys, search_api_keys as search_api_keys_db};
 
 // 添加新的API Key
 #[tauri::command]
 pub async fn add_api_key(
     state: State<'_, AppState>,
     api_key: ApiKey,
-) -> Result<bool, DatabaseError> {
+) -> Result<bool, String> {
     let pool = &state.db;
-    insert_api_key(pool, &api_key).await?;
+    insert_api_key(pool, &api_key).await.map_err(|e| e.to_string())?;
     Ok(true)
 }
 
@@ -17,9 +18,9 @@ pub async fn add_api_key(
 pub async fn edit_api_key(
     state: State<'_, AppState>,
     api_key: ApiKey,
-) -> Result<bool, DatabaseError> {
+) -> Result<bool, String> {
     let pool = &state.db;
-    update_api_key(pool, &api_key).await?;
+    update_api_key(pool, &api_key).await.map_err(|e| e.to_string())?;
     Ok(true)
 }
 
@@ -28,9 +29,9 @@ pub async fn edit_api_key(
 pub async fn delete_api_key(
     state: State<'_, AppState>,
     key_id: String,
-) -> Result<bool, DatabaseError> {
+) -> Result<bool, String> {
     let pool = &state.db;
-    delete_api_key(pool, &key_id).await?;
+    delete_api_key_db(pool, &key_id).await.map_err(|e| e.to_string())?;
     Ok(true)
 }
 
@@ -38,9 +39,9 @@ pub async fn delete_api_key(
 #[tauri::command]
 pub async fn list_api_keys(
     state: State<'_, AppState>,
-) -> Result<Vec<ApiKey>, DatabaseError> {
+) -> Result<Vec<ApiKey>, String> {
     let pool = &state.db;
-    get_all_api_keys(pool).await
+    get_all_api_keys(pool).await.map_err(|e| e.to_string())
 }
 
 // 搜索API Key
@@ -48,7 +49,7 @@ pub async fn list_api_keys(
 pub async fn search_api_keys(
     state: State<'_, AppState>,
     keyword: String,
-) -> Result<Vec<ApiKey>, DatabaseError> {
+) -> Result<Vec<ApiKey>, String> {
     let pool = &state.db;
-    search_api_keys(pool, &keyword).await
+    search_api_keys_db(pool, &keyword).await.map_err(|e| e.to_string())
 }

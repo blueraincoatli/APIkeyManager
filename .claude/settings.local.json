@@ -1,8 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(dir /b)"
+      "Bash(wmic:*)",
+      "Bash(rustup:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

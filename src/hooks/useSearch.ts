@@ -21,8 +21,8 @@ export const useSearch = (items: ApiKey[], searchFields: (keyof ApiKey)[]) => {
     try {
       // 如果有搜索服务，使用它
       if (searchService) {
-        const results = await searchService.searchApiKeys(items, term, searchFields);
-        setSearchResults(results);
+        const results = await searchService.searchKeys(term);
+        setSearchResults(results.data);
       } else {
         // 简单的本地搜索实现
         const results = items.filter(item =>

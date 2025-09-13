@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { ApiKey, Group } from "../../types/apiKey";
-import { apiKeyService, groupService } from "../../services/apiKeyService";
-import { clipboardService } from "../../services/clipboardService";
+import { apiKeyService } from "../../services/apiKeyService";
 import { useApiKeys } from "../../hooks/useApiKey";
 import { useClipboard } from "../../hooks/useClipboard";
 import { formatDateTime } from "../../utils/helpers";

@@ -3,6 +3,7 @@ import { KeyManager } from "./components/KeyManager/KeyManager";
 import { SmartClipboard } from "./components/SmartClipboard/SmartClipboard";
 import { FloatingToolbar } from "./components/FloatingToolbar/FloatingToolbar";
 import { FloatingToolbarDemo } from "./components/FloatingToolbarDemo";
+import { RadialMenuTest } from "./components/RadialMenu/RadialMenu.test";
 import "./App.css";
 
 function App() {
@@ -75,6 +76,16 @@ function App() {
                 浮动工具条演示
               </button>
               <button
+                onClick={() => setActiveTab("radial-menu-test")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  activeTab === "radial-menu-test"
+                    ? "bg-gray-200 dark:bg-gray-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                径向菜单测试
+              </button>
+              <button
                 onClick={() => setActiveTab("settings")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "settings"
@@ -115,6 +126,8 @@ function App() {
         {activeTab === "smart-clipboard" && <SmartClipboard />}
 
         {activeTab === "floating-toolbar-demo" && <FloatingToolbarDemo />}
+
+        {activeTab === "radial-menu-test" && <RadialMenuTest />}
 
         {activeTab === "settings" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">

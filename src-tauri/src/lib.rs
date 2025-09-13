@@ -5,11 +5,9 @@ mod clipboard;
 mod llm;
 mod commands;
 
-use database::{init_database, error::DatabaseError};
-use serde::{Deserialize, Serialize};
+use database::init_database;
 use sqlx::SqlitePool;
 use tauri::Manager;
-use std::sync::Arc;
 
 // 应用状态
 pub struct AppState {
@@ -35,14 +33,6 @@ pub fn run() {
                     Ok(pool) => {
                         // 存储数据库连接池到应用状态
                         handle.manage(AppState { db: pool });
-                        
-                        // 注册全局快捷键
-                        if let Err(e) = handle.global_shortcut_manager().register("Ctrl+Shift+K", move || {
-                            // 这里需要与前端通信来显示搜索工具条
-                            println!("快捷键 Ctrl+Shift+K 被触发");
-                        }) {
-                            eprintln!("注册全局快捷键失败: {}", e);
-                        }
                     }
                     Err(e) => {
                         eprintln!("数据库初始化失败: {}", e);

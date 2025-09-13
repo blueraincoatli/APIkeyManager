@@ -1,4 +1,3 @@
-use tauri::Manager;
 use crate::clipboard;
 
 // 获取剪贴板内容

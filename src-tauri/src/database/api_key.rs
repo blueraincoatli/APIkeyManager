@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 use sqlx::SqlitePool;
-use crate::database::DatabaseError;
+use crate::database::error::DatabaseError;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct ApiKey {
     pub id: String,
     pub name: String,
@@ -18,6 +19,7 @@ pub struct ApiKey {
 
 impl ApiKey {
     // 创建新的API Key
+    #[allow(dead_code)]
     pub fn new(
         name: String,
         key_value: String,
@@ -44,79 +46,82 @@ impl ApiKey {
 
 // 插入API Key
 pub async fn insert_api_key(pool: &SqlitePool, api_key: &ApiKey) -> Result<(), DatabaseError> {
-    sqlx::query!(
+    sqlx::query(
         r#"
         INSERT INTO api_keys (
             id, name, key_value, platform, description, group_id, tags, created_at, updated_at, last_used_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        "#,
-        api_key.id,
-        api_key.name,
-        api_key.key_value,
-        api_key.platform,
-        api_key.description,
-        api_key.group_id,
-        api_key.tags,
-        api_key.created_at,
-        api_key.updated_at,
-        api_key.last_used_at
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+        "#
     )
+    .bind(&api_key.id)
+    .bind(&api_key.name)
+    .bind(&api_key.key_value)
+    .bind(&api_key.platform)
+    .bind(&api_key.description)
+    .bind(&api_key.group_id)
+    .bind(&api_key.tags)
+    .bind(api_key.created_at)
+    .bind(api_key.updated_at)
+    .bind(api_key.last_used_at)
     .execute(pool)
     .await
     .map(|_| ())
-    .map_err(|e| DatabaseError::SqlxError(e))
+    .map_err(|e| DatabaseError::SqlxError(e.to_string()))
 }
 
 // 更新API Key
 pub async fn update_api_key(pool: &SqlitePool, api_key: &ApiKey) -> Result<(), DatabaseError> {
-    sqlx::query!(
+    sqlx::query(
         r#"
         UPDATE api_keys
-        SET name = ?, key_value = ?, platform = ?, description = ?, group_id = ?, tags = ?, updated_at = ?, last_used_at = ?
-        WHERE id = ?
-        "#,
-        api_key.name,
-        api_key.key_value,
-        api_key.platform,
-        api_key.description,
-        api_key.group_id,
-        api_key.tags,
-        api_key.updated_at,
-        api_key.last_used_at,
-        api_key.id
+        SET name = ?1, key_value = ?2, platform = ?3, description = ?4, group_id = ?5, tags = ?6, updated_at = ?7, last_used_at = ?8
+        WHERE id = ?9
+        "#
     )
+    .bind(&api_key.name)
+    .bind(&api_key.key_value)
+    .bind(&api_key.platform)
+    .bind(&api_key.description)
+    .bind(&api_key.group_id)
+    .bind(&api_key.tags)
+    .bind(api_key.updated_at)
+    .bind(api_key.last_used_at)
+    .bind(&api_key.id)
     .execute(pool)
     .await
     .map(|_| ())
-    .map_err(|e| DatabaseError::SqlxError(e))
+    .map_err(|e| DatabaseError::SqlxError(e.to_string()))
 }
 
 // 删除API Key
 pub async fn delete_api_key(pool: &SqlitePool, id: &str) -> Result<(), DatabaseError> {
-    sqlx::query!("DELETE FROM api_keys WHERE id = ?", id)
+    sqlx::query("DELETE FROM api_keys WHERE id = ?1")
+        .bind(id)
         .execute(pool)
         .await
         .map(|_| ())
-        .map_err(|e| DatabaseError::SqlxError(e))
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))
 }
 
 // 获取所有API Keys
 pub async fn get_all_api_keys(pool: &SqlitePool) -> Result<Vec<ApiKey>, DatabaseError> {
-    let keys = sqlx::query_as!(ApiKey, "SELECT * FROM api_keys")
+    let keys = sqlx::query_as::<_, ApiKey>("SELECT * FROM api_keys")
         .fetch_all(pool)
         .await
-        .map_err(|e| DatabaseError::SqlxError(e))?;
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
     
     Ok(keys)
 }
 
 // 根据ID获取API Key
+#[allow(dead_code)]
 pub async fn get_api_key_by_id(pool: &SqlitePool, id: &str) -> Result<Option<ApiKey>, DatabaseError> {
-    let key = sqlx::query_as!(ApiKey, "SELECT * FROM api_keys WHERE id = ?", id)
+    let key = sqlx::query_as::<_, ApiKey>("SELECT * FROM api_keys WHERE id = ?1")
+        .bind(id)
         .fetch_optional(pool)
         .await
-        .map_err(|e| DatabaseError::SqlxError(e))?;
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
     
     Ok(key)
 }
@@ -124,19 +129,18 @@ pub async fn get_api_key_by_id(pool: &SqlitePool, id: &str) -> Result<Option<Api
 // 搜索API Keys
 pub async fn search_api_keys(pool: &SqlitePool, keyword: &str) -> Result<Vec<ApiKey>, DatabaseError> {
     let search_term = format!("%{}%", keyword);
-    let keys = sqlx::query_as!(
-        ApiKey,
+    let keys = sqlx::query_as::<_, ApiKey>(
         r#"
         SELECT * FROM api_keys 
-        WHERE name LIKE ? OR platform LIKE ? OR description LIKE ?
-        "#,
-        search_term,
-        search_term,
-        search_term
+        WHERE name LIKE ?1 OR platform LIKE ?2 OR description LIKE ?3
+        "#
     )
+    .bind(&search_term)
+    .bind(&search_term)
+    .bind(&search_term)
     .fetch_all(pool)
     .await
-    .map_err(|e| DatabaseError::SqlxError(e))?;
+    .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
     
     Ok(keys)
 }

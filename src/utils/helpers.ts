@@ -11,23 +11,19 @@ export const formatDateTime = (timestamp: number): string => {
   });
 };
 
-// 生成唯一ID
 export const generateId = (): string => {
   return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-// 防抖函数
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: any[]) => void>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void => {
-  let timeout: NodeJS.Timeout | null = null;
-  return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
+): T => {
+  let timeout: number;
+  return ((...args: any[]) => {
+    clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
-  };
+  }) as T;
 };
 
 // 节流函数

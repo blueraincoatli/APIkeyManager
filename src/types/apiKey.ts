@@ -46,3 +46,10 @@ export interface AnalyzedKey {
   name?: string;
   group?: string;
 }
+
+// Tauri 环境接口
+declare global {
+  interface Window {
+    __TAURI__?: unknown;
+  }
+}

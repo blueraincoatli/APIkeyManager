@@ -11,7 +11,7 @@ pub async fn analyze_clipboard_text(text: String) -> Result<Vec<llm::AnalyzedKey
 
 // 导入分析的API Key
 #[tauri::command]
-pub async fn import_analyzed_keys(keys: Vec<llm::AnalyzedKey>) -> Result<bool, String> {
+pub async fn import_analyzed_keys(_keys: Vec<llm::AnalyzedKey>) -> Result<bool, String> {
     // 这里应该将分析的API Key导入到数据库
     // 为了简化，我们暂时只返回成功
     Ok(true)

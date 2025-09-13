@@ -1,11 +1,10 @@
 pub mod api_key;
+pub mod error;
 pub mod group;
 pub mod usage_history;
 pub mod settings;
 pub mod batch_import;
-pub mod error;
 
-use std::sync::Arc;
 use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use tauri::Manager;
 
@@ -39,7 +38,7 @@ pub async fn init_database(app_handle: &tauri::AppHandle) -> Result<SqlitePool, 
 // 运行数据库迁移
 async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     // 创建API Key表
-    sqlx::query!(
+    sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS api_keys (
             id TEXT PRIMARY KEY,
@@ -59,7 +58,7 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .await?;
 
     // 创建分组表
-    sqlx::query!(
+    sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS groups (
             id TEXT PRIMARY KEY,
@@ -74,7 +73,7 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .await?;
 
     // 创建使用历史记录表
-    sqlx::query!(
+    sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS usage_history (
             id TEXT PRIMARY KEY,
@@ -88,7 +87,7 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .await?;
 
     // 创建配置表
-    sqlx::query!(
+    sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
@@ -100,7 +99,7 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .await?;
 
     // 创建批量导入记录表
-    sqlx::query!(
+    sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS batch_imports (
             id TEXT PRIMARY KEY,
