@@ -1,6 +1,7 @@
 import { ApiKey, Group, UsageHistory } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
 import { Validator } from "./validation";
+import { generateId } from "../utils/helpers";
 
 // API Key相关服务
 export const apiKeyService = {

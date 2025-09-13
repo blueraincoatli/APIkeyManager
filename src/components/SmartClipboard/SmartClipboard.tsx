@@ -2,23 +2,19 @@ import { useState } from "react";
 import { AnalyzedKey } from "../../types/apiKey";
 import { smartClipboardService } from "../../services/smartClipboardService";
 import { clipboardService } from "../../services/clipboardService";
+import { useClipboard } from "../../hooks/useClipboard";
 
 export function SmartClipboard() {
   const [clipboardText, setClipboardText] = useState("");
   const [analyzedKeys, setAnalyzedKeys] = useState<AnalyzedKey[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [ollamaStatus, setOllamaStatus] = useState<boolean | null>(null);
+  const { isCopying: isGettingClipboard, copyError: getClipboardError, copyToClipboard: getClipboardContent } = useClipboard();
 
   // 检查Ollama服务状态
   const checkOllama = async () => {
     const status = await smartClipboardService.checkOllamaStatus();
     setOllamaStatus(status);
-  };
-
-  // 获取剪贴板内容
-  const getClipboardContent = async () => {
-    const content = await clipboardService.getClipboardContent();
-    setClipboardText(content);
   };
 
   // 分析文本
@@ -84,12 +80,19 @@ export function SmartClipboard() {
         <div className="flex justify-between items-center mb-2">
           <label className="font-medium">剪贴板内容</label>
           <button
-            onClick={getClipboardContent}
-            className="text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-1 rounded"
+            onClick={async () => {
+              const content = await clipboardService.getClipboardContent();
+              setClipboardText(content);
+            }}
+            disabled={isGettingClipboard}
+            className="text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-1 rounded disabled:opacity-50"
           >
-            获取剪贴板内容
+            {isGettingClipboard ? '获取中...' : '获取剪贴板内容'}
           </button>
         </div>
+        {getClipboardError && (
+          <div className="text-red-500 text-sm mb-2">{getClipboardError}</div>
+        )}
         <textarea
           value={clipboardText}
           onChange={(e) => setClipboardText(e.target.value)}

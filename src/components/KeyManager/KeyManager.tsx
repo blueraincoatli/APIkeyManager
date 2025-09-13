@@ -2,47 +2,23 @@ import { useState, useEffect } from "react";
 import { ApiKey, Group } from "../../types/apiKey";
 import { apiKeyService, groupService } from "../../services/apiKeyService";
 import { clipboardService } from "../../services/clipboardService";
+import { useApiKeys } from "../../hooks/useApiKey";
+import { useClipboard } from "../../hooks/useClipboard";
+import { formatDateTime } from "../../utils/helpers";
 
 export function KeyManager() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { apiKeys, groups, loading, refetch } = useApiKeys();
+  const { isCopying, copyToClipboard } = useClipboard();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-
-  // 获取API Keys和分组
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const keysResult = await apiKeyService.listApiKeys();
-      const groupsResult = await groupService.listGroups();
-      
-      if (!keysResult.error) {
-        setApiKeys(keysResult.data);
-      }
-      
-      if (!groupsResult.error) {
-        setGroups(groupsResult.data);
-      }
-      
-      if (keysResult.error || groupsResult.error) {
-        const errorMsg = [keysResult.error, groupsResult.error].filter(Boolean).join("; ");
-        console.error("获取数据失败:", errorMsg);
-      }
-    } catch (error) {
-      console.error("获取数据失败:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 初始化时获取数据
   useEffect(() => {
-    fetchData();
+    refetch();
   }, []);
 
   // 复制API Key到剪贴板
-  const copyToClipboard = async (keyValue: string) => {
-    const result = await clipboardService.copyToClipboard(keyValue);
+  const handleCopyToClipboard = async (keyValue: string) => {
+    const result = await copyToClipboard(keyValue);
     if (result) {
       // 显示成功提示
       alert("已复制到剪贴板");
@@ -57,7 +33,7 @@ export function KeyManager() {
       const result = await apiKeyService.deleteApiKey(id);
       if (result.success) {
         // 优化：只更新相关数据而不是重新获取所有数据
-        setApiKeys(prev => prev.filter(key => key.id !== id));
+        refetch();
       } else {
         alert("删除失败: " + (result.error || "未知错误"));
       }
@@ -161,15 +137,16 @@ export function KeyManager() {
                         {group ? group.name : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(key.createdAt).toLocaleDateString()}
+                        {formatDateTime(key.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => copyToClipboard(key.keyValue)}
+                            onClick={() => handleCopyToClipboard(key.keyValue)}
                             className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            disabled={isCopying}
                           >
-                            复制
+                            {isCopying ? '复制中...' : '复制'}
                           </button>
                           <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                             编辑
