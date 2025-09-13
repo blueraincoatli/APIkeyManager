@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { clipboardService } from "../../services/clipboardService";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
@@ -12,7 +12,17 @@ interface SearchResultsProps {
 export function SearchResults({ results, onCopy, position }: SearchResultsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<number | null>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(resultsRef);
+
+  // 组件卸载时清理timeout
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   
 
@@ -21,9 +31,17 @@ export function SearchResults({ results, onCopy, position }: SearchResultsProps)
     await clipboardService.copyToClipboard(key.keyValue);
     setCopiedId(key.id);
     onCopy(key);
-    
-    // 2秒后清除复制状态
-    setTimeout(() => setCopiedId(null), 2000);
+
+    // 清理之前的timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // 设置新的timeout
+    timeoutRef.current = window.setTimeout(() => {
+      setCopiedId(null);
+      timeoutRef.current = null;
+    }, 2000);
   };
 
   // 格式化API密钥显示

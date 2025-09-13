@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ApiKey } from "../../types/apiKey";
-import { searchService } from "../../services/searchService";
+import { searchOptimizationService } from "../../services/searchOptimizationService";
 import { clipboardService } from "../../services/clipboardService";
+import { debounced } from "../../utils/debounce";
+import { SearchSuggestions } from "./SearchSuggestions";
 
 interface SearchToolbarProps {
   onClose: () => void;
@@ -10,23 +12,52 @@ interface SearchToolbarProps {
 export function SearchToolbar({ onClose }: SearchToolbarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 聚焦搜索框
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
 
-  // 处理搜索
-  const handleSearch = async (term: string) => {
-    setSearchTerm(term);
+    // 组件卸载时清理防抖定时器
+    return () => {
+      cancel();
+    };
+  }, [cancel]);
+
+  // 创建防抖搜索函数 - 300ms延迟
+  const { fn: debouncedSearch, cancel } = debounced(async (term: string) => {
     if (term.trim() === "") {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
-    const results = await searchService.searchKeys(term);
-    setSearchResults(results.data);
+    setIsSearching(true);
+    try {
+      const results = await searchOptimizationService.smartSearch(term);
+      setSearchResults(results.data);
+    } catch (error) {
+      console.error("Search failed:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, 300);
+
+  // 处理搜索
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setShowSuggestions(term.trim().length > 1);
+    debouncedSearch(term);
+  };
+
+  // 处理搜索建议选择
+  const handleSuggestionSelect = (suggestion: string) => {
+    setSearchTerm(suggestion);
+    setShowSuggestions(false);
+    debouncedSearch(suggestion);
   };
 
   // 处理键盘事件
@@ -61,6 +92,8 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setShowSuggestions(searchTerm.trim().length > 1)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="搜索API Key..."
               className="w-full px-4 py-3 bg-white/70 dark:bg-gray-700/70 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent backdrop-blur-sm cursor-text"
             />
@@ -72,12 +105,26 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </button>
+
+            {/* 搜索建议 */}
+            <SearchSuggestions
+              keyword={searchTerm}
+              onSelect={handleSuggestionSelect}
+              visible={showSuggestions}
+            />
           </div>
         </div>
 
         {/* 搜索结果 */}
         <div className="max-h-96 overflow-y-auto">
-          {searchResults.length === 0 ? (
+          {isSearching ? (
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>搜索中...</span>
+              </div>
+            </div>
+          ) : searchResults.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               {searchTerm ? "未找到匹配的API Key" : "输入关键词搜索API Key"}
             </div>

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ApiKey, Group } from "../../types/apiKey";
+import { ApiKey } from "../../types/apiKey";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useApiKeys } from "../../hooks/useApiKey";
 import { useClipboard } from "../../hooks/useClipboard";
 import { formatDateTime } from "../../utils/helpers";
+import { VirtualList } from "../VirtualScroll/VirtualList";
 
 export function KeyManager() {
   const { apiKeys, groups, loading, refetch } = useApiKeys();
@@ -44,6 +45,67 @@ export function KeyManager() {
     ? apiKeys.filter(key => key.groupId === selectedGroup)
     : apiKeys;
 
+  // 渲染单个API Key项
+  const renderApiKeyItem = (key: ApiKey, index: number) => {
+    const group = groups.find(g => g.id === key.groupId);
+
+    return (
+      <div className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+        index === 0 ? 'border-t' : ''
+      }`}>
+        {/* 名称 */}
+        <div className="col-span-3">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {key.name}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+            {key.description}
+          </div>
+        </div>
+
+        {/* 平台 */}
+        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+          {key.platform || "-"}
+        </div>
+
+        {/* 分组 */}
+        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+          {group ? group.name : "-"}
+        </div>
+
+        {/* 创建时间 */}
+        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+          {formatDateTime(key.createdAt)}
+        </div>
+
+        {/* 操作 */}
+        <div className="col-span-3 text-sm font-medium">
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handleCopyToClipboard(key.keyValue)}
+              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded"
+              disabled={isCopying}
+            >
+              {isCopying ? '复制中...' : '复制'}
+            </button>
+            <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-2 py-1 rounded">
+              编辑
+            </button>
+            <button
+              onClick={() => deleteApiKey(key.id)}
+              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded"
+            >
+              删除
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 计算项目高度（大约64px每行）
+  const getItemHeight = () => 64;
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
@@ -82,88 +144,39 @@ export function KeyManager() {
         </div>
       </div>
 
-      {/* API Keys列表 */}
+      {/* API Keys列表 - 使用虚拟滚动 */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  名称
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  平台
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  分组
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  创建时间
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredKeys.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    {selectedGroup ? "该分组下暂无API Keys" : "暂无API Keys"}
-                  </td>
-                </tr>
-              ) : (
-                filteredKeys.map((key) => {
-                  const group = groups.find(g => g.id === key.groupId);
-                  return (
-                    <tr key={key.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {key.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                          {key.description}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {key.platform || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {group ? group.name : "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {formatDateTime(key.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleCopyToClipboard(key.keyValue)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            disabled={isCopying}
-                          >
-                            {isCopying ? '复制中...' : '复制'}
-                          </button>
-                          <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                            编辑
-                          </button>
-                          <button
-                            onClick={() => deleteApiKey(key.id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          >
-                            删除
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+          {/* 表头 */}
+          <div className="bg-gray-50 dark:bg-gray-700 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <div className="col-span-3">名称</div>
+              <div className="col-span-2">平台</div>
+              <div className="col-span-2">分组</div>
+              <div className="col-span-2">创建时间</div>
+              <div className="col-span-3">操作</div>
+            </div>
+          </div>
+
+          {/* 虚拟滚动列表 */}
+          {filteredKeys.length === 0 ? (
+            <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+              {selectedGroup ? "该分组下暂无API Keys" : "暂无API Keys"}
+            </div>
+          ) : (
+            <VirtualList
+              items={filteredKeys}
+              renderItem={renderApiKeyItem}
+              itemHeight={getItemHeight}
+              containerHeight={600}
+              overscan={5}
+              className="bg-white dark:bg-gray-800"
+            />
+          )}
         </div>
       )}
     </div>
