@@ -3,7 +3,9 @@
     "allow": [
       "Bash(wmic:*)",
       "Bash(rustup:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
