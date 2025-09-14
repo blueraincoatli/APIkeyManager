@@ -8,6 +8,7 @@ import { SearchResults } from "../SearchResults/SearchResults";
 import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon/Icon";
 import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
+import { apiKeyService } from "../../services/apiKeyService";
 
 interface FloatingToolbarProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(toolbarRef);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -82,6 +84,21 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     const filtered = (res.data || []).filter((k) => matchProvider(k.name, k.platform, k.tags, id));
     setSearchResults(filtered.length ? filtered : res.data);
   };
+
+  // 打开环形菜单时，统计各提供商的 key 数量并展示在按钮上
+  useEffect(() => {
+    const loadCounts = async () => {
+      if (!showRadialMenu) return;
+      const res = await apiKeyService.listApiKeys();
+      const keys = res.success ? res.data || [] : [];
+      const counts: Record<string, number> = {};
+      for (const p of PROVIDERS) {
+        counts[p.id] = keys.filter(k => matchProvider(k.name, k.platform, k.tags, p.id)).length;
+      }
+      setProviderCounts(counts);
+    };
+    loadCounts();
+  }, [showRadialMenu]);
 
   return (
     <div className="fixed z-50" style={{ left: position.x, top: position.y }}>
@@ -146,7 +163,12 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         
         
         <RadialMenu
-          options={PROVIDERS.slice(0,5).map(p => ({ id: p.id, label: p.label, icon: p.label.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase() }))}
+          options={PROVIDERS.slice(0,6).map(p => ({
+            id: p.id,
+            label: p.label,
+            icon: p.label.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(),
+            count: providerCounts[p.id] ?? 0,
+          }))}
           onSelect={handleRadialSelect}
           onClose={() => setShowRadialMenu(false)}
           center={{

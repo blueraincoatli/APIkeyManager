@@ -5,6 +5,7 @@ interface RadialMenuOption {
   id: string;
   label: string;
   icon?: string;
+  count?: number;
 }
 
 interface RadialMenuProps {
@@ -133,6 +134,9 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
               <span className="text-sm font-medium flex items-center gap-2">
                 {option.icon && <span className="text-base">{option.icon}</span>}
                 {option.label}
+                <span className="ml-1 text-xs px-2 py-0.5 rounded-full border" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
+                  {option.count ?? 0}
+                </span>
               </span>
             </button>
           );
