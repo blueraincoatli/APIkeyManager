@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useToast, ToastMessage } from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
+import { ToastMessage } from '../../services/toastService';
 import { cn } from '../../utils/helpers';
 import { UI_CONSTANTS } from '../../constants';
 
@@ -47,14 +48,14 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
 
   const getIcon = () => {
     const iconStyles = 'flex-shrink-0 w-5 h-5';
-    const iconColors = {
+    const iconColors: Record<'success'|'error'|'warning'|'info', string> = {
       success: 'text-green-500',
       error: 'text-red-500',
       warning: 'text-yellow-500',
       info: 'text-blue-500',
     };
 
-    const icons = {
+    const icons: Record<'success'|'error'|'warning'|'info', React.ReactElement> = {
       success: (
         <svg className={cn(iconStyles, iconColors.success)} fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

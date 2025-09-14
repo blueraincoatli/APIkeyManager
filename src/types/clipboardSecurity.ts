@@ -61,6 +61,7 @@ export interface ClipboardContentMetadata {
   isEncrypted: boolean;
   contentHash?: string;
   validationRules?: string[];
+  iv?: string; // 可选：加密向量（部分实现会用到）
 }
 
 // Authorization context for clipboard access

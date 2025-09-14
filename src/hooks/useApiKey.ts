@@ -17,16 +17,16 @@ export const useApiKeys = () => {
       const keysResult = await apiKeyService.listApiKeys();
       const groupsResult = await groupService.listGroups();
       
-      if (!keysResult.error) {
-        setApiKeys(keysResult.data);
-      } else {
+      if (keysResult.success) {
+        setApiKeys(keysResult.data || []);
+      } else if (keysResult.error) {
         setError(keysResult.error);
       }
       
-      if (!groupsResult.error) {
-        setGroups(groupsResult.data);
-      } else if (!error) {
-        setError(groupsResult.error);
+      if (groupsResult.success) {
+        setGroups(groupsResult.data || []);
+      } else if (groupsResult.error && !error) {
+        setError(groupsResult.error.message || String(groupsResult.error.code));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '获取数据失败');

@@ -65,14 +65,14 @@ class SecureClipboardService {
       }
 
       // Get raw content from clipboard
-      const rawContent = await invoke("get_clipboard_content");
+      const rawContent = (await invoke("get_clipboard_content")) as unknown as string;
 
       // Decrypt if necessary
       if (metadata?.isEncrypted) {
         const encryptionKey = await clipboardEncryption.retrieveEncryptionKey(metadataId || "");
         if (encryptionKey) {
           result = await clipboardEncryption.decrypt(
-            rawContent,
+            rawContent as string,
             metadata.iv || "",
             encryptionKey,
             metadata.securityLevel

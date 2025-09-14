@@ -12,8 +12,18 @@ export const formatDateTime = (timestamp: number): string => {
 };
 
 // CSS class name utility function (clsx alternative)
-export const cn = (...classes: (string | undefined | null | false)[]): string => {
-  return classes.filter(Boolean).join(' ');
+export const cn = (
+  ...classes: Array<string | Record<string, boolean> | undefined | null | false>
+): string => {
+  const out: string[] = [];
+  for (const c of classes) {
+    if (!c) continue;
+    if (typeof c === 'string') out.push(c);
+    else {
+      for (const [k, v] of Object.entries(c)) if (v) out.push(k);
+    }
+  }
+  return out.join(' ');
 };
 
 export const generateId = (): string => {

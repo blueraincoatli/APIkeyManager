@@ -7,11 +7,12 @@ import {
   ClipboardContentMetadata,
   ClipboardAuditLog
 } from '../types/clipboardSecurity';
-import { SECURITY_CONSTANTS, UI_CONSTANTS } from '../constants';
+import { UI_CONSTANTS } from '../constants';
+import { ClipboardOperation } from '../types/clipboardSecurity';
 
 // Audit log filters interface
 interface AuditLogFilters {
-  operation?: string;
+  operation?: ClipboardOperation;
   success?: boolean;
   securityLevel?: ClipboardSecurityLevel;
   userId?: string;
@@ -24,12 +25,11 @@ interface AuditLogFilters {
 interface SecurityStats {
   totalOperations: number;
   successRate: number;
-  securityViolations: number;
+  operationsByType: Record<ClipboardOperation, number>;
+  securityLevelDistribution: Record<any, number>;
+  errorRate: number;
   averageResponseTime: number;
-  topOperations: Array<{
-    operation: string;
-    count: number;
-  }>;
+  suspiciousActivities: ClipboardAuditLog[];
 }
 
 interface UseClipboardOptions {

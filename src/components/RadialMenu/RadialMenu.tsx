@@ -1,176 +1,103 @@
-import { ApiKey } from "../../types/apiKey";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 
-interface RadialMenuProps {
-  apiKey: ApiKey;
-  onClose: () => void;
-  onCopy: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  onDetails: () => void;
+interface RadialMenuOption {
+  id: string;
+  label: string;
+  icon?: string;
 }
 
-export function RadialMenu({ apiKey: _apiKey, onClose, onCopy, onEdit, onDelete, onDetails }: RadialMenuProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+interface RadialMenuProps {
+  options: RadialMenuOption[];
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  center?: { x: number; y: number };
+}
+
+// 通用径向菜单：胶囊按钮沿弧线排列，仅对悬停项绘制单条连线
+export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuProps) {
+  const [menuCenter, setMenuCenter] = useState<{ x: number; y: number }>(center || { x: 0, y: 0 });
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(menuRef);
-  
-  // 径向菜单选项
-  const menuOptions = [
-    { id: "copy", label: "Copy", icon: "📋", action: onCopy },
-    { id: "edit", label: "Edit", icon: "✏️", action: onEdit },
-    { id: "delete", label: "Delete", icon: "🗑️", action: onDelete },
-    { id: "details", label: "Details", icon: "ℹ️", action: onDetails },
-  ];
 
-  // 初始化菜单位置
   useEffect(() => {
-    setMenuPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
-  }, []);
-
-  // 处理鼠标移动
-  const handleMouseMove = (e: MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
-
-  
-
-  // 添加鼠标移动事件监听器
-  useEffect(() => {
-    document.addEventListener("mousemove", handleMouseMove);
-    
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
-  // 计算两点间距离
-  const distance = (point1: { x: number; y: number }, point2: { x: number; y: number }) => {
-    return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-  };
-
-  // 计算连线坐标点
-  const calculateConnectorLinePoints = (
-    iconCenter: { x: number; y: number },
-    mousePosition: { x: number; y: number },
-    iconRadius: number,
-    optionBounds: { left: number; top: number; right: number; bottom: number }
-  ) => {
-    // 从图标中心到鼠标位置计算初始坐标
-    const initialStartPoint = { x: iconCenter.x, y: iconCenter.y };
-    const initialEndPoint = { x: mousePosition.x, y: mousePosition.y };
-
-    // 调整起点到图标外缘
-    const dist = distance(initialStartPoint, initialEndPoint);
-    if (dist === 0) {
-      // 当鼠标和图标中心重合时，返回默认坐标
-      return { 
-        startPoint: initialStartPoint, 
-        endPoint: initialEndPoint 
-      };
+    if (!center) {
+      setMenuCenter({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     }
+  }, [center]);
+
+  const getLineForItem = (index: number) => {
+    if (!menuRef.current) return null;
+    const angle = index * 60 - 90;
+    const radius = 120;
+    const x = radius * Math.cos((angle * Math.PI) / 180);
+    const y = radius * Math.sin((angle * Math.PI) / 180);
+    const centerX = menuRef.current.offsetWidth / 2;
+    const centerY = menuRef.current.offsetHeight / 2;
+
+    const buttonWidth = 120;
+    const buttonHeight = 40;
+    const optionBounds = {
+      left: centerX + x - buttonWidth / 2,
+      top: centerY + y - buttonHeight / 2,
+      right: centerX + x + buttonWidth / 2,
+      bottom: centerY + y + buttonHeight / 2,
+    };
+
+    const iconRadius = 24;
     const startPoint = {
-      x: initialStartPoint.x + (initialEndPoint.x - initialStartPoint.x) * (iconRadius / dist),
-      y: initialStartPoint.y + (initialEndPoint.y - initialStartPoint.y) * (iconRadius / dist)
+      x: centerX + (x * iconRadius) / radius,
+      y: centerY + (y * iconRadius) / radius,
     };
-
-    // 调整终点到选项外轮廓线
-    const boundsWidth = optionBounds.right - optionBounds.left;
-    const boundsHeight = optionBounds.bottom - optionBounds.top;
-    if (boundsWidth === 0 || boundsHeight === 0) {
-      // 当选项边界无效时，返回默认坐标
-      return { 
-        startPoint: initialStartPoint, 
-        endPoint: initialEndPoint 
-      };
-    }
-    const endPoint = {
-      x: optionBounds.left + boundsWidth * (initialEndPoint.x - optionBounds.left) / boundsWidth,
-      y: optionBounds.top + boundsHeight * (initialEndPoint.y - optionBounds.top) / boundsHeight
-    };
+    const endPoint = { x: (optionBounds.left + optionBounds.right) / 2, y: optionBounds.top };
 
     return { startPoint, endPoint };
   };
 
-  // 处理选项点击
-  const handleOptionClick = (action: () => void) => {
-    action();
+  const handleClick = (id: string) => {
+    onSelect(id);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 背景遮罩 */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
-      {/* 径向菜单 */}
-      <div 
-        ref={menuRef} 
+      <div className="fixed inset-0 bg-black/10" onClick={onClose} />
+
+      <div
+        ref={menuRef}
         className="relative w-80 h-80"
-        style={{ left: menuPosition.x - 160, top: menuPosition.y - 160 }}
+        style={{ left: (menuCenter.x || 0) - 160, top: (menuCenter.y || 0) - 160 }}
       >
-        {/* SVG连线 */}
         <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
-          {menuOptions.map((_, index) => {
-            // 计算选项位置（沿弧线排列，胶囊形设计）
-            const angle = (index * 60) - 90; // 从顶部开始，间隔60度
-            const radius = 120; // 半径
-            const x = radius * Math.cos(angle * Math.PI / 180);
-            const y = radius * Math.sin(angle * Math.PI / 180);
-            
-            // 获取选项元素的位置信息
-            if (menuRef.current) {
-              const centerX = menuRef.current.offsetWidth / 2;
-              const centerY = menuRef.current.offsetHeight / 2;
-              const iconRadius = 24; // 中心点半径
-              
-              // 胶囊形按钮尺寸
-              const buttonWidth = 120;
-              const buttonHeight = 40;
-              const optionBounds = {
-                left: centerX + x - buttonWidth/2,
-                top: centerY + y - buttonHeight/2,
-                right: centerX + x + buttonWidth/2,
-                bottom: centerY + y + buttonHeight/2
-              };
-              
-              const iconCenter = { x: centerX, y: centerY };
-              const points = calculateConnectorLinePoints(iconCenter, mousePosition, iconRadius, optionBounds);
-              
-              return (
-                <line
-                  key={index}
-                  x1={points.startPoint.x}
-                  y1={points.startPoint.y}
-                  x2={points.endPoint.x}
-                  y2={points.endPoint.y}
-                  stroke="rgba(255, 255, 255, 0.3)"
-                  strokeWidth="2"
-                  strokeDasharray="4,4"
-                />
-              );
-            }
-            return null;
-          })}
+          {hoverIndex !== null && (() => {
+            const p = getLineForItem(hoverIndex);
+            if (!p) return null;
+            return (
+              <line
+                x1={p.startPoint.x}
+                y1={p.startPoint.y}
+                x2={p.endPoint.x}
+                y2={p.endPoint.y}
+                stroke="rgba(255,255,255,0.35)"
+                strokeWidth="2"
+              />
+            );
+          })()}
         </svg>
-        
-        {menuOptions.map((option, index) => {
-          // 计算选项位置（沿弧线排列，胶囊形设计）
-          const angle = (index * 60) - 90; // 从顶部开始，间隔60度
-          const radius = 120; // 半径
-          const x = radius * Math.cos(angle * Math.PI / 180);
-          const y = radius * Math.sin(angle * Math.PI / 180);
-          
+
+        {options.map((option, index) => {
+          const angle = index * 60 - 90;
+          const radius = 120;
+          const x = radius * Math.cos((angle * Math.PI) / 180);
+          const y = radius * Math.sin((angle * Math.PI) / 180);
           return (
             <button
               key={option.id}
-              onClick={() => handleOptionClick(option.action)}
-              className="absolute flex items-center justify-center px-6 py-3 backdrop-blur-xl rounded-full shadow-xl border transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:bg-white/20"
+              onMouseEnter={() => setHoverIndex(index)}
+              onMouseLeave={() => setHoverIndex(null)}
+              onClick={() => handleClick(option.id)}
+              className="absolute flex items-center justify-center px-6 py-3 rounded-full border shadow-xl backdrop-blur-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl"
               style={{
                 left: `calc(50% + ${x}px - 60px)`,
                 top: `calc(50% + ${y}px - 20px)`,
@@ -179,18 +106,21 @@ export function RadialMenu({ apiKey: _apiKey, onClose, onCopy, onEdit, onDelete,
                 borderColor,
               }}
             >
-              <span className="flex items-center space-x-2 font-medium">
-                <span className="text-lg">{option.icon}</span>
-                <span className="text-sm">{option.label}</span>
+              <span className="text-sm font-medium flex items-center gap-2">
+                {option.icon && <span className="text-base">{option.icon}</span>}
+                {option.label}
               </span>
             </button>
           );
         })}
-        
-        {/* 中心装饰点 */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full backdrop-blur-xl border-2 border-white/30"
-             style={{ backgroundColor }}></div>
+
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/30"
+          style={{ backgroundColor }}
+        />
       </div>
     </div>
   );
 }
+
+export type { RadialMenuOption };

@@ -1,7 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { UI_CONSTANTS } from '../constants';
 
-interface Props {
+export interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
@@ -58,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.props.onError?.(error, errorInfo);
 
     // Log the error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
   }
@@ -124,7 +123,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </button>
               </div>
 
-              {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+              {import.meta.env.DEV && this.state.errorInfo && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                     Error Stack Information (Developer Mode)

@@ -13,8 +13,9 @@ import "./App.css";
 import "./styles/theme.css";
 
 function App() {
+  const isDev = import.meta.env.DEV;
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
+  const [showFloatingToolbar, setShowFloatingToolbar] = useState(!isDev);
 
   // 注册全局快捷键
   useEffect(() => {
@@ -48,6 +49,7 @@ function App() {
     <ThemeProvider defaultTheme="system">
       <ErrorBoundary>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+      {isDev && (
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -120,7 +122,9 @@ function App() {
           </div>
         </div>
       </header>
+      )}
 
+      {isDev && (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === "dashboard" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -182,6 +186,7 @@ function App() {
           </div>
         )}
       </main>
+      )}
 
       {showFloatingToolbar && (
         <FloatingToolbar onClose={() => setShowFloatingToolbar(false)} />
