@@ -6,6 +6,7 @@ import {
   ClipboardSecurityConfig,
   DEFAULT_CLIPBOARD_SECURITY_CONFIG
 } from '../types/clipboardSecurity';
+import { SECURITY_CONSTANTS } from '../constants';
 
 export class ClipboardSecurityConfigManager {
   private static instance: ClipboardSecurityConfigManager;
@@ -91,16 +92,16 @@ export class ClipboardSecurityConfigManager {
   /**
    * Validate configuration structure
    */
-  private validateConfig(config: any): ClipboardSecurityConfig {
+  private validateConfig(config: Partial<ClipboardSecurityConfig>): ClipboardSecurityConfig {
     const validated = { ...DEFAULT_CLIPBOARD_SECURITY_CONFIG };
 
     // Validate each property
     if (typeof config.clearTimeoutMs === 'number' && config.clearTimeoutMs > 0) {
-      validated.clearTimeoutMs = Math.min(config.clearTimeoutMs, 300000); // Max 5 minutes
+      validated.clearTimeoutMs = Math.min(config.clearTimeoutMs, SECURITY_CONSTANTS.CLIPBOARD.MAX_TIMEOUT); // Max 5 minutes
     }
 
     if (typeof config.maxContentLength === 'number' && config.maxContentLength > 0) {
-      validated.maxContentLength = Math.min(config.maxContentLength, 100000); // Max 100KB
+      validated.maxContentLength = Math.min(config.maxContentLength, SECURITY_CONSTANTS.CLIPBOARD.MAX_CONTENT_LENGTH); // Max 100KB
     }
 
     if (typeof config.enableEncryption === 'boolean') {
@@ -120,7 +121,7 @@ export class ClipboardSecurityConfigManager {
     }
 
     if (typeof config.defaultExpirationMs === 'number' && config.defaultExpirationMs > 0) {
-      validated.defaultExpirationMs = Math.min(config.defaultExpirationMs, 600000); // Max 10 minutes
+      validated.defaultExpirationMs = Math.min(config.defaultExpirationMs, UI_CONSTANTS.LIMITS.MAX_CLIPBOARD_DURATION); // Max 10 minutes
     }
 
     return validated;
@@ -132,28 +133,28 @@ export class ClipboardSecurityConfigManager {
   getSecurityPresets(): Record<string, Partial<ClipboardSecurityConfig>> {
     return {
       high_security: {
-        clearTimeoutMs: 10000, // 10 seconds
+        clearTimeoutMs: SECURITY_CONSTANTS.SECURITY_LEVELS.HIGH.TIMEOUT,
         enableEncryption: true,
         enableAuditLogging: true,
         enablePasteValidation: true,
         requireAuthorization: true,
-        defaultExpirationMs: 30000 // 30 seconds
+        defaultExpirationMs: SECURITY_CONSTANTS.SECURITY_LEVELS.HIGH.AUTO_CLEAR_MINUTES * UI_CONSTANTS.INTERVALS.MINUTE // 30 seconds
       },
       balanced: {
-        clearTimeoutMs: 30000, // 30 seconds
+        clearTimeoutMs: SECURITY_CONSTANTS.SECURITY_LEVELS.BALANCED.TIMEOUT,
         enableEncryption: true,
         enableAuditLogging: true,
         enablePasteValidation: true,
         requireAuthorization: true,
-        defaultExpirationMs: 60000 // 1 minute
+        defaultExpirationMs: SECURITY_CONSTANTS.SECURITY_LEVELS.BALANCED.AUTO_CLEAR_MINUTES * UI_CONSTANTS.INTERVALS.MINUTE // 1 minute
       },
       convenience: {
-        clearTimeoutMs: 60000, // 1 minute
+        clearTimeoutMs: SECURITY_CONSTANTS.SECURITY_LEVELS.CONVENIENCE.TIMEOUT,
         enableEncryption: false,
         enableAuditLogging: true,
         enablePasteValidation: false,
         requireAuthorization: false,
-        defaultExpirationMs: 120000 // 2 minutes
+        defaultExpirationMs: SECURITY_CONSTANTS.SECURITY_LEVELS.CONVENIENCE.AUTO_CLEAR_MINUTES * UI_CONSTANTS.INTERVALS.MINUTE // 2 minutes
       },
       custom: {}
     };
@@ -205,22 +206,22 @@ export class ClipboardSecurityConfigManager {
     level: 'warning' | 'info' | 'critical';
     message: string;
     setting: keyof ClipboardSecurityConfig;
-    recommendedValue: any;
+    recommendedValue: number | boolean;
   }> {
     const recommendations: Array<{
       level: 'warning' | 'info' | 'critical';
       message: string;
       setting: keyof ClipboardSecurityConfig;
-      recommendedValue: any;
+      recommendedValue: number | boolean;
     }> = [];
 
     // Check timeout settings
-    if (this.config.clearTimeoutMs > 60000) {
+    if (this.config.clearTimeoutMs > UI_CONSTANTS.INTERVALS.MINUTE) {
       recommendations.push({
         level: 'warning',
         message: 'Clipboard content remains for more than 1 minute. Consider reducing for better security.',
         setting: 'clearTimeoutMs',
-        recommendedValue: 30000
+        recommendedValue: SECURITY_CONSTANTS.SECURITY_LEVELS.BALANCED.TIMEOUT
       });
     }
 
@@ -245,12 +246,12 @@ export class ClipboardSecurityConfigManager {
     }
 
     // Check content length
-    if (this.config.maxContentLength > 50000) {
+    if (this.config.maxContentLength > SECURITY_CONSTANTS.CLIPBOARD.MAX_CONTENT_LENGTH / 2) {
       recommendations.push({
         level: 'info',
         message: 'Large content size allowed. Consider limiting to prevent excessive memory usage.',
         setting: 'maxContentLength',
-        recommendedValue: 10000
+        recommendedValue: SECURITY_CONSTANTS.CLIPBOARD.MAX_CONTENT_LENGTH / 5
       });
     }
 
@@ -276,11 +277,11 @@ export class ClipboardSecurityConfigManager {
     if (this.config.enablePasteValidation) score += 15;
 
     // Timeout settings
-    if (this.config.clearTimeoutMs <= 30000) score += 10;
-    else if (this.config.clearTimeoutMs <= 60000) score += 5;
+    if (this.config.clearTimeoutMs <= SECURITY_CONSTANTS.SECURITY_LEVELS.BALANCED.TIMEOUT) score += 10;
+    else if (this.config.clearTimeoutMs <= SECURITY_CONSTANTS.SECURITY_LEVELS.CONVENIENCE.TIMEOUT) score += 5;
 
     // Content length limit
-    if (this.config.maxContentLength <= 10000) score += 10;
+    if (this.config.maxContentLength <= SECURITY_CONSTANTS.CLIPBOARD.MAX_CONTENT_LENGTH / 10) score += 10;
 
     return Math.min(score, 100);
   }

@@ -4,6 +4,7 @@ import { searchOptimizationService } from "../../services/searchOptimizationServ
 import { clipboardService } from "../../services/clipboardService";
 import { debounced } from "../../utils/debounce";
 import { SearchSuggestions } from "./SearchSuggestions";
+import { UI_CONSTANTS } from "../../constants";
 
 interface SearchToolbarProps {
   onClose: () => void;
@@ -34,7 +35,7 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
     } finally {
       setIsSearching(false);
     }
-  }, 300);
+  }, UI_CONSTANTS.ANIMATION_DURATION.MEDIUM);
 
   // 聚焦搜索框
   useEffect(() => {
@@ -93,7 +94,7 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
               onChange={(e) => handleSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => setShowSuggestions(searchTerm.trim().length > 1)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), UI_CONSTANTS.ANIMATION_DURATION.SHORT)}
               placeholder="搜索API Key..."
               className="w-full px-4 py-3 bg-white/70 dark:bg-gray-700/70 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent backdrop-blur-sm cursor-text"
             />
@@ -130,7 +131,7 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
             </div>
           ) : (
             <ul className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-              {searchResults.slice(0, 5).map((key) => (
+              {searchResults.slice(0, UI_CONSTANTS.LIMITS.MAX_SEARCH_RESULTS).map((key) => (
                 <li 
                   key={key.id} 
                   className="p-4 hover:bg-white/50 dark:hover:bg-gray-700/50 transition-colors duration-150"
@@ -156,9 +157,9 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
               ))}
             </ul>
           )}
-          {searchResults.length > 5 && (
+          {searchResults.length > UI_CONSTANTS.LIMITS.MAX_SEARCH_RESULTS && (
             <div className="p-2 text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200/50 dark:border-gray-700/50">
-              显示前5个结果，共{searchResults.length}个匹配项
+              显示前{UI_CONSTANTS.LIMITS.MAX_SEARCH_RESULTS}个结果，共{searchResults.length}个匹配项
             </div>
           )}
         </div>

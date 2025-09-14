@@ -2,226 +2,378 @@ import { ApiKey, Group, UsageHistory } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
 import { validateAndSanitizeApiKey, validateAndSanitizeGroup, validateId } from "./inputValidation";
 import { logSecureError, getUserFriendlyErrorMessage, OperationContext } from "./secureLogging";
+import {
+  ServiceResult,
+  ErrorCode,
+  createSuccessResult,
+  createErrorResult,
+  wrapServiceOperation,
+  errorToResult
+} from "./errors";
+
+/**
+ * Executes an operation with standardized error handling and logging
+ * @param operation - The async operation to execute
+ * @param context - The operation context for error mapping
+ * @param errorContext - Additional context for error logging
+ * @returns Promise<ServiceResult<T>> - Result containing either success data or error information
+ */
+async function executeOperation<T>(
+  operation: () => Promise<T>,
+  context: OperationContext,
+  errorContext?: Record<string, unknown>
+): Promise<ServiceResult<T>> {
+  return wrapServiceOperation(async () => {
+    const result = await operation();
+    return result;
+  }, mapContextToErrorCode(context));
+}
+
+/**
+ * Validates and handles ID input with proper error handling
+ * @param id - The ID string to validate
+ * @returns ServiceResult<string> - Validated ID or error information
+ */
+function validateAndHandleId(id: string): ServiceResult<string> {
+  const validation = validateId(id);
+  if (!validation.isValid) {
+    return createErrorResult(
+      ErrorCode.INVALID_INPUT,
+      validation.error || "Invalid ID"
+    );
+  }
+  return createSuccessResult(id);
+}
+
+// 上下文到错误代码的映射
+/**
+ * Maps operation context to appropriate error codes
+ * @param context - The operation context to map
+ * @returns ErrorCode - Corresponding error code for the context
+ */
+function mapContextToErrorCode(context: OperationContext): ErrorCode {
+  const errorMap: Record<OperationContext, ErrorCode> = {
+    [OperationContext.API_KEY_ADD]: ErrorCode.API_KEY_INVALID,
+    [OperationContext.API_KEY_EDIT]: ErrorCode.API_KEY_INVALID,
+    [OperationContext.API_KEY_DELETE]: ErrorCode.API_KEY_NOT_FOUND,
+    [OperationContext.API_KEY_SEARCH]: ErrorCode.SEARCH_ERROR,
+    [OperationContext.API_KEY_COPY]: ErrorCode.API_KEY_NOT_FOUND,
+    [OperationContext.GROUP_ADD]: ErrorCode.VALIDATION_FAILED,
+    [OperationContext.USAGE_RECORD]: ErrorCode.API_KEY_NOT_FOUND,
+    [OperationContext.MASTER_PASSWORD_SET]: ErrorCode.SECURITY_ERROR,
+    [OperationContext.MASTER_PASSWORD_VERIFY]: ErrorCode.SECURITY_ERROR,
+    [OperationContext.KEY_ENCRYPTION]: ErrorCode.ENCRYPTION_ERROR,
+    [OperationContext.KEY_DECRYPTION]: ErrorCode.DECRYPTION_ERROR,
+    [OperationContext.CLIPBOARD_ANALYZE]: ErrorCode.CLIPBOARD_ERROR,
+    [OperationContext.OLLAMA_CHECK]: ErrorCode.NETWORK_ERROR,
+    [OperationContext.THEME_ANALYSIS]: ErrorCode.UNKNOWN_ERROR
+  };
+
+  return errorMap[context] || ErrorCode.UNKNOWN_ERROR;
+}
 
 // API Key相关服务
 export const apiKeyService = {
-  // 添加新的API Key
-  async addApiKey(apiKey: Omit<ApiKey, "id" | "createdAt" | "updatedAt">): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证和清理输入
-      const validation = validateAndSanitizeApiKey(apiKey);
-      if (!validation.isValid) {
-        return { success: false, error: validation.errors.join("; ") };
-      }
-
-      // 使用清理后的数据
-      const sanitizedApiKey = validation.sanitized || apiKey;
-
-      const newApiKey: ApiKey = {
-        ...sanitizedApiKey,
-        id: generateId(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      // 调用Tauri后端命令
-      const result = await invoke("add_api_key", { apiKey: newApiKey });
-      return { success: result as boolean, error: result ? undefined : "添加API Key失败" };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_ADD, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.API_KEY_ADD) };
+  /**
+   * Adds a new API key to the system with validation and encryption
+   * @param apiKey - API key data without system-generated fields
+   * @returns Promise<ServiceResult<ApiKey>> - Result containing the created API key or error information
+   */
+  async addApiKey(apiKey: Omit<ApiKey, "id" | "createdAt" | "updatedAt">): Promise<ServiceResult<ApiKey>> {
+    // 验证和清理输入
+    const validation = validateAndSanitizeApiKey(apiKey);
+    if (!validation.isValid) {
+      return createErrorResult(
+        ErrorCode.VALIDATION_FAILED,
+        validation.errors.join("; ")
+      );
     }
+
+    // 使用清理后的数据
+    const sanitizedApiKey = validation.sanitized || apiKey;
+
+    const newApiKey: ApiKey = {
+      ...sanitizedApiKey,
+      id: generateId(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    return executeOperation(
+      () => invoke("add_api_key", { apiKey: newApiKey }) as Promise<boolean>,
+      OperationContext.API_KEY_ADD
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(newApiKey);
+      } else {
+        return createErrorResult(
+          ErrorCode.API_KEY_INVALID,
+          "添加API Key失败"
+        );
+      }
+    });
   },
 
   // 编辑现有API Key
-  async editApiKey(apiKey: ApiKey): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证和清理输入
-      const validation = validateAndSanitizeApiKey(apiKey);
-      if (!validation.isValid) {
-        return { success: false, error: validation.errors.join("; ") };
-      }
-
-      // 使用清理后的数据，但保持原有ID和创建时间
-      const sanitizedApiKey = validation.sanitized || apiKey;
-
-      const updatedApiKey = {
-        ...sanitizedApiKey,
-        id: apiKey.id, // 保持原有ID
-        createdAt: apiKey.createdAt, // 保持原有创建时间
-        updatedAt: Date.now(),
-      };
-
-      // 调用Tauri后端命令
-      const result = await invoke("edit_api_key", { apiKey: updatedApiKey });
-      return { success: result as boolean, error: result ? undefined : "编辑API Key失败" };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_EDIT, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.API_KEY_EDIT) };
+  /**
+   * Updates an existing API key with validation and security checks
+   * @param apiKey - Complete API key object including id and system fields
+   * @returns Promise<ServiceResult<ApiKey>> - Result containing the updated API key or error information
+   */
+  async editApiKey(apiKey: ApiKey): Promise<ServiceResult<ApiKey>> {
+    // 验证和清理输入
+    const validation = validateAndSanitizeApiKey(apiKey);
+    if (!validation.isValid) {
+      return createErrorResult(
+        ErrorCode.VALIDATION_FAILED,
+        validation.errors.join("; ")
+      );
     }
+
+    // 使用清理后的数据，但保持原有ID和创建时间
+    const sanitizedApiKey = validation.sanitized || apiKey;
+
+    const updatedApiKey: ApiKey = {
+      ...sanitizedApiKey,
+      id: apiKey.id, // 保持原有ID
+      createdAt: apiKey.createdAt, // 保持原有创建时间
+      updatedAt: Date.now(),
+    };
+
+    return executeOperation(
+      () => invoke("edit_api_key", { apiKey: updatedApiKey }) as Promise<boolean>,
+      OperationContext.API_KEY_EDIT
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(updatedApiKey);
+      } else {
+        return createErrorResult(
+          ErrorCode.API_KEY_INVALID,
+          "编辑API Key失败"
+        );
+      }
+    });
   },
 
   // 删除API Key
-  async deleteApiKey(id: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证ID
-      const idValidation = validateId(id);
-      if (!idValidation.isValid) {
-        return { success: false, error: idValidation.error };
-      }
-
-      // 调用Tauri后端命令
-      const result = await invoke("delete_api_key", { keyId: id });
-      return { success: result as boolean, error: result ? undefined : "删除API Key失败" };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_DELETE, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.API_KEY_DELETE) };
+  /**
+   * Deletes an API key by ID with security validation
+   * @param id - The unique identifier of the API key to delete
+   * @returns Promise<ServiceResult<boolean>> - Result indicating success/failure of deletion
+   */
+  async deleteApiKey(id: string): Promise<ServiceResult<boolean>> {
+    // 验证ID
+    const idValidation = validateAndHandleId(id);
+    if (!idValidation.success) {
+      return idValidation;
     }
+
+    return executeOperation(
+      () => invoke("delete_api_key", { keyId: id }) as Promise<boolean>,
+      OperationContext.API_KEY_DELETE
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(true);
+      } else {
+        return createErrorResult(
+          ErrorCode.API_KEY_NOT_FOUND,
+          "删除API Key失败"
+        );
+      }
+    });
   },
 
   // 获取API Key列表
-  async listApiKeys(): Promise<{ data: ApiKey[]; error?: string }> {
-    try {
-      // 调用Tauri后端命令
-      const result = await invoke("list_api_keys");
-      return { data: result as ApiKey[], error: undefined };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_SEARCH, error, { operation: 'list_keys' });
-      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH) };
-    }
+  /**
+   * Retrieves all API keys from the system
+   * @returns Promise<ServiceResult<ApiKey[]>> - Result containing array of all API keys or error information
+   */
+  async listApiKeys(): Promise<ServiceResult<ApiKey[]>> {
+    return executeOperation(
+      () => invoke("list_api_keys") as Promise<ApiKey[]>,
+      OperationContext.API_KEY_SEARCH,
+      { operation: 'list_keys' }
+    );
   },
 
   // 搜索API Key
-  async searchKeys(keyword: string): Promise<{ data: ApiKey[]; error?: string }> {
-    try {
-      // 验证和清理搜索关键词
-      if (typeof keyword !== 'string') {
-        return { data: [], error: "搜索关键词必须是字符串" };
-      }
-
-      // 清理搜索关键词防止注入攻击
-      const sanitizedKeyword = keyword.trim();
-      if (sanitizedKeyword.length === 0) {
-        return { data: [], error: "搜索关键词不能为空" };
-      }
-
-      if (sanitizedKeyword.length > 200) {
-        return { data: [], error: "搜索关键词不能超过200个字符" };
-      }
-
-      // 调用Tauri后端命令（使用清理后的关键词）
-      const result = await invoke("search_api_keys", { keyword: sanitizedKeyword });
-      return { data: result as ApiKey[], error: undefined };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_SEARCH, error, { operation: 'search_keys' });
-      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH) };
+  /**
+   * Searches API keys by keyword across name, platform, and description
+   * @param keyword - Search term to match against API key fields
+   * @returns Promise<ServiceResult<ApiKey[]>> - Result containing matching API keys or error information
+   */
+  async searchKeys(keyword: string): Promise<ServiceResult<ApiKey[]>> {
+    // 验证和清理搜索关键词
+    if (typeof keyword !== 'string') {
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        "搜索关键词必须是字符串"
+      );
     }
+
+    // 清理搜索关键词防止注入攻击
+    const sanitizedKeyword = keyword.trim();
+    if (sanitizedKeyword.length === 0) {
+      return createErrorResult(
+        ErrorCode.SEARCH_INVALID_QUERY,
+        "搜索关键词不能为空"
+      );
+    }
+
+    if (sanitizedKeyword.length > 200) {
+      return createErrorResult(
+        ErrorCode.SEARCH_INVALID_QUERY,
+        "搜索关键词不能超过200个字符"
+      );
+    }
+
+    return executeOperation(
+      () => invoke("search_api_keys", { keyword: sanitizedKeyword }) as Promise<ApiKey[]>,
+      OperationContext.API_KEY_SEARCH,
+      { operation: 'search_keys' }
+    );
   },
 
   // 复制API Key到剪贴板
-  async copyToClipboard(id: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证ID
-      const idValidation = validateId(id);
-      if (!idValidation.isValid) {
-        return { success: false, error: idValidation.error };
-      }
-
-      // 调用Tauri后端命令
-      const result = await invoke("copy_to_clipboard", { keyId: id });
-      return { success: result as boolean, error: result ? undefined : "复制API Key到剪贴板失败" };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_COPY, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.API_KEY_COPY) };
+  /**
+   * Copies an API key to system clipboard with security validation
+   * @param id - The unique identifier of the API key to copy
+   * @returns Promise<ServiceResult<boolean>> - Result indicating success/failure of copy operation
+   */
+  async copyToClipboard(id: string): Promise<ServiceResult<boolean>> {
+    // 验证ID
+    const idValidation = validateAndHandleId(id);
+    if (!idValidation.success) {
+      return idValidation;
     }
+
+    return executeOperation(
+      () => invoke("copy_to_clipboard", { keyId: id }) as Promise<boolean>,
+      OperationContext.API_KEY_COPY
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(true);
+      } else {
+        return createErrorResult(
+          ErrorCode.CLIPBOARD_ERROR,
+          "复制API Key到剪贴板失败"
+        );
+      }
+    });
   },
 };
 
 // 分组相关服务
 export const groupService = {
   // 获取分组列表
-  async listGroups(): Promise<{ data: Group[]; error?: string }> {
-    try {
-      // 调用Tauri后端命令
-      const result = await invoke("list_groups");
-      return { data: result as Group[], error: undefined };
-    } catch (error) {
-      logSecureError(OperationContext.API_KEY_SEARCH, error, { operation: 'list_groups' });
-      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH) };
-    }
+  /**
+   * Retrieves all API key groups from the system
+   * @returns Promise<ServiceResult<Group[]>> - Result containing array of all groups or error information
+   */
+  async listGroups(): Promise<ServiceResult<Group[]>> {
+    return executeOperation(
+      () => invoke("list_groups") as Promise<Group[]>,
+      OperationContext.API_KEY_SEARCH,
+      { operation: 'list_groups' }
+    );
   },
 
   // 添加新分组
-  async addGroup(group: Omit<Group, "id" | "createdAt" | "updatedAt">): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证和清理输入
-      const validation = validateAndSanitizeGroup(group);
-      if (!validation.isValid) {
-        return { success: false, error: validation.errors.join("; ") };
-      }
-
-      // 使用清理后的数据
-      const sanitizedGroup = validation.sanitized || group;
-
-      const newGroup: Group = {
-        ...sanitizedGroup,
-        id: generateId(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      // 调用Tauri后端命令
-      const result = await invoke("add_group", { group: newGroup });
-      return { success: result as boolean, error: result ? undefined : "添加分组失败" };
-    } catch (error) {
-      logSecureError(OperationContext.GROUP_ADD, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.GROUP_ADD) };
+  /**
+   * Adds a new group for organizing API keys
+   * @param group - Group data without system-generated fields
+   * @returns Promise<ServiceResult<Group>> - Result containing the created group or error information
+   */
+  async addGroup(group: Omit<Group, "id" | "createdAt" | "updatedAt">): Promise<ServiceResult<Group>> {
+    // 验证和清理输入
+    const validation = validateAndSanitizeGroup(group);
+    if (!validation.isValid) {
+      return createErrorResult(
+        ErrorCode.VALIDATION_FAILED,
+        validation.errors.join("; ")
+      );
     }
+
+    // 使用清理后的数据
+    const sanitizedGroup = validation.sanitized || group;
+
+    const newGroup: Group = {
+      ...sanitizedGroup,
+      id: generateId(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    return executeOperation(
+      () => invoke("add_group", { group: newGroup }) as Promise<boolean>,
+      OperationContext.GROUP_ADD
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(newGroup);
+      } else {
+        return createErrorResult(
+          ErrorCode.VALIDATION_FAILED,
+          "添加分组失败"
+        );
+      }
+    });
   },
 };
 
 // 使用历史相关服务
 export const usageHistoryService = {
   // 记录使用历史
-  async recordUsage(keyId: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      // 验证keyId
-      const keyIdValidation = validateId(keyId);
-      if (!keyIdValidation.isValid) {
-        return { success: false, error: keyIdValidation.error };
-      }
-
-      const history: UsageHistory = {
-        id: generateId(),
-        keyId,
-        usedAt: Date.now(),
-      };
-
-      // 调用Tauri后端命令
-      const result = await invoke("record_usage", { history });
-      return { success: result as boolean, error: result ? undefined : "记录使用历史失败" };
-    } catch (error) {
-      logSecureError(OperationContext.USAGE_RECORD, error);
-      return { success: false, error: getUserFriendlyErrorMessage(OperationContext.USAGE_RECORD) };
+  /**
+   * Records usage history for an API key
+   * @param keyId - The unique identifier of the API key being used
+   * @returns Promise<ServiceResult<UsageHistory>> - Result containing the usage record or error information
+   */
+  async recordUsage(keyId: string): Promise<ServiceResult<UsageHistory>> {
+    // 验证keyId
+    const keyIdValidation = validateAndHandleId(keyId);
+    if (!keyIdValidation.success) {
+      return keyIdValidation;
     }
+
+    const history: UsageHistory = {
+      id: generateId(),
+      keyId,
+      usedAt: Date.now(),
+    };
+
+    return executeOperation(
+      () => invoke("record_usage", { history }) as Promise<boolean>,
+      OperationContext.USAGE_RECORD
+    ).then(result => {
+      if (result.success && result.data) {
+        return createSuccessResult(history);
+      } else {
+        return createErrorResult(
+          ErrorCode.API_KEY_NOT_FOUND,
+          "记录使用历史失败"
+        );
+      }
+    });
   },
 
   // 获取使用历史
-  async getUsageHistory(keyId: string): Promise<{ data: UsageHistory[]; error?: string }> {
-    try {
-      // 验证keyId
-      const keyIdValidation = validateId(keyId);
-      if (!keyIdValidation.isValid) {
-        return { data: [], error: keyIdValidation.error };
-      }
-
-      // 调用Tauri后端命令
-      const result = await invoke("get_usage_history", { keyId });
-      return { data: result as UsageHistory[], error: undefined };
-    } catch (error) {
-      logSecureError(OperationContext.USAGE_RECORD, error, { operation: 'get_history' });
-      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.USAGE_RECORD) };
+  /**
+   * Retrieves usage history for a specific API key
+   * @param keyId - The unique identifier of the API key
+   * @returns Promise<ServiceResult<UsageHistory[]>> - Result containing array of usage records or error information
+   */
+  async getUsageHistory(keyId: string): Promise<ServiceResult<UsageHistory[]>> {
+    // 验证keyId
+    const keyIdValidation = validateAndHandleId(keyId);
+    if (!keyIdValidation.success) {
+      return keyIdValidation as ServiceResult<UsageHistory[]>;
     }
+
+    return executeOperation(
+      () => invoke("get_usage_history", { keyId }) as Promise<UsageHistory[]>,
+      OperationContext.USAGE_RECORD,
+      { operation: 'get_history' }
+    );
   },
 };
 

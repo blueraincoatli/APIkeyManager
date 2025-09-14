@@ -3,7 +3,9 @@ import { AnalyzedKey } from "../../types/apiKey";
 import { smartClipboardService } from "../../services/smartClipboardService";
 import { clipboardService } from "../../services/clipboardService";
 import { useClipboard } from "../../hooks/useClipboard";
+import { useApiToast } from "../../hooks/useToast";
 import { logSecureError, OperationContext } from "../../services/secureLogging";
+import { API_CONSTANTS } from "../../constants";
 
 export function SmartClipboard() {
   const [clipboardText, setClipboardText] = useState("");
@@ -11,6 +13,7 @@ export function SmartClipboard() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [ollamaStatus, setOllamaStatus] = useState<boolean | null>(null);
   const { isCopying: isGettingClipboard, copyError: getClipboardError } = useClipboard();
+  const toast = useApiToast();
 
   // 检查Ollama服务状态
   const checkOllama = async () => {
@@ -36,19 +39,19 @@ export function SmartClipboard() {
   // 导入分析的API Key
   const importKeys = async () => {
     if (analyzedKeys.length === 0) return;
-    
+
     try {
       const success = await smartClipboardService.importAnalyzedKeys(analyzedKeys);
       if (success) {
-        alert("API Key导入成功！");
+        toast.showImportSuccess();
         setAnalyzedKeys([]);
         setClipboardText("");
       } else {
-        alert("API Key导入失败！");
+        toast.showImportError();
       }
     } catch (error) {
       logSecureError(OperationContext.CLIPBOARD_ANALYZE, error, { operation: 'import_keys' });
-      alert("API Key导入失败！");
+      toast.showImportError();
     }
   };
 
@@ -71,7 +74,7 @@ export function SmartClipboard() {
         </div>
         {!ollamaStatus && (
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            请确保Ollama服务正在运行 (http://localhost:11434)
+            请确保Ollama服务正在运行 (${API_CONSTANTS.ENDPOINTS.OLLAMA})
           </p>
         )}
       </div>

@@ -22,7 +22,7 @@ export interface GroupInput {
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
-  sanitized?: any;
+  sanitized?: ApiKeyInput | GroupInput;
 }
 
 // 危险字符模式

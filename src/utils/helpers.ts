@@ -11,6 +11,11 @@ export const formatDateTime = (timestamp: number): string => {
   });
 };
 
+// CSS class name utility function (clsx alternative)
+export const cn = (...classes: (string | undefined | null | false)[]): string => {
+  return classes.filter(Boolean).join(' ');
+};
+
 export const generateId = (): string => {
   return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
 };

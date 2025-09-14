@@ -3,12 +3,18 @@ import { ApiKey } from "../../types/apiKey";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useApiKeys } from "../../hooks/useApiKey";
 import { useClipboard } from "../../hooks/useClipboard";
+import { useApiToast } from "../../hooks/useToast";
 import { formatDateTime } from "../../utils/helpers";
 import { VirtualList } from "../VirtualScroll/VirtualList";
 
+/**
+ * KeyManager component for managing API keys with CRUD operations
+ * Provides interface for viewing, adding, editing, deleting, and copying API keys
+ */
 const KeyManagerComponent = () => {
   const { apiKeys, groups, loading, refetch } = useApiKeys();
   const { isCopying, copyToClipboard } = useClipboard();
+  const toast = useApiToast();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   // 初始化时获取数据
@@ -21,24 +27,25 @@ const KeyManagerComponent = () => {
     const result = await copyToClipboard(keyValue);
     if (result) {
       // 显示成功提示
-      alert("已复制到剪贴板");
+      toast.showCopySuccess();
     } else {
-      alert("复制失败");
+      toast.showCopyError();
     }
-  }, [copyToClipboard]);
+  }, [copyToClipboard, toast]);
 
   // 删除API Key - 使用useCallback避免重渲染
   const deleteApiKey = useCallback(async (id: string) => {
-    if (window.confirm("确定要删除这个API Key吗？")) {
+    if (window.confirm("Are you sure you want to delete this API Key?")) {
       const result = await apiKeyService.deleteApiKey(id);
       if (result.success) {
-        // 优化：只更新相关数据而不是重新获取所有数据
+        // 显示成功提示并刷新数据
+        toast.showDeleteSuccess();
         refetch();
       } else {
-        alert("删除失败: " + (result.error || "未知错误"));
+        toast.showDeleteError(result.error?.message);
       }
     }
-  }, []);
+  }, [toast]);
 
   // 过滤API Keys - 使用useMemo避免重复计算
   const filteredKeys = useMemo(() => {
@@ -96,16 +103,16 @@ const KeyManagerComponent = () => {
               className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded"
               disabled={isCopying}
             >
-              {isCopying ? '复制中...' : '复制'}
+              {isCopying ? 'Copying...' : 'Copy'}
             </button>
             <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-2 py-1 rounded">
-              编辑
+              Edit
             </button>
             <button
               onClick={() => deleteApiKey(key.id)}
               className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded"
             >
-              删除
+              Delete
             </button>
           </div>
         </div>
@@ -127,7 +134,7 @@ const KeyManagerComponent = () => {
             : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
         }`}
       >
-        全部
+        All
       </button>
       {groups.map(group => (
         <button
@@ -150,7 +157,7 @@ const KeyManagerComponent = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">API Keys</h2>
         <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-          添加新Key
+          Add New Key
         </button>
       </div>
 
@@ -169,18 +176,18 @@ const KeyManagerComponent = () => {
           {/* 表头 */}
           <div className="bg-gray-50 dark:bg-gray-700 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              <div className="col-span-3">名称</div>
-              <div className="col-span-2">平台</div>
-              <div className="col-span-2">分组</div>
-              <div className="col-span-2">创建时间</div>
-              <div className="col-span-3">操作</div>
+              <div className="col-span-3">Name</div>
+              <div className="col-span-2">Platform</div>
+              <div className="col-span-2">Group</div>
+              <div className="col-span-2">Created</div>
+              <div className="col-span-3">Actions</div>
             </div>
           </div>
 
           {/* 虚拟滚动列表 */}
           {filteredKeys.length === 0 ? (
             <div className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-              {selectedGroup ? "该分组下暂无API Keys" : "暂无API Keys"}
+              {selectedGroup ? "No API Keys in this group" : "No API Keys"}
             </div>
           ) : (
             <VirtualList
@@ -198,5 +205,8 @@ const KeyManagerComponent = () => {
   );
 };
 
-// 使用memo包装组件以避免不必要的重渲染
+/**
+ * Memoized KeyManager component to prevent unnecessary re-renders
+ * @type {React.MemoExoticComponent<React.FC>}
+ */
 export const KeyManager = memo(KeyManagerComponent);

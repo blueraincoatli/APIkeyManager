@@ -6,6 +6,9 @@ import { FloatingToolbarDemo } from "./components/FloatingToolbarDemo";
 import { RadialMenuTest } from "./components/RadialMenu/RadialMenu.test";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ThemeToggle } from "./components/ThemeToggle/ThemeToggle";
+import ToastContainer from "./components/Toast/ToastContainer";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { UI_CONSTANTS } from "./constants";
 import "./App.css";
 import "./styles/theme.css";
 
@@ -38,12 +41,13 @@ function App() {
     // 移除动画类
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transitioning');
-    }, 200);
+    }, UI_CONSTANTS.ANIMATION_DURATION.THEME_TRANSITION);
   }, []);
 
   return (
     <ThemeProvider defaultTheme="system">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -60,7 +64,7 @@ function App() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                仪表板
+                Dashboard
               </button>
               <button
                 onClick={() => handleTabChange("keys")}
@@ -80,7 +84,7 @@ function App() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                智能剪贴板
+                Smart Clipboard
               </button>
               <button
                 onClick={() => handleTabChange("floating-toolbar-demo")}
@@ -90,7 +94,7 @@ function App() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                浮动工具条演示
+                Floating Toolbar Demo
               </button>
               <button
                 onClick={() => handleTabChange("radial-menu-test")}
@@ -100,7 +104,7 @@ function App() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                径向菜单测试
+                Radial Menu Test
               </button>
               <button
                 onClick={() => handleTabChange("settings")}
@@ -110,7 +114,7 @@ function App() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                设置
+                Settings
               </button>
             </nav>
           </div>
@@ -120,18 +124,18 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === "dashboard" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4">仪表板</h2>
+            <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-6 text-white">
-                <h3 className="text-lg font-semibold">总API Keys</h3>
+                <h3 className="text-lg font-semibold">Total API Keys</h3>
                 <p className="text-3xl font-bold mt-2">0</p>
               </div>
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-6 text-white">
-                <h3 className="text-lg font-semibold">已使用</h3>
+                <h3 className="text-lg font-semibold">Used</h3>
                 <p className="text-3xl font-bold mt-2">0</p>
               </div>
               <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg p-6 text-white">
-                <h3 className="text-lg font-semibold">最近使用</h3>
+                <h3 className="text-lg font-semibold">Recently Used</h3>
                 <p className="text-3xl font-bold mt-2">-</p>
               </div>
             </div>
@@ -148,29 +152,29 @@ function App() {
 
         {activeTab === "settings" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4">设置</h2>
+            <h2 className="text-2xl font-bold mb-4">Settings</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-2">通用设置</h3>
+                <h3 className="text-lg font-medium mb-2">General Settings</h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between">
-                    <span>主题</span>
+                    <span>Theme</span>
                     <ThemeToggle />
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-medium mb-2">安全设置</h3>
+                <h3 className="text-lg font-medium mb-2">Security Settings</h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span>主密码</span>
+                    <span>Master Password</span>
                     <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
-                      设置
+                      Set
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    设置主密码以保护您的API Keys
+                    Set master password to protect your API Keys
                   </p>
                 </div>
               </div>
@@ -182,7 +186,11 @@ function App() {
       {showFloatingToolbar && (
         <FloatingToolbar onClose={() => setShowFloatingToolbar(false)} />
       )}
+
+      {/* Toast Notification Container */}
+      <ToastContainer />
       </div>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

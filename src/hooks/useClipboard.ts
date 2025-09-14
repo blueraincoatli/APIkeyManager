@@ -4,8 +4,33 @@ import { clipboardAuditService } from '../services/clipboardAuditService';
 import {
   ClipboardSecurityLevel,
   ClipboardAuthorizationContext,
-  ClipboardContentMetadata
+  ClipboardContentMetadata,
+  ClipboardAuditLog
 } from '../types/clipboardSecurity';
+import { SECURITY_CONSTANTS, UI_CONSTANTS } from '../constants';
+
+// Audit log filters interface
+interface AuditLogFilters {
+  operation?: string;
+  success?: boolean;
+  securityLevel?: ClipboardSecurityLevel;
+  userId?: string;
+  startDate?: number;
+  endDate?: number;
+  limit?: number;
+}
+
+// Security stats interface
+interface SecurityStats {
+  totalOperations: number;
+  successRate: number;
+  securityViolations: number;
+  averageResponseTime: number;
+  topOperations: Array<{
+    operation: string;
+    count: number;
+  }>;
+}
 
 interface UseClipboardOptions {
   securityLevel?: ClipboardSecurityLevel;
@@ -72,7 +97,7 @@ export const useClipboard = (defaultOptions: UseClipboardOptions = {}): UseClipb
     };
 
     updateActiveOperations();
-    const interval = setInterval(updateActiveOperations, 1000);
+    const interval = setInterval(updateActiveOperations, UI_CONSTANTS.INTERVALS.SECOND);
 
     return () => clearInterval(interval);
   }, []);
@@ -202,10 +227,10 @@ export const useClipboard = (defaultOptions: UseClipboardOptions = {}): UseClipb
  * Hook for clipboard audit logs
  */
 export const useClipboardAudit = () => {
-  const [logs, setLogs] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [logs, setLogs] = useState<ClipboardAuditLog[]>([]);
+  const [stats, setStats] = useState<SecurityStats | null>(null);
 
-  const refreshLogs = useCallback((filters?: any) => {
+  const refreshLogs = useCallback((filters?: AuditLogFilters) => {
     const auditLogs = clipboardAuditService.getLogs(filters);
     setLogs(auditLogs);
   }, []);
@@ -219,7 +244,7 @@ export const useClipboardAudit = () => {
     return clipboardAuditService.exportLogs(format);
   }, []);
 
-  const clearOldLogs = useCallback((olderThanDays: number = 30) => {
+  const clearOldLogs = useCallback((olderThanDays: number = UI_CONSTANTS.INTERVALS.AUDIT_CLEANUP_DAYS) => {
     clipboardAuditService.clearOldLogs(olderThanDays);
     refreshLogs();
   }, [refreshLogs]);
@@ -244,8 +269,17 @@ export const useClipboardAudit = () => {
  */
 export const useClipboardSecurity = () => {
   const [riskScore, setRiskScore] = useState(0);
-  const [suspiciousActivities, setSuspiciousActivities] = useState<any[]>([]);
-  const [metrics, setMetrics] = useState<any>(null);
+  const [suspiciousActivities, setSuspiciousActivities] = useState<ClipboardAuditLog[]>([]);
+
+  // Activity metrics interface
+  interface ActivityMetrics {
+    totalOperations: number;
+    successRate: number;
+    errorRate: number;
+    operationsPerMinute: number;
+  }
+
+  const [metrics, setMetrics] = useState<ActivityMetrics | null>(null);
 
   const refreshSecurityInfo = useCallback(() => {
     // Get activity metrics
@@ -268,7 +302,7 @@ export const useClipboardSecurity = () => {
 
   useEffect(() => {
     refreshSecurityInfo();
-    const interval = setInterval(refreshSecurityInfo, 30000); // Update every 30 seconds
+    const interval = setInterval(refreshSecurityInfo, UI_CONSTANTS.INTERVALS.SECURITY_CHECK); // Update every 30 seconds
 
     return () => clearInterval(interval);
   }, [refreshSecurityInfo]);
