@@ -23,6 +23,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(toolbarRef);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -105,50 +106,62 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       {/* 工具条本体（无全屏遮罩） */}
       <div
         ref={toolbarRef}
-        className="relative flex items-center rounded-full shadow-2xl border px-5 py-3 gap-2 backdrop-blur-2xl"
+        className="relative flex items-center rounded-2xl shadow-2xl border px-4 py-3 gap-3 backdrop-blur-2xl"
         style={{ backgroundColor, color: textColor, borderColor, boxShadow: "0 25px 50px -12px rgba(0,0,0,.25)" }}
       >
-        {/* 放大镜图标 */}
-        <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-          <SearchIcon />
+        {/* 搜索输入（内置前缀图标，圆角矩形） */}
+        <div className="relative flex-1 min-w-[280px]">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search API keys..."
+            className="w-full pl-9 pr-3 py-2 bg-white/20 backdrop-blur-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent placeholder-white/70"
+            style={{ color: textColor, borderColor, backgroundColor: textColor === "#ffffff" ? "rgba(255,255,255,.2)" : "rgba(26,28,65,.2)" }}
+          />
         </div>
 
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Search API keys..."
-          className="flex-1 px-3 py-2 bg-white/20 backdrop-blur-sm border rounded-full focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent min-w-[260px] placeholder-white/70"
-          style={{ color: textColor, borderColor, backgroundColor: textColor === "#ffffff" ? "rgba(255,255,255,.2)" : "rgba(26,28,65,.2)" }}
-        />
-
         {/* 加号 */}
-        <button className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all" onClick={() => setShowAddDialog(true)}>
+        <button
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
+          onClick={() => setShowAddDialog(true)}
+          aria-label="Add API Key"
+        >
           <PlusIcon />
         </button>
 
         {/* 更多（环形菜单） */}
         <button
-          className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
           onClick={() => setShowRadialMenu(true)}
+          ref={moreBtnRef}
+          aria-label="More"
         >
           <EllipsisIcon />
         </button>
 
         {/* 设置 */}
-        <button className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all">
+        <button
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
+          aria-label="Settings"
+        >
           <GearIcon />
         </button>
 
         {/* 关闭 */}
-        <button className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all" onClick={onClose}>
+        <button
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
+          onClick={onClose}
+          aria-label="Close"
+        >
           <CloseIcon />
         </button>
 
-        {/* 拖拽手柄 */}
-        <div className="absolute inset-0 rounded-full" onMouseDown={handleDragStart} style={{ cursor: isDragging ? "grabbing" : "grab" }} />
+        {/* 拖拽手柄：仅背景区域可拖拽，避免遮挡按钮 */}
+        <div className="absolute inset-0 rounded-2xl" onMouseDown={handleDragStart} style={{ cursor: isDragging ? "grabbing" : "grab" }} />
       </div>
 
       {/* 结果面板（统一组件） */}
@@ -158,22 +171,23 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
       {/* 环形菜单 */}
       {showRadialMenu && (
-        
-        // 以工具条右侧为中心点动态定位菜单
-        
-        
         <RadialMenu
           options={PROVIDERS.slice(0,6).map(p => ({
             id: p.id,
             label: p.label,
-            icon: p.label.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(),
             count: providerCounts[p.id] ?? 0,
           }))}
           onSelect={handleRadialSelect}
           onClose={() => setShowRadialMenu(false)}
-          center={{
-            x: position.x + (toolbarRef.current?.offsetWidth || 520) + 60,
-            y: position.y + (toolbarRef.current?.offsetHeight || 56) / 2,
+          center={() => {
+            const rect = moreBtnRef.current?.getBoundingClientRect();
+            if (!rect) return { x: position.x + (toolbarRef.current?.offsetWidth || 520) + 60, y: position.y + (toolbarRef.current?.offsetHeight || 56) / 2 };
+            return { x: rect.right + 140, y: rect.top + rect.height / 2 };
+          }}
+          anchor={() => {
+            const rect = moreBtnRef.current?.getBoundingClientRect();
+            if (!rect) return undefined;
+            return { x: rect.right - rect.width/2, y: rect.top + rect.height / 2 };
           }}
         />
       )}

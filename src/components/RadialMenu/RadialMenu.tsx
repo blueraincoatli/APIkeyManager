@@ -12,12 +12,14 @@ interface RadialMenuProps {
   options: RadialMenuOption[];
   onSelect: (id: string) => void;
   onClose: () => void;
-  center?: { x: number; y: number };
+  center?: { x: number; y: number } | (() => { x: number; y: number });
+  anchor?: () => { x: number; y: number } | undefined; // 连线起点，通常为“更多”按钮中心
 }
 
 // 通用径向菜单：胶囊按钮沿弧线排列，仅对悬停项绘制单条连线
-export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuProps) {
-  const [menuCenter, setMenuCenter] = useState<{ x: number; y: number }>(center || { x: 0, y: 0 });
+export function RadialMenu({ options, onSelect, onClose, center, anchor }: RadialMenuProps) {
+  const initialCenter = typeof center === 'function' ? center() : center;
+  const [menuCenter, setMenuCenter] = useState<{ x: number; y: number }>(initialCenter || { x: 0, y: 0 });
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [angleOffset, setAngleOffset] = useState<number>(0); // 根据鼠标位置产生轻微滑动
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,11 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
     const y = radius * Math.sin((angle * Math.PI) / 180);
     const centerX = menuRef.current.offsetWidth / 2;
     const centerY = menuRef.current.offsetHeight / 2;
+    const rect = menuRef.current.getBoundingClientRect();
+    const anchorPoint = anchor?.();
+    const anchorLocal = anchorPoint
+      ? { x: anchorPoint.x - rect.left, y: anchorPoint.y - rect.top }
+      : { x: centerX, y: centerY };
 
     const buttonWidth = 120;
     const buttonHeight = 40;
@@ -67,12 +74,11 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
       right: centerX + x + buttonWidth / 2,
       bottom: centerY + y + buttonHeight / 2,
     };
-
-    const iconRadius = 24;
-    const startPoint = {
-      x: centerX + (x * iconRadius) / radius,
-      y: centerY + (y * iconRadius) / radius,
-    };
+    const iconRadius = 14; // 起点离anchor稍远，避免贴边
+    const vx = (optionBounds.left + optionBounds.right) / 2 - anchorLocal.x;
+    const vy = optionBounds.top - anchorLocal.y;
+    const vlen = Math.max(1, Math.hypot(vx, vy));
+    const startPoint = { x: anchorLocal.x + (vx / vlen) * iconRadius, y: anchorLocal.y + (vy / vlen) * iconRadius };
     const endPoint = { x: (optionBounds.left + optionBounds.right) / 2, y: optionBounds.top };
 
     return { startPoint, endPoint };
