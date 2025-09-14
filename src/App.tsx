@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { KeyManager } from "./components/KeyManager/KeyManager";
 import { SmartClipboard } from "./components/SmartClipboard/SmartClipboard";
 import { FloatingToolbar } from "./components/FloatingToolbar/FloatingToolbar";
 import { FloatingToolbarDemo } from "./components/FloatingToolbarDemo";
 import { RadialMenuTest } from "./components/RadialMenu/RadialMenu.test";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeToggle } from "./components/ThemeToggle/ThemeToggle";
 import "./App.css";
+import "./styles/theme.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -26,17 +29,31 @@ function App() {
     };
   }, []);
 
+  // 优化：使用useCallback缓存事件处理函数
+  const handleTabChange = useCallback((tab: string) => {
+    // 添加主题切换动画类
+    document.documentElement.classList.add('theme-transitioning');
+    setActiveTab(tab);
+
+    // 移除动画类
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 200);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+    <ThemeProvider defaultTheme="system">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold">API Key Manager</h1>
+              <ThemeToggle />
             </div>
             <nav className="flex space-x-4">
               <button
-                onClick={() => setActiveTab("dashboard")}
+                onClick={() => handleTabChange("dashboard")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "dashboard"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -46,7 +63,7 @@ function App() {
                 仪表板
               </button>
               <button
-                onClick={() => setActiveTab("keys")}
+                onClick={() => handleTabChange("keys")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "keys"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -56,7 +73,7 @@ function App() {
                 API Keys
               </button>
               <button
-                onClick={() => setActiveTab("smart-clipboard")}
+                onClick={() => handleTabChange("smart-clipboard")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "smart-clipboard"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -66,7 +83,7 @@ function App() {
                 智能剪贴板
               </button>
               <button
-                onClick={() => setActiveTab("floating-toolbar-demo")}
+                onClick={() => handleTabChange("floating-toolbar-demo")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "floating-toolbar-demo"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -76,7 +93,7 @@ function App() {
                 浮动工具条演示
               </button>
               <button
-                onClick={() => setActiveTab("radial-menu-test")}
+                onClick={() => handleTabChange("radial-menu-test")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "radial-menu-test"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -86,7 +103,7 @@ function App() {
                 径向菜单测试
               </button>
               <button
-                onClick={() => setActiveTab("settings")}
+                onClick={() => handleTabChange("settings")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "settings"
                     ? "bg-gray-200 dark:bg-gray-700"
@@ -138,15 +155,11 @@ function App() {
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <span>主题</span>
-                    <select className="bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1">
-                      <option>浅色</option>
-                      <option>深色</option>
-                      <option>自动</option>
-                    </select>
+                    <ThemeToggle />
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium mb-2">安全设置</h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -169,7 +182,8 @@ function App() {
       {showFloatingToolbar && (
         <FloatingToolbar onClose={() => setShowFloatingToolbar(false)} />
       )}
-    </div>
+      </div>
+    </ThemeProvider>
   );
 }
 

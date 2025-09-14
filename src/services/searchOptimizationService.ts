@@ -189,8 +189,6 @@ export class SearchOptimizationService {
    * 更新搜索建议
    */
   private updateSuggestions(keyword: string, results: ApiKey[]): void {
-    const words = keyword.toLowerCase().split(/\s+/);
-
     results.forEach(result => {
       // 从名称提取建议
       if (result.name) {

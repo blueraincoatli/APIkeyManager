@@ -1,0 +1,105 @@
+/* 主题切换性能优化 */
+
+/* 减少重绘和重排 */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+
+/* 特殊元素不需要过渡 */
+.no-transition,
+.no-transition *,
+[data-no-transition] {
+  transition: none !important;
+}
+
+/* 主题切换时的性能优化 */
+.theme-transitioning * {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 200ms !important;
+}
+
+/* 暗色模式优化 */
+.dark {
+  color-scheme: dark;
+}
+
+/* 亮色模式优化 */
+.light {
+  color-scheme: light;
+}
+
+/* 减少复杂元素的过渡性能影响 */
+.virtualized-item,
+.virtualized-item * {
+  transition-duration: 100ms !important;
+}
+
+/* 图片和视频在主题切换时的优化 */
+img,
+video,
+canvas {
+  transition: opacity 150ms ease !important;
+}
+
+.theme-transitioning img,
+.theme-transitioning video,
+.theme-transitioning canvas {
+  opacity: 0.95;
+}
+
+/* 防止主题切换时的闪烁 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* 高性能滚动容器优化 */
+.scroll-container {
+  contain: layout style paint;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* 暗色模式滚动条优化 */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 亮色模式滚动条优化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}

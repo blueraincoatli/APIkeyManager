@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { searchOptimizationService } from "../../services/searchOptimizationService";
 import { clipboardService } from "../../services/clipboardService";
@@ -15,16 +15,6 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // 聚焦搜索框
-  useEffect(() => {
-    inputRef.current?.focus();
-
-    // 组件卸载时清理防抖定时器
-    return () => {
-      cancel();
-    };
-  }, [cancel]);
 
   // 创建防抖搜索函数 - 300ms延迟
   const { fn: debouncedSearch, cancel } = debounced(async (term: string) => {
@@ -45,6 +35,16 @@ export function SearchToolbar({ onClose }: SearchToolbarProps) {
       setIsSearching(false);
     }
   }, 300);
+
+  // 聚焦搜索框
+  useEffect(() => {
+    inputRef.current?.focus();
+
+    // 组件卸载时清理防抖定时器
+    return () => {
+      cancel();
+    };
+  }, [cancel]);
 
   // 处理搜索
   const handleSearch = (term: string) => {
