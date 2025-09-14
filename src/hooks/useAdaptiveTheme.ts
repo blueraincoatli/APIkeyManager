@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { logSecureError } from '../services/secureLogging';
-import { OperationContext } from '../services/secureLogging';
+import { useEffect, useState } from 'react';
+import { logSecureError, OperationContext } from '../services/secureLogging';
 
 interface AdaptiveThemeResult {
   backgroundColor: string;
@@ -9,126 +8,49 @@ interface AdaptiveThemeResult {
   isDarkBackground: boolean;
 }
 
-export function useAdaptiveTheme(elementRef?: React.RefObject<HTMLDivElement | null>): AdaptiveThemeResult {
-  const [backgroundColor, setBackgroundColor] = useState("rgba(30, 32, 71, 0.85)");
-  const [textColor, setTextColor] = useState("#ffffff");
-  const [borderColor, setBorderColor] = useState("rgba(255, 255, 255, 0.2)");
-  const [isDarkBackground, setIsDarkBackground] = useState(true);
+// 简化版自适应主题：不再基于时间/位置变化，仅根据文档根主题或系统偏好一次性设置，并在主题切换时同步。
+export function useAdaptiveTheme(): AdaptiveThemeResult {
+  const [backgroundColor, setBackgroundColor] = useState('rgba(255, 255, 255, 0.9)');
+  const [textColor, setTextColor] = useState('#1a1c41');
+  const [borderColor, setBorderColor] = useState('rgba(26, 28, 65, 0.2)');
+  const [isDarkBackground, setIsDarkBackground] = useState(false);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const analysisIntervalRef = useRef<number | null>(null);
-
-  // 初始化canvas
-  useEffect(() => {
-    canvasRef.current = document.createElement('canvas');
-    canvasRef.current.width = 1;
-    canvasRef.current.height = 1;
-    
-    return () => {
-      if (analysisIntervalRef.current) {
-        clearInterval(analysisIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // 分析背景颜色
-  const analyzeBackground = () => {
+  const applyFromDocumentTheme = () => {
     try {
-      let x = window.innerWidth / 2;
-      let y = window.innerHeight / 2;
-
-      // 如果有元素引用，分析元素中心的背景
-      if (elementRef?.current) {
-        const rect = elementRef.current.getBoundingClientRect();
-        x = rect.left + rect.width / 2;
-        y = rect.top + rect.height / 2;
-      }
-
-      // 使用一个简化的方法来获取背景颜色
-      // 在实际应用中，这里可以使用更复杂的颜色采样算法
-      const simulatedColor = getSimulatedBackgroundColor(x, y);
-      const brightness = calculateBrightness(simulatedColor);
-      
-      // 根据背景亮度调整主题
-      if (brightness < 128) {
-        // 深色背景
-        setBackgroundColor("rgba(26, 28, 65, 0.9)");
-        setTextColor("#ffffff");
-        setBorderColor("rgba(255, 255, 255, 0.2)");
+      const root = document.documentElement;
+      const isDark = root.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        setBackgroundColor('rgba(26, 28, 65, 0.9)');
+        setTextColor('#ffffff');
+        setBorderColor('rgba(255, 255, 255, 0.2)');
         setIsDarkBackground(true);
       } else {
-        // 浅色背景
-        setBackgroundColor("rgba(255, 255, 255, 0.9)");
-        setTextColor("#1a1c41");
-        setBorderColor("rgba(26, 28, 65, 0.2)");
+        setBackgroundColor('rgba(255, 255, 255, 0.9)');
+        setTextColor('#1a1c41');
+        setBorderColor('rgba(26, 28, 65, 0.2)');
         setIsDarkBackground(false);
       }
     } catch (error) {
       logSecureError(OperationContext.THEME_ANALYSIS, error, { component: 'useAdaptiveTheme' });
-      // 使用默认主题
-      setBackgroundColor("rgba(30, 32, 71, 0.85)");
-      setTextColor("#ffffff");
-      setBorderColor("rgba(255, 255, 255, 0.2)");
-      setIsDarkBackground(true);
     }
   };
 
-  // 模拟背景颜色获取（实际应用中应该使用真实的颜色采样）
-  const getSimulatedBackgroundColor = (x: number, y: number): string => {
-    // 这里使用一个基于位置和时间的变化来模拟不同的背景
-    const time = Date.now() * 0.001;
-    const r = Math.floor(Math.sin(x * 0.01 + time) * 50 + 100);
-    const g = Math.floor(Math.sin(y * 0.01 + time * 1.1) * 50 + 100);
-    const b = Math.floor(Math.sin((x + y) * 0.01 + time * 0.9) * 50 + 150);
-    
-    return `rgb(${r}, ${g}, ${b})`;
-  };
-
-  // 计算颜色亮度
-  const calculateBrightness = (color: string): number => {
-    // 解析RGB颜色
-    const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!match) return 128;
-    
-    const r = parseInt(match[1]);
-    const g = parseInt(match[2]);
-    const b = parseInt(match[3]);
-    
-    // 使用相对亮度公式
-    return (r * 0.299 + g * 0.587 + b * 0.114);
-  };
-
-  // 开始定期分析背景
   useEffect(() => {
-    analyzeBackground();
-    
-    // 每2秒重新分析一次背景
-    analysisIntervalRef.current = window.setInterval(analyzeBackground, 2000);
-    
-    return () => {
-      if (analysisIntervalRef.current) {
-        clearInterval(analysisIntervalRef.current);
-      }
-    };
-  }, [elementRef]);
+    applyFromDocumentTheme();
 
-  // 监听窗口大小变化
-  useEffect(() => {
-    const handleResize = () => {
-      analyzeBackground();
-    };
+    // 监听系统主题与文档 root class 变化
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyFromDocumentTheme();
+    mq.addEventListener('change', handler);
+    const obs = new MutationObserver(handler);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    window.addEventListener('resize', handleResize);
-    
     return () => {
-      window.removeEventListener('resize', handleResize);
+      mq.removeEventListener('change', handler);
+      obs.disconnect();
     };
   }, []);
 
-  return {
-    backgroundColor,
-    textColor,
-    borderColor,
-    isDarkBackground
-  };
+  return { backgroundColor, textColor, borderColor, isDarkBackground };
 }
+
