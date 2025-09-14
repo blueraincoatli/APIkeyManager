@@ -18,6 +18,7 @@ interface RadialMenuProps {
 export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuProps) {
   const [menuCenter, setMenuCenter] = useState<{ x: number; y: number }>(center || { x: 0, y: 0 });
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [angleOffset, setAngleOffset] = useState<number>(0); // 根据鼠标位置产生轻微滑动
   const menuRef = useRef<HTMLDivElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(menuRef);
 
@@ -26,6 +27,27 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
       setMenuCenter({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     }
   }, [center]);
+
+  // 根据鼠标在容器内的Y偏移，给予轻微角度偏移，制造“随鼠标滑动”的感觉
+  useEffect(() => {
+    const el = menuRef.current;
+    if (!el) return;
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cy = rect.top + rect.height / 2;
+      const dy = e.clientY - cy; // [-h/2, h/2]
+      const norm = Math.max(-1, Math.min(1, dy / (rect.height / 2))); // [-1,1]
+      const max = 20; // 最大偏移角度（度）
+      setAngleOffset(norm * max);
+    };
+    const handleLeave = () => setAngleOffset(0);
+    el.addEventListener('mousemove', handleMove);
+    el.addEventListener('mouseleave', handleLeave);
+    return () => {
+      el.removeEventListener('mousemove', handleMove);
+      el.removeEventListener('mouseleave', handleLeave);
+    };
+  }, []);
 
   const getLineForItem = (index: number) => {
     if (!menuRef.current) return null;
@@ -87,7 +109,9 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
         </svg>
 
         {options.map((option, index) => {
-          const angle = index * 60 - 90;
+          // 步进角根据数量自适应，基础从顶点-90°开始
+          const step = Math.min(60, 360 / Math.max(6, options.length));
+          const angle = index * step - 90 + angleOffset;
           const radius = 120;
           const x = radius * Math.cos((angle * Math.PI) / 180);
           const y = radius * Math.sin((angle * Math.PI) / 180);
@@ -97,7 +121,7 @@ export function RadialMenu({ options, onSelect, onClose, center }: RadialMenuPro
               onMouseEnter={() => setHoverIndex(index)}
               onMouseLeave={() => setHoverIndex(null)}
               onClick={() => handleClick(option.id)}
-              className="absolute flex items-center justify-center px-6 py-3 rounded-full border shadow-xl backdrop-blur-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl"
+              className="absolute flex items-center justify-center px-6 py-3 rounded-full border shadow-xl backdrop-blur-xl transition-transform duration-200 hover:scale-105 hover:shadow-2xl"
               style={{
                 left: `calc(50% + ${x}px - 60px)`,
                 top: `calc(50% + ${y}px - 20px)`,
