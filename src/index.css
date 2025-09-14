@@ -80,13 +80,16 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Light theme gradient to showcase glass */
+    background-image: linear-gradient(135deg, #f8fafc 0%, #eef2f7 50%, #e5e7eb 100%);
+    background-attachment: fixed;
   }
 }
 
 /* 添加全局样式以支持更好的视觉效果 */
 .backdrop-blur-xl {
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
 
 .shadow-xl {
@@ -95,6 +98,40 @@
 
 .shadow-2xl {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Glassmorphism helpers */
+:root {
+  --glass-bg-rgb: 255, 255, 255;
+  --glass-bg-alpha: 0.18; /* light theme base alpha */
+  --glass-border: rgba(255, 255, 255, 0.22);
+}
+.dark {
+  --glass-bg-rgb: 17, 25, 40;
+  --glass-bg-alpha: 0.45; /* darker, more opaque */
+  --glass-border: rgba(255, 255, 255, 0.14);
+}
+
+/* Dark theme gradient background */
+.dark body {
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(135deg, #0b1220 0%, #111827 50%, #0a0f1e 100%);
+  background-attachment: fixed;
+}
+
+.glass {
+  background-color: rgba(var(--glass-bg-rgb), var(--glass-bg-alpha));
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+}
+
+.glass-chip {
+  background-color: rgba(var(--glass-bg-rgb), calc(var(--glass-bg-alpha) * 0.8));
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--glass-border);
 }
 
 /* 纤细滚动条（与设计图接近） */
@@ -109,3 +146,32 @@
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* App gradient via id to ensure it wins over utility classes */
+#app-bg {
+  position: relative;
+  /* Outer spacing for the whole interface */
+  padding: 5px;
+  box-sizing: border-box;
+}
+#app-bg > * {
+  position: relative;
+  z-index: 1;
+}
+#app-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+}
+:root[data-theme="light"] #app-bg::before {
+  /* Stronger contrast for easy visual check */
+  background-image: linear-gradient(135deg, #ffffff 0%, #e5eefc 50%, #d1d5db 100%) !important;
+}
+:root[data-theme="dark"] #app-bg::before {
+  /* Stronger tri-color gradient for dark theme */
+  background-image: linear-gradient(135deg, #020617 0%, #1e293b 50%, #0b1220 100%) !important;
+}
+
