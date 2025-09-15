@@ -1,1 +1,1 @@
-Fix search results panel styling to match toolbar glass effect
+Adjust search results panel width to match API key input panel, add auto-hide functionality

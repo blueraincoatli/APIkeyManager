@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 
 interface RadialMenuOption {
@@ -18,45 +18,30 @@ interface RadialMenuProps {
 // 通用径向菜单：胶囊按钮沿弧线排列，仅对悬停项绘制单条连线
 export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [angleOffset, setAngleOffset] = useState<number>(0); // 根据鼠标位置产生轻微滑动
   const menuRef = useRef<HTMLDivElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(menuRef);
-
-  // 根据鼠标在容器内的Y偏移，给予轻微角度偏移，制造"随鼠标滑动"的感觉
-  useEffect(() => {
-    const el = menuRef.current;
-    if (!el) return;
-    const handleMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const cy = rect.top + rect.height / 2;
-      const dy = e.clientY - cy; // [-h/2, h/2]
-      const norm = Math.max(-1, Math.min(1, dy / (rect.height / 2))); // [-1,1]
-      const max = 2; // 进一步减小最大偏移角度（度），使效果更 subtle
-      setAngleOffset(norm * max);
-    };
-    const handleLeave = () => setAngleOffset(0);
-    el.addEventListener('mousemove', handleMove);
-    el.addEventListener('mouseleave', handleLeave);
-    return () => {
-      el.removeEventListener('mousemove', handleMove);
-      el.removeEventListener('mouseleave', handleLeave);
-    };
-  }, []);
+  
+  // 计算中心点位置
+  const getCenterPoint = () => {
+    if (!menuRef.current) return { centerX: 0, centerY: 0 };
+    const centerX = menuRef.current.offsetWidth * 0.05 - 52;
+    const centerY = menuRef.current.offsetHeight / 2;
+    return { centerX, centerY };
+  };
 
   const getLineForItem = (index: number) => {
     if (!menuRef.current) return null;
+    const { centerX, centerY } = getCenterPoint();
     // 修改为扇形布局的角度计算
-    const startAngle = -60; // 起始角度，从右上开始
-    const angleRange = 120; // 角度范围，形成120度的扇形
+    const startAngle = -45; // 起始角度，从右上开始
+    const angleRange = 90; // 角度范围，形成90度的扇形
     const step = options.length > 1 ? angleRange / (options.length - 1) : 0;
     const angle = startAngle + index * step;
     const radius = 120;
     const x = radius * Math.cos((angle * Math.PI) / 180);
     const y = radius * Math.sin((angle * Math.PI) / 180);
-    const centerX = menuRef.current.offsetWidth / 2;
-    const centerY = menuRef.current.offsetHeight / 2;
     const anchorPoint = anchor?.();
-    const anchorLocal = anchorPoint || { x: 0, y: centerY };
+    const anchorLocal = anchorPoint || { x: centerX, y: centerY };
 
     const buttonWidth = 120;
     const buttonHeight = 40;
@@ -108,12 +93,13 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
         </svg>
 
         {options.map((option, index) => {
-          // 修改为扇形布局：从右上开始，形成120度的扇形
-          const startAngle = -60; // 起始角度，从右上开始（-60度）
-          const angleRange = 120; // 角度范围，形成120度的扇形
+          const { centerX, centerY } = getCenterPoint();
+          // 修改为扇形布局：从右上开始，形成90度的扇形
+          const startAngle = -45; // 起始角度，从右上开始（-45度）
+          const angleRange = 90; // 角度范围，形成90度的扇形
           const step = options.length > 1 ? angleRange / (options.length - 1) : 0;
-          const angle = startAngle + index * step + angleOffset;
-          const radius = 100; // 减小半径以适应新的容器尺寸
+          const angle = startAngle + index * step;
+          const radius = 120; // 增大半径以展平弧度
           const x = radius * Math.cos((angle * Math.PI) / 180);
           const y = radius * Math.sin((angle * Math.PI) / 180);
           return (
@@ -124,14 +110,14 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
               onClick={() => handleClick(option.id)}
               className="absolute flex items-center justify-center px-4 py-2 rounded-full shadow-xl glass-chip transition-transform duration-200 hover:scale-105 hover:shadow-2xl min-w-[100px] max-w-[140px]"
               style={{
-                left: `calc(50% + ${x}px - 50px)`,
-                top: `calc(50% + ${y}px - 16px)`,
+                left: `${centerX + x - 50}px`,
+                top: `${centerY + y - 16}px`,
               }}
             >
-              <span className="text-sm font-medium flex items-center gap-2 whitespace-nowrap max-w-[140px] text-gray-700 dark:text-gray-100">
+              <span className="text-sm font-medium flex items-center gap-3 whitespace-nowrap max-w-[140px] text-gray-700 dark:text-gray-100">
                 {option.icon && <span className="text-base flex-shrink-0"> {option.icon}</span>}
                 <span className="truncate flex-grow text-center">{option.label}</span>
-                <span className="ml-1 text-xs px-2 py-0.5 rounded-full border flex-shrink-0 text-gray-700 dark:text-gray-100" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full border flex-shrink-0 text-gray-700 dark:text-gray-100" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                   {option.count ?? 0}
                 </span>
               </span>
@@ -140,8 +126,11 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
         })}
 
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/30"
-          style={{ backgroundColor }}
+          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/30"
+          style={{ 
+            backgroundColor, 
+            left: menuRef.current ? `${getCenterPoint().centerX}px` : '0px'
+          }}
         />
       </div>
     </div>
