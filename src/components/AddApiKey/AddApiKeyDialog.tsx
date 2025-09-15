@@ -148,7 +148,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
             <h5 className="text-[18px] mb-6 text-center text-gray-300 dark:text-white font-normal">批量导入API Key</h5>
             <div className="space-y-6">
               <div className="flex flex-col items-center text-center">
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                <p className="text-gray-600 dark:text-gray-300 text-xs mb-4">
                   请下载模板文件，按照格式填写API Key信息后上传
                 </p>
                 <p className="text-gray-500 dark:text-gray-400 text-xs mb-6">
@@ -160,7 +160,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               <div className="flex flex-col items-center space-y-4">
                 <button
                   type="button"
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm"
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-xs"
                 >
                   下载模板
                 </button>
@@ -168,7 +168,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 <button
                   type="button"
                   onClick={handleFileSelect}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-xs"
                 >
                   选择Excel文件
                 </button>
@@ -181,7 +181,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                   <button
                     type="button"
                     onClick={handleBackToSingle}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-xs w-full"
                   >
                     返回
                   </button>
@@ -190,7 +190,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-xs w-full"
                   >
                     取消
                   </button>
