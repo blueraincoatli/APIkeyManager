@@ -2,6 +2,17 @@ import { useMemo, useState } from "react";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { downloadDir } from '@tauri-apps/api/path';
+
+// 定义API Key模板类型
+interface ApiKeyTemplate {
+  name: string;
+  keyValue: string;
+  platform: string;
+  description: string;
+}
 
 interface AddApiKeyDialogProps {
   open: boolean;
@@ -59,14 +70,84 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
     setShowBatchImport(false);
   };
 
-  const handleFileSelect = () => {
-    // 模拟文件选择后的预览
-    setShowPreview(true);
+  const handleDownloadTemplate = async () => {
+    try {
+      // 获取下载目录路径
+      const downloadPath = await downloadDir();
+      
+      // 弹出保存对话框，让用户选择保存位置
+      const filePath = await save({
+        filters: [{
+          name: 'CSV Files',
+          extensions: ['csv']
+        }],
+        defaultPath: `${downloadPath}api_key_template.csv`
+      });
+      
+      if (filePath) {
+        // 从public目录获取模板文件
+        const templateContent = await readTextFile('templates/api_key_template.csv');
+        
+        // 保存文件到用户选择的位置
+        await writeTextFile(filePath, templateContent);
+        
+        // 通知用户文件已保存
+        toast.success('模板下载成功', `文件已保存到: ${filePath}`);
+      }
+    } catch (error) {
+      console.error('下载模板失败:', error);
+      toast.error('下载失败', '模板下载过程中发生错误');
+    }
+  };
+
+  const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
+  const toast = useToast();
+  
+  const handleFileSelect = async () => {
+    try {
+      // 使用Tauri的文件对话框
+      const filePath = await save({
+        filters: [{
+          name: 'Excel Files',
+          extensions: ['xlsx', 'xls']
+        }],
+        defaultPath: await downloadDir()
+      });
+
+      if (filePath) {
+        // 读取Excel文件内容
+        const fileContent = await readTextFile(filePath);
+        
+        // 模拟Excel解析（实际需要使用适当的库如xlsx）
+        const mockData: ApiKeyTemplate[] = [
+          {
+            name: "OpenAI Key",
+            keyValue: "sk-xxxx...xxxx",
+            platform: "OpenAI",
+            description: "用于GPT-4访问"
+          },
+          {
+            name: "Claude Key",
+            keyValue: "claude-xxxx...xxxx",
+            platform: "Anthropic",
+            description: "用于Claude模型"
+          }
+        ];
+        
+        // 显示预览
+        setPreviewData(mockData);
+        setShowPreview(true);
+      }
+    } catch (error) {
+      console.error('文件选择失败:', error);
+      toast.error('文件读取失败', '无法读取所选文件');
+    }
   };
 
   // 预览窗口组件
   const PreviewWindow = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* 预览内容 */}
       <div className="absolute inset-0 bg-black/30" onClick={() => setShowPreview(false)} />
       <div className="relative z-10 w-[800px] max-w-[90vw] h-[600px] max-h-[90vh] bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 flex flex-col">
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
@@ -156,6 +237,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               <div className="flex flex-col items-center">
                 <button
                   type="button"
+                  onClick={handleDownloadTemplate}
                   className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm mb-[16px]"
                 >
                   下载模板
