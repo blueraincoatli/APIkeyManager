@@ -92,13 +92,11 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       }
     };
 
-    if (searchResults.length > 0) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [searchResults.length]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const copyToClipboard = async (key: ApiKey) => {
     await apiKeyService.copyToClipboard(key.id);
@@ -231,7 +229,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
       {/* 结果面板（统一组件） */}
       {searchResults.length > 0 && (
-        <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} providerLabel={providerLabel} />
+        <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 520} providerLabel={providerLabel} />
       )}
 
       {showAddDialog && (
