@@ -17,6 +17,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [touched, setTouched] = useState<{ name?: boolean; key?: boolean }>({});
+  const [showBatchImport, setShowBatchImport] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const errors = useMemo(() => {
     const errs: { name?: string; key?: string } = {};
@@ -48,9 +50,89 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   };
 
   const handleBatchImport = () => {
-    // 批量导入功能待实现
-    console.log("批量导入功能待实现");
+    // 切换到批量导入面板
+    setShowBatchImport(true);
   };
+
+  const handleBackToSingle = () => {
+    // 返回单个添加面板
+    setShowBatchImport(false);
+  };
+
+  const handleFileSelect = () => {
+    // 模拟文件选择后的预览
+    setShowPreview(true);
+  };
+
+  // 预览窗口组件
+  const PreviewWindow = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={() => setShowPreview(false)} />
+      <div className="relative z-10 w-[800px] max-w-[90vw] h-[600px] max-h-[90vh] bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">数据预览</h2>
+          <button 
+            onClick={() => setShowPreview(false)}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="关闭预览"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-auto p-6">
+          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">名称</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">API Key</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">提供商</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">描述</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {/* 示例数据行 */}
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">OpenAI Key</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">sk-xxxx...xxxx</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">OpenAI</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">用于GPT-4访问</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Claude Key</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">claude-xxxx...xxxx</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Anthropic</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">用于Claude模型</td>
+                </tr>
+                {/* 可以添加更多示例行 */}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowPreview(false)}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium text-sm"
+            >
+              确认导入
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -60,93 +142,157 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           onSubmit={handleSubmit}
           className="relative z-10 w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 px-8 py-6"
         >
-        <h5 className="text-[18px] mb-8 text-center  text-gray-300 dark:text-white font-normal">新增API Key</h5>
-        <div>
-          <div className="flex flex-col items-center mb-[16px]">
-            <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">名称</label>
-            <input
-              type="text"
-              placeholder="请输入API Key名称"
-              value={name}
-              onChange={(e)=>setName(e.target.value)}
-              onBlur={()=>setTouched(prev=>({ ...prev, name: true }))}
-              className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip focus:outline-none focus:ring-2 transition-all text-sm ${
-                touched.name && errors.name
-                  ? 'border-red-400 focus:ring-red-400/50'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
-              }`}
-              required
-            />
-            {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px]">{errors.name}</p>)}
+        {showBatchImport ? (
+          // 批量导入说明面板
+          <>
+            <h5 className="text-[18px] mb-6 text-center text-gray-300 dark:text-white font-normal">批量导入API Key</h5>
+            <div className="space-y-6">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                  请下载模板文件，按照格式填写API Key信息后上传
+                </p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs mb-6">
+                  支持的格式：Excel文件 (.xlsx)<br/>
+                  需包含列：名称 | API Key | 提供商 | 描述
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-center space-y-4">
+                <button
+                  type="button"
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm"
+                >
+                  下载模板
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={handleFileSelect}
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
+                >
+                  选择Excel文件
+                </button>
+              </div>
+            </div>
+            
+            <div className="mt-[30px] mb-[30px] flex justify-center">
+              <div className="w-[300px] grid grid-cols-2 gap-3">
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleBackToSingle}
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                  >
+                    返回
+                  </button>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          // 单个添加API Key表单
+          <>
+            <h5 className="text-[18px] mb-8 text-center text-gray-300 dark:text-white font-normal">新增API Key</h5>
+            <div className="space-y-10">
+              <div className="flex flex-col items-center">
+                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">名称</label>
+                <input
+                  type="text"
+                  placeholder="请输入API Key名称"
+                  value={name}
+                  onChange={(e)=>setName(e.target.value)}
+                  onBlur={()=>setTouched(prev=>({ ...prev, name: true }))}
+                  className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip focus:outline-none focus:ring-2 transition-all text-sm ${
+                    touched.name && errors.name
+                      ? 'border-red-400 focus:ring-red-400/50'
+                      : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
+                  }`}
+                  required
+                />
+                {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.name}</p>)}
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">API Key</label>
+                <input
+                  value={keyValue}
+                  onChange={(e)=>setKeyValue(e.target.value)}
+                  onBlur={()=>setTouched(prev=>({ ...prev, key: true }))}
+                  className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip font-mono focus:outline-none focus:ring-2 transition-all text-sm ${
+                    touched.key && errors.key
+                      ? 'border-red-400 focus:ring-red-400/50'
+                      : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
+                  }`}
+                  placeholder="请输入API Key"
+                  required
+                />
+                {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.key}</p>)}
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">提供商</label>
+                <input
+                  value={platform}
+                  onChange={(e)=>setPlatform(e.target.value)}
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                  placeholder="如：OpenAI、Claude、Gemini..."
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">描述</label>
+                <input
+                  value={description}
+                  onChange={(e)=>setDescription(e.target.value)}
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                  placeholder="可选描述信息..."
+                />
+              </div>
+            </div>
+            <div className="mt-[30px] mb-[30px] flex justify-center">
+            <div className="w-[300px] grid grid-cols-3 gap-3">
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                >
+                  取消
+                </button>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleBatchImport}
+                  className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                >
+                  批量导入
+                </button>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  disabled={submitting || !!errors.name || !!errors.key}
+                  className="px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 disabled:opacity-60 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 disabled:hover:bg-transparent transition-all font-medium text-sm w-full"
+                >
+                  {submitting? '提交中…':'保存'}
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col items-center mb-[16px]">
-            <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">API Key</label>
-            <input
-              value={keyValue}
-              onChange={(e)=>setKeyValue(e.target.value)}
-              onBlur={()=>setTouched(prev=>({ ...prev, key: true }))}
-              className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip font-mono focus:outline-none focus:ring-2 transition-all text-sm ${
-                touched.key && errors.key
-                  ? 'border-red-400 focus:ring-red-400/50'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
-              }`}
-              placeholder="请输入API Key"
-              required
-            />
-            {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px]">{errors.key}</p>)}
-          </div>
-          <div className="flex flex-col items-center mb-[16px]">
-            <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">提供商</label>
-            <input
-              value={platform}
-              onChange={(e)=>setPlatform(e.target.value)}
-              className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
-              placeholder="如：OpenAI、Claude、Gemini..."
-            />
-          </div>
-          <div className="flex flex-col items-center mb-[16px]">
-            <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">描述</label>
-            <input
-              value={description}
-              onChange={(e)=>setDescription(e.target.value)}
-              className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
-              placeholder="可选描述信息..."
-            />
-          </div>
-        </div>
-        <div className="mt-[30px] mb-[30px] flex justify-center mb-[16px]">
-        <div className="w-[300px] grid grid-cols-3 gap-3">
-          <div className="flex justify-center mb-[16px]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-            >
-              取消
-            </button>
-          </div>
-          <div className="flex justify-center mb-[16px]">
-            <button
-              type="button"
-              onClick={handleBatchImport}
-              className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-            >
-              批量导入
-            </button>
-          </div>
-          <div className="flex justify-center mb-[16px]">
-            <button
-              type="submit"
-              disabled={submitting || !!errors.name || !!errors.key}
-              className="px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 disabled:opacity-60 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 disabled:hover:bg-transparent transition-all font-medium text-sm w-full"
-            >
-              {submitting? '提交中…':'保存'}
-            </button>
-          </div>
-        </div>
-      </div>
+          </>
+        )}
         </form>
       </div>
+      
+      {/* 预览窗口 */}
+      {showPreview && <PreviewWindow />}
     </div>
   );
 }
