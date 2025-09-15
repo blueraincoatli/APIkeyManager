@@ -153,7 +153,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 </p>
               </div>
               
-              <div className="flex flex-col items-center space-y-4">
+              <div className="flex flex-col items-center space-y-6">
                 <button
                   type="button"
                   className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm"
