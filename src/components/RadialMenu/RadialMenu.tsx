@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 
 interface RadialMenuOption {
@@ -18,6 +18,7 @@ interface RadialMenuProps {
 // 通用径向菜单：胶囊按钮沿弧线排列，仅对悬停项绘制单条连线
 export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [animationStage, setAnimationStage] = useState<'initial' | 'animating' | 'complete'>('initial');
   const menuRef = useRef<HTMLDivElement>(null);
   const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(menuRef);
   
@@ -28,6 +29,18 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
     const centerY = menuRef.current.offsetHeight / 2;
     return { centerX, centerY };
   };
+
+  // 菜单弹出动画
+  useEffect(() => {
+    if (animationStage === 'initial') {
+      const timer = setTimeout(() => setAnimationStage('animating'), 10);
+      const completeTimer = setTimeout(() => setAnimationStage('complete'), 300);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(completeTimer);
+      };
+    }
+  }, [animationStage]);
 
   const getLineForItem = (index: number) => {
     if (!menuRef.current) return null;
@@ -66,14 +79,41 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
     onClose();
   };
 
+  // 计算菜单项的动画样式
+  const getItemAnimationStyle = (index: number) => {
+    if (animationStage === 'initial') {
+      return {
+        transform: 'scale(0)',
+        opacity: 0,
+      };
+    }
+    
+    if (animationStage === 'animating') {
+      const delay = index * 30; // 每个项延迟30ms
+      return {
+        transform: 'scale(1)',
+        opacity: 1,
+        transition: `all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delay}ms`,
+      };
+    }
+    
+    return {};
+  };
+
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50" style={{ background: 'transparent' }}>
       <div className="fixed inset-0 bg-black/10" onClick={onClose} />
 
       <div
         ref={menuRef}
         className="absolute w-80 h-64"
-        style={{ left: 0, top: 0 }}
+        style={{ 
+          left: 0, 
+          top: 0,
+          opacity: animationStage === 'initial' ? 0 : 1,
+          transform: animationStage === 'initial' ? 'scale(0.8)' : 'scale(1)',
+          transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        }}
       >
         <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
           {hoverIndex !== null && (() => {
@@ -87,6 +127,9 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
                 y2={p.endPoint.y}
                 stroke="rgba(255,255,255,0.35)"
                 strokeWidth="2"
+                style={{
+                  transition: 'all 0.2s ease-out',
+                }}
               />
             );
           })()}
@@ -102,6 +145,10 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
           const radius = 120; // 增大半径以展平弧度
           const x = radius * Math.cos((angle * Math.PI) / 180);
           const y = radius * Math.sin((angle * Math.PI) / 180);
+          
+          // 计算动画样式
+          const animationStyle = getItemAnimationStyle(index);
+          
           return (
             <button
               key={option.id}
@@ -112,6 +159,8 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
               style={{
                 left: `${centerX + x - 50}px`,
                 top: `${centerY + y - 16}px`,
+                zIndex: 10,
+                ...animationStyle,
               }}
             >
               <span className="text-sm font-medium flex items-center gap-3 whitespace-nowrap max-w-[140px] text-gray-700 dark:text-gray-100">
