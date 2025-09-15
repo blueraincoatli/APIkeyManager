@@ -84,8 +84,26 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     if (e.key === "Escape") onClose();
   };
 
+  // 点击外部区域隐藏搜索结果
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setSearchResults([]);
+      }
+    };
+
+    if (searchResults.length > 0) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [searchResults.length]);
+
   const copyToClipboard = async (key: ApiKey) => {
     await apiKeyService.copyToClipboard(key.id);
+    // 复制后隐藏搜索结果面板
+    setSearchResults([]);
   };
 
   // 选择环形菜单项（按提供商过滤）

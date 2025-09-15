@@ -1,0 +1,1 @@
+Fix search results panel styling to match toolbar glass effect

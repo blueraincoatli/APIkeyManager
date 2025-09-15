@@ -42,7 +42,7 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
   return (
     <div
       ref={resultsRef}
-      className="fixed z-40 w-[520px] glass rounded-2xl shadow-2xl overflow-hidden transition-all duration-300"
+      className="fixed z-40 w-[360px] glass rounded-2xl shadow-2xl overflow-hidden transition-all duration-300"
       style={{
         left: position.x,
         top: position.y + 72,
@@ -50,14 +50,14 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
     >
       {providerLabel && (
         <div className="px-4 pt-3">
-          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-white/10 border border-white/20">
+          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-white/10 border border-white/20 text-gray-700 dark:text-gray-100">
             {providerLabel}
           </span>
         </div>
       )}
-      <div className="max-h-96 overflow-y-auto">
+      <div className="max-h-96 overflow-y-auto py-2">
         {results.length === 0 ? (
-          <div className="p-6 text-center opacity-70 text-gray-700 dark:text-gray-100">暂无结果</div>
+          <div className="p-6 text-center opacity-70 text-gray-700 dark:text-gray-100 text-sm">暂无结果</div>
         ) : (
           <div className="divide-y divide-white/10">
             {results.map((key) => (
@@ -68,8 +68,8 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate text-gray-700 dark:text-gray-100">{key.name}</div>
-                    <div className="text-sm opacity-80 font-mono text-gray-700 dark:text-gray-100">{formatApiKey(key.keyValue)}</div>
+                    <div className="font-medium truncate text-sm text-gray-700 dark:text-gray-100">{key.name}</div>
+                    <div className="text-xs opacity-80 font-mono mt-1 text-gray-700 dark:text-gray-100">{formatApiKey(key.keyValue)}</div>
                   </div>
                   <button
                     onClick={(e) => {
@@ -77,9 +77,9 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
                       handleCopy(key);
                     }}
                     aria-label="复制"
-                    className="w-9 h-9 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                    className="w-8 h-8 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
                   >
-                    {copiedId === key.id ? <CheckIcon /> : <CopyIcon />}
+                    {copiedId === key.id ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
                   </button>
                 </div>
               </div>
