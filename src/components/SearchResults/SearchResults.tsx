@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { ApiKey } from "../../types/apiKey";
-import { clipboardService } from "../../services/clipboardService";
 import { CopyIcon, CheckIcon } from "../Icon/Icon";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 
@@ -15,7 +14,7 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
-  const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(resultsRef);
+  const { textColor, backgroundColor } = useAdaptiveTheme();
 
   useEffect(() => {
     return () => {
@@ -26,7 +25,6 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
   }, []);
 
   const handleCopy = async (key: ApiKey) => {
-    await clipboardService.copyToClipboard(key.keyValue);
     setCopiedId(key.id);
     onCopy(key);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -46,14 +44,12 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
   return (
     <div
       ref={resultsRef}
-      className="fixed z-40 w-[520px] backdrop-blur-2xl rounded-2xl shadow-2xl border overflow-hidden transition-all duration-300"
+      className="fixed z-40 w-[520px] glass rounded-2xl shadow-2xl overflow-hidden transition-all duration-300"
       style={{
         left: position.x,
         top: position.y + 72,
-        backgroundColor,
+        backgroundColor: backgroundColor,
         color: textColor,
-        borderColor,
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
       }}
     >
       {providerLabel && (

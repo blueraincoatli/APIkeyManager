@@ -17,29 +17,30 @@ function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(!isDev);
 
-  // 注册全局快捷键
+  // 注册全局快捷�?
+    // ע��ȫ�ֿ�ݼ�
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Shift+K 快捷键显示浮动工具条
-      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+      // Ctrl+Shift+K ��ݼ���ʾ����������
+      if (e.ctrlKey && e.shiftKey && e.key === "K") {
         e.preventDefault();
         setShowFloatingToolbar(true);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   // 优化：使用useCallback缓存事件处理函数
   const handleTabChange = useCallback((tab: string) => {
-    // 添加主题切换动画类
+    // 添加主题切换动画�?
     document.documentElement.classList.add('theme-transitioning');
     setActiveTab(tab);
 
-    // 移除动画类
+    // 移除动画�?
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transitioning');
     }, UI_CONSTANTS.ANIMATION_DURATION.THEME_TRANSITION);
@@ -48,7 +49,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system">
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+        <div className="min-h-screen text-gray-900 dark:text-gray-100" id="app-bg">
       {isDev && (
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -201,3 +202,7 @@ function App() {
 }
 
 export default App;
+
+
+
+

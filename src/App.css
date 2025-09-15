@@ -60,8 +60,12 @@ h1 {
   text-align: center;
 }
 
-input,
-button {
+/* NOTE: The default Vite template styles below were globally
+   affecting all inputs/buttons (including the FloatingToolbar),
+   causing blue hover borders and solid backgrounds. Scope them
+   under .legacy to avoid overriding Tailwind-based components. */
+.legacy input,
+.legacy button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -74,20 +78,20 @@ button {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
-button {
+.legacy button {
   cursor: pointer;
 }
 
-button:hover {
+.legacy button:hover {
   border-color: #396cd8;
 }
-button:active {
+.legacy button:active {
   border-color: #396cd8;
   background-color: #e8e8e8;
 }
 
-input,
-button {
+.legacy input,
+.legacy button {
   outline: none;
 }
 
@@ -105,12 +109,12 @@ button {
     color: #24c8db;
   }
 
-  input,
-  button {
+  .legacy input,
+  .legacy button {
     color: #ffffff;
     background-color: #0f0f0f98;
   }
-  button:active {
+  .legacy button:active {
     background-color: #0f0f0f69;
   }
 }

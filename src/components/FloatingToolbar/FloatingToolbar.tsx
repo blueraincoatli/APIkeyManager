@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { searchService } from "../../services/searchService";
-import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 import { RadialMenu } from "../RadialMenu/RadialMenu";
 import { SearchResults } from "../SearchResults/SearchResults";
 import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon/Icon";
@@ -22,9 +21,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const moreBtnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { textColor, borderColor } = useAdaptiveTheme();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
 
@@ -115,19 +114,26 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     loadCounts();
   }, [showRadialMenu]);
 
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (el) {
+      el.style.left = `${position.x}px`;
+      el.style.top = `${position.y}px`;
+    }
+  }, [position]);
+
   return (
-    <div className="fixed z-50" style={{ left: position.x, top: position.y }}>
+    <div ref={wrapperRef} className="fixed z-50">
       {/* 工具条本体（无全屏遮罩） */}
       <div
         ref={toolbarRef}
-        className="relative grid grid-cols-[1fr_auto] items-center h-[56px] rounded-full shadow-2xl glass px-[32px] md:px-[40px] gap-4"
-        style={{ color: textColor, cursor: isDragging ? 'grabbing' : 'grab' }}
+        className={`relative grid grid-cols-[1fr_auto] items-center h-[56px] rounded-full shadow-2xl glass px-[32px] md:px-[40px] gap-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} text-gray-900 dark:text-white`}
         onMouseDown={handleDragStart}
       >
         {/* 搜索输入（内置前缀图标，圆角矩形） */}
-        <div className="relative flex-1 min-w-[280px]">
+        <div className="relative z-0 flex-1 min-w-[248px]">
           {/* 放大镜：固定在输入框左侧 16px 位置 */}
-          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 opacity-70" />
+          <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 opacity-70" />
           <input
             ref={inputRef}
             type="text"
@@ -135,11 +141,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search API keys..."
-            className="w-[calc(100%-1rem)] pl-[44px] pr-4 py-3 bg-transparent backdrop-blur-xl bg-clip-padding border border-white/30 dark:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent placeholder-white/70 shadow-none"
-            style={{ color: textColor }}
+            className="w-[calc(100%-3rem)] pl-[32px] pr-4 py-3 bg-transparent backdrop-blur-xl bg-clip-padding border border-white/30 dark:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent placeholder-white/70 shadow-none text-gray-700 dark:text-gray-100"
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="relative z-10 flex items-center gap-4">
           {/* 加号 */}
           <button
             className="w-10 h-10 inline-flex items-center justify-center rounded-full hover:bg-white/10 focus:outline-none transition-colors p-0 border-0 bg-transparent shadow-none"
@@ -178,34 +183,37 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         </div>
 
         {/* 拖拽说明：点击输入框或按钮不会触发拖拽 */}
+        
+        {/* 环形菜单 */}
+        {showRadialMenu && (
+          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50">
+            <RadialMenu
+              options={PROVIDERS.slice(0,6).map(p => ({
+                id: p.id,
+                label: p.label,
+                count: providerCounts[p.id] ?? 0,
+              }))}
+              onSelect={handleRadialSelect}
+              onClose={() => setShowRadialMenu(false)}
+              anchor={() => {
+                const rect = moreBtnRef.current?.getBoundingClientRect();
+                if (!rect) return undefined;
+                // 返回相对于工具条容器的坐标
+                const toolbarRect = toolbarRef.current?.getBoundingClientRect();
+                if (!toolbarRect) return undefined;
+                return { 
+                  x: rect.left - toolbarRect.left + rect.width/2, 
+                  y: rect.top - toolbarRect.top + rect.height / 2 
+                };
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* 结果面板（统一组件） */}
       {searchResults.length > 0 && (
         <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} providerLabel={providerLabel} />
-      )}
-
-      {/* 环形菜单 */}
-      {showRadialMenu && (
-        <RadialMenu
-          options={PROVIDERS.slice(0,6).map(p => ({
-            id: p.id,
-            label: p.label,
-            count: providerCounts[p.id] ?? 0,
-          }))}
-          onSelect={handleRadialSelect}
-          onClose={() => setShowRadialMenu(false)}
-          center={() => {
-            const rect = moreBtnRef.current?.getBoundingClientRect();
-            if (!rect) return { x: position.x + (toolbarRef.current?.offsetWidth || 520) + 60, y: position.y + (toolbarRef.current?.offsetHeight || 56) / 2 };
-            return { x: rect.right + 140, y: rect.top + rect.height / 2 };
-          }}
-          anchor={() => {
-            const rect = moreBtnRef.current?.getBoundingClientRect();
-            if (!rect) return undefined;
-            return { x: rect.right - rect.width/2, y: rect.top + rect.height / 2 };
-          }}
-        />
       )}
 
       {showAddDialog && (

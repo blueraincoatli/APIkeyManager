@@ -103,3 +103,8 @@ canvas {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.5);
 }
+
+/* Adaptive text color class */
+.text-adaptive {
+  color: var(--text-color);
+}
