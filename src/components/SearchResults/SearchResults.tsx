@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon } from "../Icon/Icon";
-import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
 
 interface SearchResultsProps {
   results: ApiKey[];
@@ -14,7 +13,6 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
-  const { textColor, backgroundColor } = useAdaptiveTheme();
 
   useEffect(() => {
     return () => {
@@ -48,8 +46,6 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
       style={{
         left: position.x,
         top: position.y + 72,
-        backgroundColor: backgroundColor,
-        color: textColor,
       }}
     >
       {providerLabel && (
@@ -61,7 +57,7 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
       )}
       <div className="max-h-96 overflow-y-auto">
         {results.length === 0 ? (
-          <div className="p-6 text-center opacity-70">暂无结果</div>
+          <div className="p-6 text-center opacity-70 text-gray-700 dark:text-gray-100">暂无结果</div>
         ) : (
           <div className="divide-y divide-white/10">
             {results.map((key) => (
@@ -72,8 +68,8 @@ export function SearchResults({ results, onCopy, position, providerLabel }: Sear
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{key.name}</div>
-                    <div className="text-sm opacity-80 font-mono">{formatApiKey(key.keyValue)}</div>
+                    <div className="font-medium truncate text-gray-700 dark:text-gray-100">{key.name}</div>
+                    <div className="text-sm opacity-80 font-mono text-gray-700 dark:text-gray-100">{formatApiKey(key.keyValue)}</div>
                   </div>
                   <button
                     onClick={(e) => {
