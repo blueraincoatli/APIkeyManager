@@ -53,16 +53,16 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center mb-[16px] justify-center mb-[16px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="w-[360px] translate-x-[36px]">
         <form
           onSubmit={handleSubmit}
           className="relative z-10 w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 px-8 py-6"
         >
-        <h5 className="text-[18px] mb-8 text-center mb-[16px] text-gray-300 dark:text-white font-normal">新增API Key</h5>
-        <div>
-          <div className="flex flex-col items-center mb-[16px]">
+        <h5 className="text-[18px] mb-8 text-center text-gray-300 dark:text-white font-normal">新增API Key</h5>
+        <div className="space-y-10">
+          <div className="flex flex-col items-center">
             <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">名称</label>
             <input
               type="text"
@@ -77,9 +77,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               }`}
               required
             />
-            {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px]">{errors.name}</p>)}
+            {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.name}</p>)}
           </div>
-          <div className="flex flex-col items-center mb-[16px]">
+          <div className="flex flex-col items-center">
             <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">API Key</label>
             <input
               value={keyValue}
@@ -93,9 +93,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               placeholder="请输入API Key"
               required
             />
-            {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px]">{errors.key}</p>)}
+            {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.key}</p>)}
           </div>
-          <div className="flex flex-col items-center mb-[16px]">
+          <div className="flex flex-col items-center">
             <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">提供商</label>
             <input
               value={platform}
@@ -104,7 +104,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               placeholder="如：OpenAI、Claude、Gemini..."
             />
           </div>
-          <div className="flex flex-col items-center mb-[16px]">
+          <div className="flex flex-col items-center">
             <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">描述</label>
             <input
               value={description}
@@ -114,9 +114,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
             />
           </div>
         </div>
-        <div className="mt-[30px] mb-[30px] flex justify-center mb-[16px]">
+        <div className="mt-[30px] mb-[30px] flex justify-center">
         <div className="w-[300px] grid grid-cols-3 gap-3">
-          <div className="flex justify-center mb-[16px]">
+          <div className="flex justify-center">
             <button
               type="button"
               onClick={onClose}
@@ -125,7 +125,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               取消
             </button>
           </div>
-          <div className="flex justify-center mb-[16px]">
+          <div className="flex justify-center">
             <button
               type="button"
               onClick={handleBatchImport}
@@ -134,7 +134,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               批量导入
             </button>
           </div>
-          <div className="flex justify-center mb-[16px]">
+          <div className="flex justify-center">
             <button
               type="submit"
               disabled={submitting || !!errors.name || !!errors.key}
@@ -152,7 +152,3 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
 }
 
 export default AddApiKeyDialog;
-
-
-
-
