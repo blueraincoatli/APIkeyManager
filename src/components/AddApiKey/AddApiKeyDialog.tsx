@@ -151,16 +151,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 <p className="text-gray-600 dark:text-gray-300 text-[12px] mb-4">
                   请下载模板文件，按照格式填写API Key信息后上传
                 </p>
-                <p className="text-gray-500 dark:text-gray-400 text-[12px] mb-6">
-                  支持的格式：Excel文件 (.xlsx)<br/>
-                  需包含列：名称 | API Key | 提供商 | 描述
-                </p>
               </div>
               
               <div className="flex flex-col items-center space-y-4">
                 <button
                   type="button"
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-[12px]"
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm"
                 >
                   下载模板
                 </button>
@@ -168,10 +164,17 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 <button
                   type="button"
                   onClick={handleFileSelect}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-[12px]"
+                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
                 >
                   选择Excel文件
                 </button>
+              </div>
+              
+              <div className="flex flex-col items-center text-center">
+                <p className="text-gray-500 dark:text-gray-400 text-[12px] mb-6">
+                  支持的格式：Excel文件 (.xlsx)<br/>
+                  需包含列：名称 | API Key | 提供商 | 描述
+                </p>
               </div>
             </div>
             
