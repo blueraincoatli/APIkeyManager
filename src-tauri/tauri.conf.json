@@ -5,7 +5,7 @@
   "identifier": "com.hongyu-li.api-key-manager",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:61820",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -13,8 +13,14 @@
     "windows": [
       {
         "title": "api-key-manager",
-        "width": 800,
-        "height": 600
+        "width": 300,
+        "height": 100,
+        "decorations": false,
+        "skipTaskbar": true,
+        "transparent": true,
+        "hiddenTitle": true,
+        "focus": false,
+        "visible": false
       }
     ],
     "security": {

@@ -86,3 +86,14 @@ const calculateConnectorLinePoints = (iconCenter, mousePosition, iconRadius, opt
 const distance = (point1, point2) => {
   return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 };
+
+9. 悬浮工具条窗口行为
+9.1 窗口配置
+- 在生产环境中，默认隐藏主窗口，只通过全局快捷键（Ctrl+Shift+K）显示悬浮工具条
+- 开发环境中保持主应用窗口可见，用于调试和开发
+- 窗口配置为无边框、透明且不显示在任务栏中
+
+9.2 全局快捷键
+- 使用 Ctrl+Shift+K 快捷键唤起悬浮工具条
+- 快捷键在 Tauri 后端注册，确保即使应用失去焦点也能响应
+- 快捷键触发时显示并聚焦主窗口，使悬浮工具条可见

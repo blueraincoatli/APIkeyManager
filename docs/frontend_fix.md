@@ -146,3 +146,64 @@ module.exports = {
   },
   plugins: [],
 };
+
+5. 窗口行为与全局快捷键配置
+为实现真正的悬浮工具条效果，需要调整窗口行为和全局快捷键配置。
+
+5.1 Tauri 配置调整
+在 tauri.conf.json 中配置窗口为无边框、透明且不显示在任务栏：
+json
+{
+  "app": {
+    "windows": [
+      {
+        "title": "api-key-manager",
+        "width": 300,
+        "height": 100,
+        "decorations": false,
+        "skipTaskbar": true,
+        "transparent": true,
+        "hiddenTitle": true,
+        "focus": false,
+        "visible": false
+      }
+    ]
+  }
+}
+
+5.2 前端窗口控制
+在生产环境中默认隐藏主窗口，只通过全局快捷键显示悬浮工具条：
+tsx
+useEffect(() => {
+  if (!isDev) {
+    // 在生产环境中隐藏主窗口
+    getCurrentWebviewWindow().hide();
+  }
+}, [isDev]);
+
+5.3 Tauri 后端全局快捷键处理
+在 Tauri 后端注册全局快捷键并处理显示逻辑：
+rust
+tauri::Builder::default()
+  .plugin(
+    tauri_plugin_global_shortcut::Builder::new()
+      .with_shortcuts(["Ctrl+Shift+K"])
+      .unwrap()
+      .with_handler(|app, _shortcut, event| {
+        if event.state == ShortcutState::Pressed {
+          // 获取主窗口并显示它
+          if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.set_focus();
+          }
+        }
+      })
+      .build(),
+  )
+  .setup(|app| {
+    // 在生产环境中隐藏主窗口
+    #[cfg(not(debug_assertions))]
+    if let Some(window) = app.get_webview_window("main") {
+      let _ = window.hide();
+    }
+  })

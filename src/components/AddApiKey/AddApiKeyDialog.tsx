@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { save, open as openFileDialog } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 import { downloadDir } from '@tauri-apps/api/path';
 
 // 定义API Key模板类型
@@ -30,6 +30,134 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const [touched, setTouched] = useState<{ name?: boolean; key?: boolean }>({});
   const [showBatchImport, setShowBatchImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
+  
+  const handleFileSelect = async () => {
+    try {
+      // 使用Tauri的文件对话框，让用户选择文件
+      const filePath = await openFileDialog({
+        filters: [{
+          name: 'Excel Files',
+          extensions: ['xlsx', 'xls']
+        }],
+        multiple: false
+      });
+
+      if (filePath && typeof filePath === 'string') {
+        // 模拟Excel解析（实际需要使用适当的库如xlsx）
+        const mockData: ApiKeyTemplate[] = [
+          {
+            name: "OpenAI Key",
+            keyValue: "sk-xxxx...xxxx",
+            platform: "OpenAI",
+            description: "用于GPT-4访问"
+          },
+          {
+            name: "Claude Key",
+            keyValue: "claude-xxxx...xxxx",
+            platform: "Anthropic",
+            description: "用于Claude模型"
+          }
+        ];
+        
+        // 显示预览
+        setPreviewData(mockData);
+        setShowPreview(true);
+      }
+    } catch (error: any) {
+      console.error('文件选择失败:', error);
+      toast.error('文件读取失败', error.message || '无法读取所选文件');
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    try {
+      // 这里应该实现实际的导入逻辑
+      // 目前我们只是模拟导入过程
+      for (const item of previewData) {
+        await apiKeyService.addApiKey({
+          name: item.name,
+          keyValue: item.keyValue,
+          platform: item.platform,
+          description: item.description
+        });
+      }
+      
+      toast.success('导入成功', `成功导入 ${previewData.length} 条API Key记录`);
+      setShowPreview(false);
+      onAdded?.();
+    } catch (error: any) {
+      console.error('导入失败:', error);
+      toast.error('导入失败', error.message || '导入过程中发生错误');
+    }
+  };
+
+  // 预览窗口组件
+  const PreviewWindow = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* 预览内容 */}
+      <div className="absolute inset-0 bg-black/30" onClick={() => setShowPreview(false)} />
+      <div className="relative z-10 w-[800px] max-w-[90vw] h-[600px] max-h-[90vh] bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">数据预览</h2>
+          <button
+            type="button"
+            onClick={() => setShowPreview(false)}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="关闭预览"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-auto p-6">
+          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">名称</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">API Key</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">提供商</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">描述</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {previewData.map((item, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">{item.keyValue}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.platform}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowPreview(false)}
+              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmImport}
+              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium text-sm"
+            >
+              确认导入
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const errors = useMemo(() => {
     const errs: { name?: string; key?: string } = {};
@@ -87,15 +215,10 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       if (filePath) {
         // 使用fetch获取模板文件
         const response = await fetch('/templates/api_key_template.xlsx');
-        const blob = await response.blob();
-        
-        // 将Blob转换为ArrayBuffer
-        const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as ArrayBuffer);
-          reader.onerror = reject;
-          reader.readAsArrayBuffer(blob);
-        });
+        if (!response.ok) {
+          throw new Error('模板文件下载失败');
+        }
+        const arrayBuffer = await response.arrayBuffer();
         
         // 写入文件
         await writeFile(filePath, new Uint8Array(arrayBuffer));
@@ -103,126 +226,13 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         // 通知用户文件已保存
         toast.success('模板下载成功', `文件已保存到: ${filePath}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('下载模板失败:', error);
-      toast.error('下载失败', '模板下载过程中发生错误');
+      toast.error('下载失败', error.message || '模板下载过程中发生错误');
     }
   };
 
-  const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const toast = useToast();
-  
-  const handleFileSelect = async () => {
-    try {
-      // 使用Tauri的文件对话框
-      const filePath = await save({
-        filters: [{
-          name: 'Excel Files',
-          extensions: ['xlsx', 'xls']
-        }],
-        defaultPath: await downloadDir()
-      });
-
-      if (filePath) {
-        // 读取Excel文件内容
-        const fileContent = await readTextFile(filePath);
-        
-        // 模拟Excel解析（实际需要使用适当的库如xlsx）
-        const mockData: ApiKeyTemplate[] = [
-          {
-            name: "OpenAI Key",
-            keyValue: "sk-xxxx...xxxx",
-            platform: "OpenAI",
-            description: "用于GPT-4访问"
-          },
-          {
-            name: "Claude Key",
-            keyValue: "claude-xxxx...xxxx",
-            platform: "Anthropic",
-            description: "用于Claude模型"
-          }
-        ];
-        
-        // 显示预览
-        setPreviewData(mockData);
-        setShowPreview(true);
-      }
-    } catch (error) {
-      console.error('文件选择失败:', error);
-      toast.error('文件读取失败', '无法读取所选文件');
-    }
-  };
-
-  // 预览窗口组件
-  const PreviewWindow = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 预览内容 */}
-      <div className="absolute inset-0 bg-black/30" onClick={() => setShowPreview(false)} />
-      <div className="relative z-10 w-[800px] max-w-[90vw] h-[600px] max-h-[90vh] bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">数据预览</h2>
-          <button 
-            onClick={() => setShowPreview(false)}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            aria-label="关闭预览"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-auto p-6">
-          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">名称</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">API Key</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">提供商</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">描述</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {/* 示例数据行 */}
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">OpenAI Key</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">sk-xxxx...xxxx</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">OpenAI</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">用于GPT-4访问</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Claude Key</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">claude-xxxx...xxxx</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Anthropic</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">用于Claude模型</td>
-                </tr>
-                {/* 可以添加更多示例行 */}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => setShowPreview(false)}
-              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
-            >
-              取消
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium text-sm"
-            >
-              确认导入
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

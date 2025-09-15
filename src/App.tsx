@@ -11,20 +11,23 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { UI_CONSTANTS } from "./constants";
 import "./App.css";
 import "./styles/theme.css";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 function App() {
   const isDev = import.meta.env.DEV;
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [showFloatingToolbar, setShowFloatingToolbar] = useState(!isDev);
+  // 在生产环境中默认不显示主窗口，只显示悬浮工具条
+  const [showMainApp, setShowMainApp] = useState(isDev);
+  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
 
-  // 注册全局快捷�?
-    // ע��ȫ�ֿ�ݼ�
+  // 注册全局快捷键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Shift+K ��ݼ���ʾ����������
+      // Ctrl+Shift+K 快捷键显示搜索工具条
       if (e.ctrlKey && e.shiftKey && e.key === "K") {
         e.preventDefault();
-        setShowFloatingToolbar(true);
+        setShowMainApp(false); // 隐藏主应用窗口
+        setShowFloatingToolbar(true); // 显示悬浮工具条
       }
     };
 
@@ -34,13 +37,21 @@ function App() {
     };
   }, []);
 
+  // 在生产环境中隐藏主窗口，只通过快捷键触发显示悬浮工具条
+  useEffect(() => {
+    if (!isDev) {
+      // 在生产环境中隐藏主窗口
+      getCurrentWebviewWindow().hide();
+    }
+  }, [isDev]);
+
   // 优化：使用useCallback缓存事件处理函数
   const handleTabChange = useCallback((tab: string) => {
-    // 添加主题切换动画�?
+    // 添加主题切换动画效果
     document.documentElement.classList.add('theme-transitioning');
     setActiveTab(tab);
 
-    // 移除动画�?
+    // 移除动画效果
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transitioning');
     }, UI_CONSTANTS.ANIMATION_DURATION.THEME_TRANSITION);
@@ -50,7 +61,8 @@ function App() {
     <ThemeProvider defaultTheme="system">
       <ErrorBoundary>
         <div className="min-h-screen text-gray-900 dark:text-gray-100" id="app-bg">
-      {isDev && (
+      {/* 只在开发模式下显示主应用窗口 */}
+      {showMainApp && isDev && (
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -60,6 +72,7 @@ function App() {
             </div>
             <nav className="flex space-x-4">
               <button
+                type="button"
                 onClick={() => handleTabChange("dashboard")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "dashboard"
@@ -70,6 +83,7 @@ function App() {
                 Dashboard
               </button>
               <button
+                type="button"
                 onClick={() => handleTabChange("keys")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "keys"
@@ -80,6 +94,7 @@ function App() {
                 API Keys
               </button>
               <button
+                type="button"
                 onClick={() => handleTabChange("smart-clipboard")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "smart-clipboard"
@@ -90,6 +105,7 @@ function App() {
                 Smart Clipboard
               </button>
               <button
+                type="button"
                 onClick={() => handleTabChange("floating-toolbar-demo")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "floating-toolbar-demo"
@@ -100,6 +116,7 @@ function App() {
                 Floating Toolbar Demo
               </button>
               <button
+                type="button"
                 onClick={() => handleTabChange("radial-menu-test")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "radial-menu-test"
@@ -110,6 +127,7 @@ function App() {
                 Radial Menu Test
               </button>
               <button
+                type="button"
                 onClick={() => handleTabChange("settings")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   activeTab === "settings"
@@ -125,7 +143,7 @@ function App() {
       </header>
       )}
 
-      {isDev && (
+      {showMainApp && isDev && (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === "dashboard" && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -174,7 +192,7 @@ function App() {
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span>Master Password</span>
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
+                    <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
                       Set
                     </button>
                   </div>
@@ -202,7 +220,3 @@ function App() {
 }
 
 export default App;
-
-
-
-

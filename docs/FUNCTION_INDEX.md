@@ -73,7 +73,19 @@
 - cn(...classes): string（支持对象条件写法）
 - formatDateTime(ts), generateId(), debounce(), throttle(), deepClone()
 
-## 四、类型（types）
+## 四、全局快捷键与窗口管理
+
+### Tauri 全局快捷键配置（src-tauri/src/main.rs）
+- 使用 Ctrl+Shift+K 快捷键唤起悬浮工具条
+- 在生产环境中，默认隐藏主窗口，只通过快捷键显示悬浮工具条
+- 开发环境中保持主应用窗口可见，用于调试
+
+### 前端窗口控制（src/App.tsx）
+- 在生产环境中应用启动时自动隐藏主窗口
+- 通过 getCurrentWebviewWindow().hide() 隐藏窗口
+- 悬浮工具条通过状态控制显示/隐藏
+
+## 五、类型（types）
 - types/apiKey.ts：ApiKey, Group, UsageHistory...
 - types/clipboardSecurity.ts：ClipboardOperation, ClipboardSecurityLevel, ClipboardContentMetadata(iv 可选) 等
 

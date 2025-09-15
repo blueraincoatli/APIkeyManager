@@ -9,6 +9,7 @@ use database::init_database;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
+
 // 应用状态
 pub struct AppState {
     pub db: SqlitePool,
@@ -24,9 +25,16 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::default().build())
         .setup(|app| {
             // 初始化数据库
             let handle = app.handle().clone();
+            
+            // 在生产环境中隐藏主窗口
+            #[cfg(not(debug_assertions))]
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.hide();
+            }
             
             tauri::async_runtime::spawn(async move {
                 match init_database(&handle).await {
