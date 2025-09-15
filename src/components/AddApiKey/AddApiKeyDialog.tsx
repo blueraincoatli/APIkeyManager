@@ -3,8 +3,7 @@ import { apiKeyService } from "../../services/apiKeyService";
 import { useToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
 import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile } from '@tauri-apps/plugin-fs';
-import { readTextFile } from '@tauri-apps/plugin-fs';
+import { writeFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { downloadDir } from '@tauri-apps/api/path';
 
 // 定义API Key模板类型
@@ -79,18 +78,27 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       // 弹出保存对话框，让用户选择保存位置
       const filePath = await save({
         filters: [{
-          name: 'CSV Files',
-          extensions: ['csv']
+          name: 'Excel Files',
+          extensions: ['xlsx']
         }],
-        defaultPath: `${downloadPath}api_key_template.csv`
+        defaultPath: `${downloadPath}/api_key_template.xlsx`
       });
       
       if (filePath) {
-        // 从public目录获取模板文件
-        const templateContent = await readTextFile('templates/api_key_template.csv');
+        // 使用fetch获取模板文件
+        const response = await fetch('/templates/api_key_template.xlsx');
+        const blob = await response.blob();
         
-        // 保存文件到用户选择的位置
-        await writeTextFile(filePath, templateContent);
+        // 将Blob转换为ArrayBuffer
+        const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as ArrayBuffer);
+          reader.onerror = reject;
+          reader.readAsArrayBuffer(blob);
+        });
+        
+        // 写入文件
+        await writeFile(filePath, new Uint8Array(arrayBuffer));
         
         // 通知用户文件已保存
         toast.success('模板下载成功', `文件已保存到: ${filePath}`);
