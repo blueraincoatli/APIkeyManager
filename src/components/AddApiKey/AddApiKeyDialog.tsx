@@ -202,8 +202,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           // 单个添加API Key表单
           <>
             <h5 className="text-[18px] mb-8 text-center text-gray-300 dark:text-white font-normal">新增API Key</h5>
-            <div className="space-y-10">
-              <div className="flex flex-col items-center">
+            <div>
+              <div className="flex flex-col items-center mb-[16px]">
                 <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">名称</label>
                 <input
                   type="text"
@@ -220,7 +220,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 />
                 {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.name}</p>)}
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center mb-[16px]">
                 <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">API Key</label>
                 <input
                   value={keyValue}
@@ -236,7 +236,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 />
                 {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.key}</p>)}
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center mb-[16px]">
                 <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">提供商</label>
                 <input
                   value={platform}
@@ -245,7 +245,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                   placeholder="如：OpenAI、Claude、Gemini..."
                 />
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center mb-[16px]">
                 <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">描述</label>
                 <input
                   value={description}
@@ -256,36 +256,36 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               </div>
             </div>
             <div className="mt-[30px] mb-[30px] flex justify-center">
-            <div className="w-[300px] grid grid-cols-3 gap-3">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-                >
-                  取消
-                </button>
-              </div>
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleBatchImport}
-                  className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-                >
-                  批量导入
-                </button>
-              </div>
-              <div className="flex justify-center">
-                <button
-                  type="submit"
-                  disabled={submitting || !!errors.name || !!errors.key}
-                  className="px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 disabled:opacity-60 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 disabled:hover:bg-transparent transition-all font-medium text-sm w-full"
-                >
-                  {submitting? '提交中…':'保存'}
-                </button>
+              <div className="w-[300px] grid grid-cols-3 gap-3">
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                  >
+                    取消
+                  </button>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleBatchImport}
+                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
+                  >
+                    批量导入
+                  </button>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    type="submit"
+                    disabled={submitting || !!errors.name || !!errors.key}
+                    className="px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 disabled:opacity-60 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 disabled:hover:bg-transparent transition-all font-medium text-sm w-full"
+                  >
+                    {submitting? '提交中…':'保存'}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
           </>
         )}
         </form>
