@@ -29,8 +29,6 @@ export interface ToastOptions {
 class ToastService {
   private listeners: Set<(toast: ToastMessage) => void> = new Set();
   private toasts: Map<string, ToastMessage> = new Map();
-  private readonly defaultDuration = UI_CONSTANTS.TOAST.DEFAULT_DURATION;
-  private readonly defaultPosition: ToastOptions['position'] = UI_CONSTANTS.TOAST.POSITION;
 
   /**
    * Subscribe to toast notifications

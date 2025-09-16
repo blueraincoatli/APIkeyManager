@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { toastService, ToastMessage, ToastType } from '../services/toastService';
+import { toastService, ToastMessage } from '../services/toastService';
 
 interface UseToastReturn {
   // Toast actions

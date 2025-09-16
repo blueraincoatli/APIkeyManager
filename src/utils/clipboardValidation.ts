@@ -65,7 +65,6 @@ export class ClipboardValidator {
    * Detect security level of clipboard content
    */
   detectSecurityLevel(content: string): ClipboardSecurityLevel {
-    const lowerContent = content.toLowerCase();
 
     // Check for critical patterns (API keys, passwords, tokens)
     const criticalPatterns = [

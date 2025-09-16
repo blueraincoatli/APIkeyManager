@@ -20,7 +20,7 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [animationStage, setAnimationStage] = useState<'initial' | 'animating' | 'complete'>('initial');
   const menuRef = useRef<HTMLDivElement>(null);
-  const { backgroundColor, textColor, borderColor } = useAdaptiveTheme(menuRef);
+  const { backgroundColor, borderColor } = useAdaptiveTheme();
   
   // 计算中心点位置
   const getCenterPoint = () => {

@@ -303,7 +303,7 @@ export class ClipboardAuditService {
     // Send critical operations and failures
     return (
       log.securityLevel === ClipboardSecurityLevel.CRITICAL ||
-      log.success === false ||
+      !log.success ||
       (log.errors && log.errors.length > 0)
     );
   }

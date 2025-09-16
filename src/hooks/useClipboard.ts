@@ -284,17 +284,22 @@ export const useClipboardSecurity = () => {
   const refreshSecurityInfo = useCallback(() => {
     // Get activity metrics
     const activityMetrics = clipboardAuditService.getActivityMetrics();
-    setMetrics(activityMetrics);
+    setMetrics({
+      totalOperations: activityMetrics.operationsPerMinute,
+      successRate: 100 - activityMetrics.errorRate,
+      ...activityMetrics
+    });
 
-    // Get suspicious activities
-    const stats = clipboardAuditService.getSecurityStats();
-    setSuspiciousActivities(stats.suspiciousActivities || []);
+    // Get suspicious activities from recent logs
+    const now = Date.now();
+    const recentLogs = clipboardAuditService['logs'].filter((log: any) => now - log.timestamp <= 86400000); // 24 hours
+    const suspiciousActivities = recentLogs.filter((log: any) => !log.success || log.securityLevel === 'high');
+    setSuspiciousActivities(suspiciousActivities || []);
 
     // Calculate risk score based on activity
     let score = 0;
     if (activityMetrics.errorRate > 10) score += 20;
     if (activityMetrics.operationsPerMinute > 100) score += 30;
-    if (stats.errorRate > 5) score += 15;
     if (suspiciousActivities.length > 0) score += 35;
 
     setRiskScore(Math.min(score, 100));

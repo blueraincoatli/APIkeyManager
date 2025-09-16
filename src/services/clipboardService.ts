@@ -30,7 +30,6 @@ class SecureClipboardService {
     metadataId?: string
   ): Promise<string> {
     const startTime = Date.now();
-    let success = false;
     let result = "";
     let securityLevel = ClipboardSecurityLevel.PUBLIC;
 
@@ -129,7 +128,7 @@ class SecureClipboardService {
       logSecureError(OperationContext.API_KEY_COPY, error, {
         operation: 'get_clipboard',
         metadataId,
-        duration: Date.now() - startTime
+        duration: String(Date.now() - startTime)
       });
 
       await clipboardAuditService.logOperation(
@@ -159,7 +158,6 @@ class SecureClipboardService {
   ): Promise<{ success: boolean; metadataId?: string; error?: string }> {
     const startTime = Date.now();
     const metadataId = this.generateMetadataId();
-    let success = false;
     let encryptedContent = content;
     let encryptionResult = { encrypted: content, iv: "", key: "" };
 
@@ -286,7 +284,7 @@ class SecureClipboardService {
         operation: 'copy_to_clipboard',
         metadataId,
         securityLevel,
-        duration: Date.now() - startTime
+        duration: String(Date.now() - startTime)
       });
 
       if (this.config.enableAuditLogging) {
@@ -312,7 +310,6 @@ class SecureClipboardService {
   }
   async clearClipboard(metadataId?: string): Promise<boolean> {
     const startTime = Date.now();
-    let success = false;
     let securityLevel = ClipboardSecurityLevel.PUBLIC;
 
     try {
@@ -359,7 +356,7 @@ class SecureClipboardService {
       logSecureError(OperationContext.API_KEY_COPY, error, {
         operation: 'clear_clipboard',
         metadataId,
-        duration: Date.now() - startTime
+        duration: String(Date.now() - startTime)
       });
 
       if (this.config.enableAuditLogging) {

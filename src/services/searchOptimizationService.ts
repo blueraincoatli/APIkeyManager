@@ -188,7 +188,7 @@ export class SearchOptimizationService {
   /**
    * 更新搜索建议
    */
-  private updateSuggestions(keyword: string, results: ApiKey[]): void {
+  private updateSuggestions(_keyword: string, results: ApiKey[]): void {
     results.forEach(result => {
       // 从名称提取建议
       if (result.name) {

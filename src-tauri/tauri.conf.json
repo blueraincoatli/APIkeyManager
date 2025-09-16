@@ -20,7 +20,7 @@
         "transparent": true,
         "hiddenTitle": true,
         "focus": false,
-        "visible": false
+        "visible": true
       }
     ],
     "security": {

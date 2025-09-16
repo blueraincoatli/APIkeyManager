@@ -20,7 +20,7 @@ export const useApiKeys = () => {
       if (keysResult.success) {
         setApiKeys(keysResult.data || []);
       } else if (keysResult.error) {
-        setError(keysResult.error);
+        setError(keysResult.error.message || String(keysResult.error.code));
       }
       
       if (groupsResult.success) {

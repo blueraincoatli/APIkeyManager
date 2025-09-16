@@ -6,7 +6,7 @@ import {
   ClipboardSecurityConfig,
   DEFAULT_CLIPBOARD_SECURITY_CONFIG
 } from '../types/clipboardSecurity';
-import { SECURITY_CONSTANTS } from '../constants';
+import { SECURITY_CONSTANTS, UI_CONSTANTS } from '../constants';
 
 export class ClipboardSecurityConfigManager {
   private static instance: ClipboardSecurityConfigManager;

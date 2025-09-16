@@ -1,14 +1,13 @@
 import { ApiKey, Group, UsageHistory } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
 import { validateAndSanitizeApiKey, validateAndSanitizeGroup, validateId } from "./inputValidation";
-import { logSecureError, getUserFriendlyErrorMessage, OperationContext } from "./secureLogging";
+import { OperationContext } from "./secureLogging";
 import {
   ServiceResult,
   ErrorCode,
   createSuccessResult,
   createErrorResult,
-  wrapServiceOperation,
-  errorToResult
+  wrapServiceOperation
 } from "./errors";
 
 /**
@@ -21,7 +20,7 @@ import {
 async function executeOperation<T>(
   operation: () => Promise<T>,
   context: OperationContext,
-  errorContext?: Record<string, unknown>
+  _errorContext?: Record<string, unknown>
 ): Promise<ServiceResult<T>> {
   return wrapServiceOperation(async () => {
     const result = await operation();
@@ -93,8 +92,13 @@ export const apiKeyService = {
     const sanitizedApiKey = validation.sanitized || apiKey;
 
     const newApiKey: ApiKey = {
-      ...sanitizedApiKey,
       id: generateId(),
+      name: sanitizedApiKey.name || "",
+      keyValue: sanitizedApiKey.keyValue || "",
+      platform: sanitizedApiKey.platform,
+      description: sanitizedApiKey.description,
+      groupId: sanitizedApiKey.groupId,
+      tags: sanitizedApiKey.tags,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -134,8 +138,13 @@ export const apiKeyService = {
     const sanitizedApiKey = validation.sanitized || apiKey;
 
     const updatedApiKey: ApiKey = {
-      ...sanitizedApiKey,
       id: apiKey.id, // 保持原有ID
+      name: sanitizedApiKey.name || "",
+      keyValue: sanitizedApiKey.keyValue || "",
+      platform: sanitizedApiKey.platform,
+      description: sanitizedApiKey.description,
+      groupId: sanitizedApiKey.groupId,
+      tags: sanitizedApiKey.tags,
       createdAt: apiKey.createdAt, // 保持原有创建时间
       updatedAt: Date.now(),
     };
@@ -165,7 +174,10 @@ export const apiKeyService = {
     // 验证ID
     const idValidation = validateAndHandleId(id);
     if (!idValidation.success) {
-      return idValidation;
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        idValidation.error?.message || "Invalid ID"
+      );
     }
 
     return executeOperation(
@@ -244,7 +256,10 @@ export const apiKeyService = {
     // 验证ID
     const idValidation = validateAndHandleId(id);
     if (!idValidation.success) {
-      return idValidation;
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        idValidation.error?.message || "Invalid ID"
+      );
     }
 
     return executeOperation(
@@ -298,8 +313,9 @@ export const groupService = {
     const sanitizedGroup = validation.sanitized || group;
 
     const newGroup: Group = {
-      ...sanitizedGroup,
       id: generateId(),
+      name: (sanitizedGroup as any).name || group.name || "",
+      description: (sanitizedGroup as any).description || group.description,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -332,7 +348,10 @@ export const usageHistoryService = {
     // 验证keyId
     const keyIdValidation = validateAndHandleId(keyId);
     if (!keyIdValidation.success) {
-      return keyIdValidation;
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        keyIdValidation.error?.message || "Invalid ID"
+      );
     }
 
     const history: UsageHistory = {
@@ -351,7 +370,7 @@ export const usageHistoryService = {
         return createErrorResult(
           ErrorCode.API_KEY_NOT_FOUND,
           "记录使用历史失败"
-        );
+        ) as ServiceResult<UsageHistory>;
       }
     });
   },
@@ -380,4 +399,76 @@ export const usageHistoryService = {
 // 生成唯一ID的辅助函数（使用更安全的方法）
 function generateId(): string {
   return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// 批量导入相关服务
+export const batchImportService = {
+  /**
+   * 批量导入API Keys
+   * @param keys - 要导入的API Key数组
+   * @returns Promise<ServiceResult<BatchImportResult>> - 包含导入结果或错误信息的结果
+   */
+  async importApiKeysBatch(keys: BatchApiKey[]): Promise<ServiceResult<BatchImportResult>> {
+    // 验证输入
+    if (!Array.isArray(keys) || keys.length === 0) {
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        "导入数据不能为空"
+      );
+    }
+
+    // 验证每个API Key
+    const validationErrors: string[] = [];
+    const validatedKeys: BatchApiKey[] = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const validation = validateAndSanitizeApiKey({
+        name: key.name,
+        keyValue: key.key_value,
+        platform: key.platform,
+        description: key.description
+      });
+
+      if (!validation.isValid) {
+        validationErrors.push(`第${i + 1}条记录: ${validation.errors.join("; ")}`);
+      } else {
+        validatedKeys.push({
+          name: validation.sanitized?.name || key.name,
+          key_value: validation.sanitized?.keyValue || key.key_value,
+          platform: validation.sanitized?.platform || key.platform,
+          description: validation.sanitized?.description || key.description
+        });
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      return createErrorResult(
+        ErrorCode.VALIDATION_FAILED,
+        `数据验证失败: ${validationErrors.join(" | ")}`
+      );
+    }
+
+    return executeOperation(
+      () => invoke("import_api_keys_batch", { keys: validatedKeys }) as Promise<BatchImportResult>,
+      OperationContext.API_KEY_ADD,
+      { operation: 'batch_import', count: validatedKeys.length }
+    );
+  }
+};
+
+// 批量导入相关类型
+interface BatchApiKey {
+  name: string;
+  key_value: string;
+  platform?: string;
+  description?: string;
+}
+
+interface BatchImportResult {
+  success: boolean;
+  total: number;
+  succeeded: number;
+  failed: number;
+  errors: string[];
 }

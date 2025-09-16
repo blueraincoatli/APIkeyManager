@@ -1,10 +1,25 @@
 import { useMemo, useState } from "react";
-import { apiKeyService } from "../../services/apiKeyService";
-import { useToast } from "../../hooks/useToast";
+import { apiKeyService, batchImportService } from "../../services/apiKeyService";
+import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
-import { save, open as openFileDialog } from '@tauri-apps/plugin-dialog';
-import { writeFile } from '@tauri-apps/plugin-fs';
-import { downloadDir } from '@tauri-apps/api/path';
+
+// 检测是否在Tauri环境中
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+
+// 条件导入Tauri插件，在非Tauri环境中提供降级方案
+let tauriDialog: any = null;
+let tauriFs: any = null;
+let tauriPath: any = null;
+
+if (isTauri) {
+  // 在Tauri环境中直接使用全局API
+  tauriDialog = (window as any).__TAURI__.dialog;
+  tauriFs = (window as any).__TAURI__.fs;
+  tauriPath = (window as any).__TAURI__.path;
+  console.log('Tauri plugins available in desktop environment');
+} else {
+  console.warn('Tauri plugins not available, using fallback implementations');
+}
 
 // 定义API Key模板类型
 interface ApiKeyTemplate {
@@ -21,7 +36,7 @@ interface AddApiKeyDialogProps {
 }
 
 export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps) {
-  const { success, error } = useToast();
+  const toast = useApiToast();
   const [name, setName] = useState("");
   const [keyValue, setKeyValue] = useState("");
   const [platform, setPlatform] = useState("");
@@ -34,8 +49,45 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   
   const handleFileSelect = async () => {
     try {
-      // 使用Tauri的文件对话框，让用户选择文件
-      const filePath = await openFileDialog({
+      console.log('File select clicked, isTauri:', isTauri, 'tauriDialog:', !!tauriDialog);
+      
+      if (!isTauri || !tauriDialog) {
+        console.log('Using fallback file selection');
+        // 非Tauri环境下的降级方案
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx,.xls';
+        input.onchange = (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            // 模拟Excel解析（实际需要使用适当的库如xlsx）
+            const mockData: ApiKeyTemplate[] = [
+              {
+                name: "OpenAI Key",
+                keyValue: "sk-xxxx...xxxx",
+                platform: "OpenAI",
+                description: "用于GPT-4访问"
+              },
+              {
+                name: "Claude Key",
+                keyValue: "claude-xxxx...xxxx",
+                platform: "Anthropic",
+                description: "用于Claude模型"
+              }
+            ];
+            
+            // 显示预览
+            setPreviewData(mockData);
+            setShowPreview(true);
+          }
+        };
+        input.click();
+        return;
+      }
+
+      console.log('Using Tauri file dialog');
+      // Tauri环境下的实现
+      const filePath = await tauriDialog.open({
         filters: [{
           name: 'Excel Files',
           extensions: ['xlsx', 'xls']
@@ -66,26 +118,34 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       }
     } catch (error: any) {
       console.error('文件选择失败:', error);
-      toast.error('文件读取失败', error.message || '无法读取所选文件');
+      // 更准确的错误信息
+      if (error.message?.includes('invoke') || error.message?.includes('plugin')) {
+        toast.error('Tauri插件未初始化', '请确保在Tauri桌面环境中运行');
+      } else {
+        toast.error('文件选择失败', error.message || '无法打开文件对话框');
+      }
     }
   };
 
   const handleConfirmImport = async () => {
     try {
-      // 这里应该实现实际的导入逻辑
-      // 目前我们只是模拟导入过程
-      for (const item of previewData) {
-        await apiKeyService.addApiKey({
-          name: item.name,
-          keyValue: item.keyValue,
-          platform: item.platform,
-          description: item.description
-        });
-      }
+      // 使用批量导入服务
+      const batchKeys = previewData.map(item => ({
+        name: item.name,
+        key_value: item.keyValue,
+        platform: item.platform,
+        description: item.description
+      }));
+
+      const result = await batchImportService.importApiKeysBatch(batchKeys);
       
-      toast.success('导入成功', `成功导入 ${previewData.length} 条API Key记录`);
-      setShowPreview(false);
-      onAdded?.();
+      if (result.success && result.data) {
+        toast.success('导入成功', 'API Keys已成功导入');
+        setShowPreview(false);
+        onAdded?.();
+      } else {
+        toast.error('导入失败', result.error?.message);
+      }
     } catch (error: any) {
       console.error('导入失败:', error);
       toast.error('导入失败', error.message || '导入过程中发生错误');
@@ -179,12 +239,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
     const res = await apiKeyService.addApiKey({ name, keyValue, platform, description });
     setSubmitting(false);
     if (res.success) {
-      success("新增成功", name);
+      toast.success('新增成功', name);
       onAdded?.();
       onClose();
       setName(""); setKeyValue(""); setPlatform(""); setDescription("");
     } else {
-      error("新增失败", res.error?.message);
+      toast.error('新增失败', res.error?.message);
     }
   };
 
@@ -200,11 +260,34 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
 
   const handleDownloadTemplate = async () => {
     try {
-      // 获取下载目录路径
-      const downloadPath = await downloadDir();
+      console.log('Download template clicked, isTauri:', isTauri, 'tauriDialog:', !!tauriDialog);
+      
+      if (!isTauri || !tauriDialog || !tauriFs || !tauriPath) {
+        // 非Tauri环境下的降级方案
+        const response = await fetch('/templates/api_key_template.xlsx');
+        if (!response.ok) {
+          throw new Error('模板文件下载失败');
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'api_key_template.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('模板下载成功', '文件已开始下载');
+        return;
+      }
+
+      // Tauri环境下的实现
+      const downloadPath = await tauriPath.downloadDir();
       
       // 弹出保存对话框，让用户选择保存位置
-      const filePath = await save({
+      const filePath = await tauriDialog.save({
         filters: [{
           name: 'Excel Files',
           extensions: ['xlsx']
@@ -213,26 +296,25 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       });
       
       if (filePath) {
-        // 使用fetch获取模板文件
-        const response = await fetch('/templates/api_key_template.xlsx');
-        if (!response.ok) {
-          throw new Error('模板文件下载失败');
-        }
-        const arrayBuffer = await response.arrayBuffer();
+        // 读取模板文件内容（从public目录）
+        const templateContent = await tauriFs.readBinaryFile('templates/api_key_template.xlsx');
         
-        // 写入文件
-        await writeFile(filePath, new Uint8Array(arrayBuffer));
+        // 写入到用户选择的位置
+        await tauriFs.writeBinaryFile(filePath, templateContent);
         
         // 通知用户文件已保存
         toast.success('模板下载成功', `文件已保存到: ${filePath}`);
       }
     } catch (error: any) {
       console.error('下载模板失败:', error);
-      toast.error('下载失败', error.message || '模板下载过程中发生错误');
+      // 更准确的错误信息
+      if (error.message?.includes('invoke') || error.message?.includes('plugin')) {
+        toast.error('Tauri插件未初始化', '请确保在Tauri桌面环境中运行');
+      } else {
+        toast.error('下载失败', error.message || '模板下载过程中发生错误');
+      }
     }
   };
-
-  const toast = useToast();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

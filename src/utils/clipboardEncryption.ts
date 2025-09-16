@@ -232,7 +232,7 @@ export class ClipboardEncryption {
   /**
    * Decrypt key from storage
    */
-  private async decryptKey(encryptedKey: string, metadataId: string): Promise<string> {
+  private async decryptKey(encryptedKey: string, _metadataId: string): Promise<string> {
     // In a real implementation, this would use a master key
     // For now, we'll use a simple approach
     return encryptedKey;

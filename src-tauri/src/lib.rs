@@ -25,6 +25,8 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_global_shortcut::Builder::default().build())
         .setup(|app| {
             // 初始化数据库
@@ -57,6 +59,7 @@ pub fn run() {
             commands::api_key_commands::delete_api_key,
             commands::api_key_commands::list_api_keys,
             commands::api_key_commands::search_api_keys,
+            commands::batch_import_commands::import_api_keys_batch,
             commands::clipboard_commands::get_clipboard_content,
             commands::clipboard_commands::copy_to_clipboard,
             commands::security_commands::set_master_password,
