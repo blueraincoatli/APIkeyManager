@@ -126,10 +126,10 @@
 /* Radial menu container */
 .floating-toolbar-radial-menu {
   position: absolute;
-  left: 100%;
+  left: 50%;
   top: 50%;
   transform: translateY(-50%);
-  margin-left: var(--space-s);
+  margin-right: var(--space-s);
   z-index: 50;
 }
 

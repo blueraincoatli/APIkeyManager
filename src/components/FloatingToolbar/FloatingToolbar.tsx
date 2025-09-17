@@ -243,17 +243,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 }))}
                 onSelect={handleRadialSelect}
                 onClose={() => setShowRadialMenu(false)}
-                anchor={() => {
-                  const rect = moreBtnRef.current?.getBoundingClientRect();
-                  if (!rect) return undefined;
-                  // 返回相对于工具条容器的坐标
-                  const toolbarRect = toolbarRef.current?.getBoundingClientRect();
-                  if (!toolbarRect) return undefined;
-                  return { 
-                    x: rect.left - toolbarRect.left + rect.width/2, 
-                    y: rect.top - toolbarRect.top + rect.height / 2 
-                  };
-                }}
+                
               />
             </div>
           )}

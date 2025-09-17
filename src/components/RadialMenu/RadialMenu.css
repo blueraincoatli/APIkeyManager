@@ -21,24 +21,11 @@
   width: 20rem; /* 320px */
   height: 16rem; /* 256px */
   left: 0;
-  top: -50%; /* 修改：从0改为-50%，使菜单垂直居中 */
+  top: 50%;
+  transform: translateY(-50%); /* 使用 transform 实现精确垂直居中 */
 }
 
-/* Radial menu SVG */
-.radial-menu-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
-}
 
-/* Radial menu line */
-.radial-menu-line {
-  transition: all 0.2s ease-out;
-}
 
 /* Radial menu option button */
 .radial-menu-option-button {
@@ -58,15 +45,25 @@
 }
 
 .radial-menu-option-button:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-2xl);
-  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: var(--shadow-2xl), 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.8);
+  z-index: 20;
+  filter: brightness(1.05);
 }
 
 /* Dark theme for option button */
 .dark .radial-menu-option-button {
   background-color: var(--glass-bg-dark);
   border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.dark .radial-menu-option-button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: var(--shadow-2xl), 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 15px rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+  z-index: 20;
+  filter: brightness(1.1);
 }
 
 /* Radial menu option content */
