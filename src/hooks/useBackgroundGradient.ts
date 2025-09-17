@@ -103,10 +103,18 @@ export function useBackgroundGradient() {
     const root = document.documentElement;
     if (theme === 'system') {
       const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', isDarkMode);
+      if (isDarkMode) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
       applyGradient(isDarkMode ? 'dark' : 'light');
     } else {
-      root.classList.toggle('dark', theme === 'dark');
+      if (theme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
       applyGradient(theme);
     }
     
