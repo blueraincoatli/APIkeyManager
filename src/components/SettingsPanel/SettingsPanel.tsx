@@ -1,4 +1,4 @@
-import { CheckIcon, SunIcon, MoonIcon, ComputerIcon, ShuffleIcon } from '../Icon/Icon';
+import { CheckIcon, SunIcon, MoonIcon, ComputerIcon } from '../Icon/Icon';
 import { useBackgroundGradient } from '../../hooks/useBackgroundGradient';
 import { useEffect, useRef } from 'react';
 import './SettingsPanel.css';
@@ -55,7 +55,7 @@ const shortcutOptions: ShortcutOption[] = [
 ];
 
 export function SettingsPanel({ open, onClose, position, toolbarWidth }: SettingsPanelProps) {
-  const { currentTheme, changeTheme, randomizeGradient } = useBackgroundGradient();
+  const { currentTheme, changeTheme } = useBackgroundGradient();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // 计算面板位置（在工具栏下方）
@@ -146,32 +146,6 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* 背景渐变 */}
-          <div className="settings-panel-section">
-            <h3 className="settings-panel-section-title">背景效果</h3>
-            <div className="settings-panel-background-options">
-              <button
-                type="button"
-                onClick={randomizeGradient}
-                className="settings-panel-background-option"
-              >
-                <div className="settings-panel-background-option-header">
-                  <div className="settings-panel-background-option-icon">
-                    <ShuffleIcon className="settings-panel-background-icon" />
-                  </div>
-                  <div className="settings-panel-background-option-info">
-                    <div className="settings-panel-background-option-label">
-                      随机渐变
-                    </div>
-                    <div className="settings-panel-background-option-description">
-                      切换背景渐变效果
-                    </div>
-                  </div>
-                </div>
-              </button>
             </div>
           </div>
 
