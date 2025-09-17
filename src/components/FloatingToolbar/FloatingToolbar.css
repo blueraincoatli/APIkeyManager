@@ -91,7 +91,7 @@
 /* Search icon */
 .floating-toolbar-search-icon {
   position: absolute;
-  left: 24px;
+  left: 12px; /* 调整位置，使其不与文字重叠 */
   top: 50%;
   transform: translateY(-50%);
   opacity: 0.7;
@@ -100,7 +100,7 @@
 /* Search input */
 .floating-toolbar-search-input {
   width: calc(100% - 3rem);
-  padding: var(--space-3xs) var(--space-m) var(--space-3xs) 2rem;
+  padding: var(--space-3xs) var(--space-m) var(--space-3xs) 2.5rem; /* 调整左侧内边距，为图标留出空间 */
   background-color: transparent;
   background-clip: padding-box;
   border: var(--border-width-s) solid var(--glass-border-light);
@@ -131,7 +131,7 @@
 }
 
 .floating-toolbar-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(100, 116, 139, 0.7); /* 使用深灰色而不是白色 */
 }
 
 .dark .floating-toolbar-search-input {
