@@ -1,6 +1,6 @@
-import { ApiKey, Group, UsageHistory } from "../types/apiKey";
+import { ApiKey, Group, UsageHistory, BatchApiKey, BatchImportResult } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
-import { validateAndSanitizeApiKey, validateAndSanitizeGroup, validateId } from "./inputValidation";
+import { validateAndSanitizeApiKey, validateAndSanitizeGroup, validateId, type ApiKeyInput, type GroupInput } from "./inputValidation";
 import { OperationContext } from "./secureLogging";
 import {
   ServiceResult,
@@ -93,12 +93,12 @@ export const apiKeyService = {
 
     const newApiKey: ApiKey = {
       id: generateId(),
-      name: sanitizedApiKey.name || "",
-      keyValue: sanitizedApiKey.keyValue || "",
-      platform: sanitizedApiKey.platform,
-      description: sanitizedApiKey.description,
-      groupId: sanitizedApiKey.groupId,
-      tags: sanitizedApiKey.tags,
+      name: (sanitizedApiKey as ApiKeyInput).name || "",
+      keyValue: (sanitizedApiKey as ApiKeyInput).keyValue || "",
+      platform: (sanitizedApiKey as ApiKeyInput).platform,
+      description: (sanitizedApiKey as ApiKeyInput).description,
+      groupId: (sanitizedApiKey as ApiKeyInput).groupId,
+      tags: apiKey.tags,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -139,12 +139,12 @@ export const apiKeyService = {
 
     const updatedApiKey: ApiKey = {
       id: apiKey.id, // 保持原有ID
-      name: sanitizedApiKey.name || "",
-      keyValue: sanitizedApiKey.keyValue || "",
-      platform: sanitizedApiKey.platform,
-      description: sanitizedApiKey.description,
-      groupId: sanitizedApiKey.groupId,
-      tags: sanitizedApiKey.tags,
+      name: (sanitizedApiKey as ApiKeyInput).name || "",
+      keyValue: (sanitizedApiKey as ApiKeyInput).keyValue || "",
+      platform: (sanitizedApiKey as ApiKeyInput).platform,
+      description: (sanitizedApiKey as ApiKeyInput).description,
+      groupId: (sanitizedApiKey as ApiKeyInput).groupId,
+      tags: apiKey.tags,
       createdAt: apiKey.createdAt, // 保持原有创建时间
       updatedAt: Date.now(),
     };
@@ -314,8 +314,8 @@ export const groupService = {
 
     const newGroup: Group = {
       id: generateId(),
-      name: (sanitizedGroup as any).name || group.name || "",
-      description: (sanitizedGroup as any).description || group.description,
+      name: (sanitizedGroup as GroupInput).name || group.name || "",
+      description: (sanitizedGroup as GroupInput).description || group.description,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -385,7 +385,10 @@ export const usageHistoryService = {
     // 验证keyId
     const keyIdValidation = validateAndHandleId(keyId);
     if (!keyIdValidation.success) {
-      return keyIdValidation as ServiceResult<UsageHistory[]>;
+      return createErrorResult(
+        ErrorCode.INVALID_INPUT,
+        keyIdValidation.error?.message || "Invalid ID"
+      ) as ServiceResult<UsageHistory[]>;
     }
 
     return executeOperation(
@@ -434,10 +437,10 @@ export const batchImportService = {
         validationErrors.push(`第${i + 1}条记录: ${validation.errors.join("; ")}`);
       } else {
         validatedKeys.push({
-          name: validation.sanitized?.name || key.name,
-          key_value: validation.sanitized?.keyValue || key.key_value,
-          platform: validation.sanitized?.platform || key.platform,
-          description: validation.sanitized?.description || key.description
+          name: (validation.sanitized as ApiKeyInput)?.name || key.name,
+          key_value: (validation.sanitized as ApiKeyInput)?.keyValue || key.key_value,
+          platform: (validation.sanitized as ApiKeyInput)?.platform || key.platform,
+          description: (validation.sanitized as ApiKeyInput)?.description || key.description
         });
       }
     }
@@ -457,18 +460,3 @@ export const batchImportService = {
   }
 };
 
-// 批量导入相关类型
-interface BatchApiKey {
-  name: string;
-  key_value: string;
-  platform?: string;
-  description?: string;
-}
-
-interface BatchImportResult {
-  success: boolean;
-  total: number;
-  succeeded: number;
-  failed: number;
-  errors: string[];
-}

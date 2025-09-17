@@ -30,6 +30,13 @@ export interface Setting {
   value: string;
 }
 
+export interface AnalyzedKey {
+  key: string;
+  platform: string;
+  name?: string;
+  group?: string;
+}
+
 export interface BatchImportRecord {
   id: string;
   source: string;
@@ -40,11 +47,19 @@ export interface BatchImportRecord {
   details?: string;
 }
 
-export interface AnalyzedKey {
-  platform: string;
-  key: string;
-  name?: string;
-  group?: string;
+export interface BatchApiKey {
+  name: string;
+  key_value: string;
+  platform?: string;
+  description?: string;
+}
+
+export interface BatchImportResult {
+  success: boolean;
+  total: number;
+  succeeded: number;
+  failed: number;
+  errors: string[];
 }
 
 // Tauri 环境接口

@@ -7,6 +7,24 @@ import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon
 import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
 import { apiKeyService } from "../../services/apiKeyService";
+import "./FloatingToolbar.css";
+
+// 检查是否在Tauri环境中
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+
+// 条件导入Tauri API
+let getCurrentWebviewWindow: any = null;
+if (isTauri) {
+  try {
+    import("@tauri-apps/api/webviewWindow").then(module => {
+      getCurrentWebviewWindow = module.getCurrentWebviewWindow;
+    }).catch(error => {
+      console.warn("Failed to import Tauri webviewWindow API:", error);
+    });
+  } catch (error) {
+    console.warn("Failed to import Tauri webviewWindow API:", error);
+  }
+}
 
 interface FloatingToolbarProps {
   onClose: () => void;
@@ -17,7 +35,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
   const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
   const [showRadialMenu, setShowRadialMenu] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth / 2 - 260, y: 120 });
+  const [position, setPosition] = useState({ x: window.innerWidth / 2 - 208, y: window.innerHeight / 2 - 28 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -31,13 +49,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     inputRef.current?.focus();
   }, []);
 
-  // 辅助：限制位置不超出视口
+  // 辅助：限制位置在屏幕范围内（允许部分超出，提供更好的拖拽体验）
   const clamp = (x: number, y: number) => {
-    const width = toolbarRef.current?.offsetWidth || 520;
+    const width = toolbarRef.current?.offsetWidth || 360;
     const height = toolbarRef.current?.offsetHeight || 56;
-    const maxX = Math.max(0, window.innerWidth - width);
-    const maxY = Math.max(0, window.innerHeight - height);
-    return { x: Math.min(Math.max(0, x), maxX), y: Math.min(Math.max(0, y), maxY) };
+    // 允许工具条部分超出屏幕边缘，但保留一定可见区域
+    const maxX = window.innerWidth - 50; // 保留50px可见区域
+    const maxY = window.innerHeight - 50;
+    return { 
+      x: Math.min(Math.max(-width + 50, x), maxX), 
+      y: Math.min(Math.max(-height + 50, y), maxY) 
+    };
   };
 
   // 拖拽：仅当点击不在 input 或 button 上时启动
@@ -135,21 +157,23 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     if (el) {
       el.style.left = `${position.x}px`;
       el.style.top = `${position.y}px`;
+      el.style.position = 'fixed';
+      el.style.zIndex = '50';
     }
   }, [position]);
 
   return (
-    <div ref={wrapperRef} className="fixed z-50">
+    <div ref={wrapperRef} className="floating-toolbar-wrapper">
       {/* 工具条本体（无全屏遮罩） */}
       <div
         ref={toolbarRef}
-        className={`relative grid grid-cols-[1fr_auto] items-center h-[56px] rounded-full shadow-2xl glass px-[32px] md:px-[40px] gap-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} text-gray-900 dark:text-white`}
+        className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
         onMouseDown={handleDragStart}
       >
         {/* 搜索输入（内置前缀图标，圆角矩形） */}
-        <div className="relative z-0 flex-1 min-w-[248px]">
+        <div className="floating-toolbar-search-container">
           {/* 放大镜：固定在输入框左侧 16px 位置 */}
-          <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 opacity-70" />
+          <SearchIcon className="floating-toolbar-search-icon" />
           <input
             ref={inputRef}
             type="text"
@@ -157,13 +181,13 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search API keys..."
-            className="w-[calc(100%-3rem)] pl-[32px] pr-4 py-3 bg-transparent backdrop-blur-xl bg-clip-padding border border-white/30 dark:border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent placeholder-white/70 shadow-none text-gray-700 dark:text-gray-100"
+            className="floating-toolbar-search-input"
           />
         </div>
-        <div className="relative z-10 flex items-center gap-4">
+        <div className="floating-toolbar-buttons">
           {/* 加号 */}
           <button
-            className="w-10 h-10 inline-flex items-center justify-center rounded-full hover:bg-white/10 focus:outline-none transition-colors p-0 border-0 bg-transparent shadow-none"
+            className="floating-toolbar-button"
             onClick={() => setShowAddDialog(true)}
             aria-label="Add API Key"
           >
@@ -172,7 +196,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
           {/* 更多（环形菜单） */}
           <button
-            className="w-10 h-10 inline-flex items-center justify-center rounded-full hover:bg-white/10 focus:outline-none transition-colors p-0 border-0 bg-transparent shadow-none"
+            className="floating-toolbar-button"
             onClick={() => setShowRadialMenu(true)}
             ref={moreBtnRef}
             aria-label="More"
@@ -182,17 +206,27 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
           {/* 设置 */}
           <button
-            className="w-10 h-10 inline-flex items-center justify-center rounded-full hover:bg-white/10 focus:outline-none transition-colors p-0 border-0 bg-transparent shadow-none"
+            className="floating-toolbar-button"
             aria-label="Settings"
           >
             <GearIcon />
           </button>
 
-          {/* 关闭 */}
+          {/* 最小化 */}
           <button
-            className="w-10 h-10 inline-flex items-center justify-center rounded-full hover:bg-white/10 focus:outline-none transition-colors p-0 border-0 bg-transparent shadow-none"
-            onClick={onClose}
-            aria-label="Close"
+            className="floating-toolbar-button"
+            onClick={async () => {
+              // 仅在Tauri环境中调用
+              if (isTauri && getCurrentWebviewWindow) {
+                try {
+                  // 隐藏窗口而不是关闭应用
+                  await getCurrentWebviewWindow().hide();
+                } catch (error) {
+                  console.warn("Failed to hide window:", error);
+                }
+              }
+            }}
+            aria-label="Minimize"
           >
             <CloseIcon />
           </button>
@@ -202,7 +236,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         
         {/* 环形菜单 */}
         {showRadialMenu && (
-          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50">
+          <div className="floating-toolbar-radial-menu">
             <RadialMenu
               options={PROVIDERS.slice(0,6).map(p => ({
                 id: p.id,
@@ -229,16 +263,22 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
       {/* 结果面板（统一组件） */}
       {searchResults.length > 0 && (
-        <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 520} providerLabel={providerLabel} />
+        <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 360} providerLabel={providerLabel} />
       )}
 
       {showAddDialog && (
-        <AddApiKeyDialog open={showAddDialog} onClose={() => setShowAddDialog(false)} onAdded={async()=>{
-          if (searchTerm) {
-            const res = await searchService.searchKeys(searchTerm);
-            setSearchResults(res.data);
-          }
-        }} />
+        <AddApiKeyDialog 
+          open={showAddDialog} 
+          onClose={() => setShowAddDialog(false)} 
+          onAdded={async()=>{
+            if (searchTerm) {
+              const res = await searchService.searchKeys(searchTerm);
+              setSearchResults(res.data);
+            }
+          }} 
+          position={position} 
+          toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
+        />
       )}
     </div>
   );

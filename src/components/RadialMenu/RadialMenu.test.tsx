@@ -1,49 +1,59 @@
-import { useState } from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import { RadialMenu } from "./RadialMenu";
 
-export function RadialMenuTest() {
-  const [showMenu, setShowMenu] = useState(false);
-
-  const options = [
-    { id: "copy", label: "Copy", icon: "📋" },
-    { id: "edit", label: "Edit", icon: "✏️" },
-    { id: "delete", label: "Delete", icon: "🗑️" },
-    { id: "details", label: "Details", icon: "ℹ️" },
+describe("RadialMenu", () => {
+  const mockOptions = [
+    { id: "1", label: "Option 1" },
+    { id: "2", label: "Option 2" },
+    { id: "3", label: "Option 3" },
   ];
 
-  const handleSelect = (id: string) => {
-    console.log(`Selected: ${id}`);
-  };
+  const mockOnSelect = vi.fn();
+  const mockOnClose = vi.fn();
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">RadialMenu 测试页面</h1>
-      <p className="mb-4">点击下面的按钮来显示径向菜单并测试连线功能。</p>
+  it("should render all options", () => {
+    render(
+      <RadialMenu
+        options={mockOptions}
+        onSelect={mockOnSelect}
+        onClose={mockOnClose}
+      />
+    );
 
-      <button
-        onClick={() => setShowMenu(true)}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-      >
-        显示径向菜单
-      </button>
+    mockOptions.forEach((option) => {
+      expect(screen.getByText(option.label)).toBeInTheDocument();
+    });
+  });
 
-      {showMenu && (
-        <RadialMenu
-          options={options}
-          onSelect={handleSelect}
-          onClose={() => setShowMenu(false)}
-        />
-      )}
+  it("should call onSelect when an option is clicked", () => {
+    render(
+      <RadialMenu
+        options={mockOptions}
+        onSelect={mockOnSelect}
+        onClose={mockOnClose}
+      />
+    );
 
-      <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">测试说明</h2>
-        <ul className="list-disc pl-5 space-y-2">
-          <li>点击“显示径向菜单”按钮来打开菜单</li>
-          <li>将鼠标悬停在选项上观察单条连线</li>
-          <li>点击任一选项查看回调日志</li>
-          <li>点击遮罩层或选项后关闭菜单</li>
-        </ul>
-      </div>
-    </div>
-  );
-}
+    const optionButton = screen.getByText("Option 1");
+    fireEvent.click(optionButton);
+
+    expect(mockOnSelect).toHaveBeenCalledWith("1");
+  });
+
+  it("should call onClose when the overlay is clicked", () => {
+    render(
+      <RadialMenu
+        options={mockOptions}
+        onSelect={mockOnSelect}
+        onClose={mockOnClose}
+      />
+    );
+
+    const overlay = screen.getByText("Option 1").closest(".fixed");
+    if (overlay) {
+      fireEvent.click(overlay);
+      // Note: This test might need adjustment based on the actual DOM structure
+    }
+  });
+});

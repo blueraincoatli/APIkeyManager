@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon } from "../Icon/Icon";
+import "./SearchResults.css";
 
 interface SearchResultsProps {
   results: ApiKey[];
@@ -14,6 +15,16 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Set the position dynamically
+    if (resultsRef.current) {
+      const x = position.x + (toolbarWidth - 360) / 2 + 12;
+      const y = position.y + 72;
+      resultsRef.current.style.left = `${x}px`;
+      resultsRef.current.style.top = `${y}px`;
+    }
+  }, [position, toolbarWidth]);
 
   useEffect(() => {
     return () => {
@@ -43,40 +54,35 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
   return (
     <div
       ref={resultsRef}
-      className="fixed z-30 w-[360px] glass rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 dark:border-white/20 border-gray-400"
-      style={{
-        left: position.x + (toolbarWidth - 360) / 2, // 使360px的面板相对于工具栏居中
-        top: position.y + 57, // 在56px高的工具栏下方留出1px间距
-      }}
+      className="search-results-container positioned"
     >
       {providerLabel && (
-        <div className="flex justify-center pt-4">
-          <div className="w-[300px] flex justify-end items-center" style={{ height: "32px" }}>
-            <span className="inline-flex items-center px-4 py-0 text-[10px] rounded-full bg-primary/10 border border-primary/20 text-primary" style={{ height: "18px" }}>
-                  {providerLabel}    
+        <div className="search-results-provider-label-container">
+          <div className="search-results-provider-label-wrapper">
+            <span className="search-results-provider-label">
+              {providerLabel}
             </span>
           </div>
         </div>
       )}
-      <div className="max-h-96 overflow-y-auto px-4 py-3">
+      <div className="search-results-list">
         {results.length === 0 ? (
-          <div className="flex justify-center p-8">
-            <div className="text-center opacity-70 text-gray-700 dark:text-gray-100 text-[14px]">暂无结果</div>
+          <div className="search-results-empty">
+            <div className="search-results-empty-text">暂无结果</div>
           </div>
         ) : (
           <>
             {results.map((key) => (
               <div
                 key={key.id}
-                className="flex justify-center px-4 py-6 hover:bg-white/10 transition-colors duration-150 cursor-pointer border-b-2 border-white/40 last:border-b-0"
-                style={{ height: "60px", marginTop: "8px", marginBottom: "8px" }}
+                className="search-results-item"
                 onClick={() => handleCopy(key)}
               >
-                <div className="w-[300px]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate text-[12px] text-gray-700 dark:text-gray-100">{key.name}</div>
-                      <div className="text-[14px] opacity-80 font-mono mt-1 text-gray-700 dark:text-gray-100">{formatApiKey(key.keyValue)}</div>
+                <div className="search-results-item-content">
+                  <div className="search-results-item-header">
+                    <div className="search-results-item-info">
+                      <div className="search-results-item-name">{key.name}</div>
+                      <div className="search-results-item-key">{formatApiKey(key.keyValue)}</div>
                     </div>
                     <div
                       onClick={(e) => {
@@ -84,9 +90,9 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
                         handleCopy(key);
                       }}
                       aria-label="复制"
-                      className="w-8 h-8 flex items-center justify-center bg-transparent"
+                      className="search-results-copy-button"
                     >
-                      {copiedId === key.id ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                      {copiedId === key.id ? <CheckIcon className="search-results-copy-icon" /> : <CopyIcon className="search-results-copy-icon" />}
                     </div>
                   </div>
                 </div>

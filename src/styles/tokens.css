@@ -1,0 +1,60 @@
+/* Design Tokens for API Key Manager */
+:root {
+  /* Spacing tokens */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-s: 12px;
+  --space-m: 16px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  
+  /* Size tokens */
+  --size-dialog-width: 360px;
+  --size-preview-width: 800px;
+  --size-preview-height: 600px;
+  --size-input-width: 300px;
+  --size-button-height: 40px;
+  
+  /* Border radius tokens */
+  --radius-xs: 4px;
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Typography tokens */
+  --font-size-xs: 12px;
+  --font-size-s: 14px;
+  --font-size-m: 16px;
+  --font-size-l: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  
+  /* Shadow tokens */
+  --shadow-s: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-m: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-l: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Z-index tokens */
+  --z-dialog: 50;
+  --z-overlay: 40;
+  
+  /* Transition tokens */
+  --transition-fast: 150ms;
+  --transition-medium: 200ms;
+  --transition-slow: 300ms;
+}
+
+/* Dark theme overrides */
+.dark {
+  /* Inherit most tokens, only override what's needed */
+}

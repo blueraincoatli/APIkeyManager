@@ -1,0 +1,129 @@
+/* FloatingToolbar Component Styles */
+
+/* Toolbar wrapper */
+.floating-toolbar-wrapper {
+  position: fixed;
+  z-index: 50;
+}
+
+/* Toolbar container */
+.floating-toolbar-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  height: 56px;
+  width: 360px;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-xl);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0 32px;
+  gap: 16px;
+  color: rgba(17, 24, 39, 1);
+}
+
+.dark .floating-toolbar-container {
+  color: rgba(255, 255, 255, 1);
+}
+
+.floating-toolbar-container.dragging {
+  cursor: grabbing;
+}
+
+.floating-toolbar-container:not(.dragging) {
+  cursor: grab;
+}
+
+/* Search input container */
+.floating-toolbar-search-container {
+  position: relative;
+  z-index: 0;
+  flex: 1;
+  min-width: 248px;
+}
+
+/* Search icon */
+.floating-toolbar-search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+
+/* Search input */
+.floating-toolbar-search-input {
+  width: calc(100% - 3rem);
+  padding: 12px 16px 12px 32px;
+  background-color: transparent;
+  backdrop-filter: blur(24px);
+  background-clip: padding-box;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9999px;
+  outline: none;
+  box-shadow: none;
+  color: rgba(55, 65, 81, 1);
+  font-size: var(--font-size-s);
+}
+
+.floating-toolbar-search-input:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.floating-toolbar-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .floating-toolbar-search-input {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Toolbar buttons container */
+.floating-toolbar-buttons {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Toolbar button */
+.floating-toolbar-button {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+  outline: none;
+  transition: background-color var(--transition-fast);
+}
+
+.floating-toolbar-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Radial menu container */
+.floating-toolbar-radial-menu {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  z-index: 50;
+}
+
+/* Media queries for larger screens */
+@media (min-width: 768px) {
+  .floating-toolbar-container {
+    padding: 0 40px;
+  }
+}

@@ -67,7 +67,7 @@ describe("apiKeyService", () => {
       const result = await apiKeyService.addApiKey(apiKeyData);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("API Key名称不能为空");
+      expect(result.error?.message).toContain("名称不能为空");
     });
   });
 
@@ -86,6 +86,7 @@ describe("apiKeyService", () => {
 
       const result = await apiKeyService.listApiKeys();
 
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mockKeys);
       expect(mockInvoke).toHaveBeenCalledWith("list_api_keys");
     });
@@ -95,7 +96,8 @@ describe("apiKeyService", () => {
 
       const result = await apiKeyService.listApiKeys();
 
-      expect(result.data).toEqual([]);
+      expect(result.success).toBe(false);
+      expect(result.data).toBeUndefined();
     });
   });
 });

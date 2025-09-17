@@ -12,15 +12,19 @@
   "app": {
     "windows": [
       {
-        "title": "api-key-manager",
-        "width": 300,
-        "height": 100,
+        "title": "API Key Manager",
+        "width": 360,
+        "height": 56,
         "decorations": false,
-        "skipTaskbar": true,
+        "skipTaskbar": false,
         "transparent": true,
         "hiddenTitle": true,
-        "focus": false,
-        "visible": true
+        "focus": true,
+        "visible": true,
+        "alwaysOnTop": true,
+        "center": true,
+        "shadow": false,
+        "theme": "Light"
       }
     ],
     "security": {

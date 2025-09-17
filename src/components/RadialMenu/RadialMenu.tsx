@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
+import "./RadialMenu.css";
 
 interface RadialMenuOption {
   id: string;
@@ -101,21 +102,19 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
   };
 
   return (
-    <div className="fixed inset-0 z-50" style={{ background: 'transparent' }}>
-      <div className="fixed inset-0 bg-black/10" onClick={onClose} />
+    <div className="radial-menu-overlay">
+      <div className="radial-menu-background" onClick={onClose} />
 
       <div
         ref={menuRef}
-        className="absolute w-80 h-64"
+        className="radial-menu-container"
         style={{ 
-          left: 0, 
-          top: 0,
           opacity: animationStage === 'initial' ? 0 : 1,
           transform: animationStage === 'initial' ? 'scale(0.8)' : 'scale(1)',
           transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         }}
       >
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
+        <svg className="radial-menu-svg">
           {hoverIndex !== null && (() => {
             const p = getLineForItem(hoverIndex);
             if (!p) return null;
@@ -127,9 +126,7 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
                 y2={p.endPoint.y}
                 stroke="rgba(255,255,255,0.35)"
                 strokeWidth="2"
-                style={{
-                  transition: 'all 0.2s ease-out',
-                }}
+                className="radial-menu-line"
               />
             );
           })()}
@@ -155,7 +152,7 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
               onMouseEnter={() => setHoverIndex(index)}
               onMouseLeave={() => setHoverIndex(null)}
               onClick={() => handleClick(option.id)}
-              className="absolute flex items-center justify-center px-4 py-2 rounded-full shadow-xl glass-chip transition-transform duration-200 hover:scale-105 hover:shadow-2xl min-w-[100px] max-w-[140px]"
+              className="radial-menu-option-button"
               style={{
                 left: `${centerX + x - 50}px`,
                 top: `${centerY + y - 16}px`,
@@ -163,10 +160,10 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
                 ...animationStyle,
               }}
             >
-              <span className="text-sm font-medium flex items-center gap-3 whitespace-nowrap max-w-[140px] text-gray-700 dark:text-gray-100">
-                {option.icon && <span className="text-base flex-shrink-0"> {option.icon}</span>}
-                <span className="truncate flex-grow text-center">{option.label}</span>
-                <span className="ml-2 text-xs px-2 py-0.5 rounded-full border flex-shrink-0 text-gray-700 dark:text-gray-100" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
+              <span className="radial-menu-option-content">
+                {option.icon && <span className="radial-menu-option-icon"> {option.icon}</span>}
+                <span className="radial-menu-option-label">{option.label}</span>
+                <span className="radial-menu-option-count" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                   {option.count ?? 0}
                 </span>
               </span>
@@ -175,7 +172,7 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
         })}
 
         <div
-          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/30"
+          className="radial-menu-center-dot"
           style={{ 
             backgroundColor, 
             left: menuRef.current ? `${getCenterPoint().centerX}px` : '0px'

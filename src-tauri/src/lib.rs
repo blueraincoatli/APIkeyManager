@@ -2,7 +2,6 @@
 mod database;
 mod security;
 mod clipboard;
-mod llm;
 mod commands;
 
 use database::init_database;
@@ -67,9 +66,6 @@ pub fn run() {
             commands::security_commands::encrypt_key,
             commands::security_commands::decrypt_key,
             commands::shortcut_commands::register_shortcut,
-            commands::llm_commands::analyze_clipboard_text,
-            commands::llm_commands::import_analyzed_keys,
-            commands::llm_commands::check_ollama_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
