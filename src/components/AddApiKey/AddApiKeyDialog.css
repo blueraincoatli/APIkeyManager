@@ -214,7 +214,6 @@
   display: block;
   font-size: var(--font-size-s);
   font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-s);
   color: rgba(55, 65, 81, 1);
   width: var(--size-input-width);
 }
@@ -272,7 +271,7 @@
 }
 
 .add-api-key-form-error {
-  margin-top: var(--space-xs);
+
   font-size: var(--font-size-s);
   color: rgba(239, 68, 68, 1);
   width: var(--size-input-width);
