@@ -27,7 +27,14 @@ export const EllipsisIcon: React.FC<IconProps> = ({ size = 18, className, ...res
 export const GearIcon: React.FC<IconProps> = ({ size = 18, className, ...rest }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...rest}>
     <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82H21A1.65 1.65 0 0 0 22 12a1.65 1.65 0 0 0-1.6 1.2z" />
+    <path d="M12 1v3" />
+    <path d="M12 20v3" />
+    <path d="M4.22 4.22l2.12 2.12" />
+    <path d="M17.66 17.66l2.12 2.12" />
+    <path d="M1 12h3" />
+    <path d="M20 12h3" />
+    <path d="M4.22 19.78l2.12-2.12" />
+    <path d="M17.66 6.34l2.12-2.12" />
   </svg>
 );
 
