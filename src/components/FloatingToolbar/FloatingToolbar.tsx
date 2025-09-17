@@ -112,7 +112,28 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   // 点击外部区域隐藏所有面板
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+
+      // 检查点击是否在工具栏内
+      if (wrapperRef.current && wrapperRef.current.contains(target)) {
+        return;
+      }
+
+      // 检查点击是否在任何面板内
+      const panelSelectors = [
+        '.settings-panel-container',
+        '.add-api-key-dialog-container',
+        '.radial-menu-overlay',
+        '.search-results-container'
+      ];
+
+      const isClickInPanel = panelSelectors.some(selector => {
+        const panel = document.querySelector(selector);
+        return panel && panel.contains(target);
+      });
+
+      // 只有当点击既不在工具栏内也不在任何面板内时，才隐藏面板
+      if (!isClickInPanel) {
         setSearchResults([]);
         setShowRadialMenu(false);
         setShowAddDialog(false);

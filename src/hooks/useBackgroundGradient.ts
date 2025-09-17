@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 // 定义渐变配置类型
 interface GradientConfig {
@@ -73,9 +74,8 @@ const getRandomGradient = (theme: 'light' | 'dark'): GradientConfig => {
 };
 
 export function useBackgroundGradient() {
+  const { theme, resolvedTheme } = useTheme();
   const [currentGradient, setCurrentGradient] = useState<string>('');
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // 应用背景渐变
   const applyGradient = (theme: 'light' | 'dark') => {
@@ -95,66 +95,25 @@ export function useBackgroundGradient() {
     setCurrentGradient(gradientCSS);
   };
 
-  // 切换主题并应用对应的渐变
-  const changeTheme = (theme: 'light' | 'dark' | 'system') => {
-    setCurrentTheme(theme);
-    
-    // 应用HTML主题类
-    const root = document.documentElement;
-    if (theme === 'system') {
-      const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (isDarkMode) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-      applyGradient(isDarkMode ? 'dark' : 'light');
-    } else {
-      if (theme === 'dark') {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-      applyGradient(theme);
-    }
-    
-    // 保存主题设置
-    localStorage.setItem('theme', theme);
-  };
-
   // 随机切换当前主题的渐变
   const randomizeGradient = () => {
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    applyGradient(isDarkMode ? 'dark' : 'light');
+    applyGradient(resolvedTheme);
   };
 
-  // 初始化
+  // 监听主题变化并应用对应的渐变
   useEffect(() => {
-    if (isInitialized) return;
-    
-    // 恢复保存的主题设置
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
-    const initialTheme = savedTheme || 'system';
-    changeTheme(initialTheme);
-    setIsInitialized(true);
-
-    // 监听系统主题变化
-    if (initialTheme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        if (currentTheme === 'system') {
-          applyGradient(e.matches ? 'dark' : 'light');
-        }
-      };
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (theme === 'system') {
+      const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyGradient(isDarkMode ? 'dark' : 'light');
+    } else {
+      applyGradient(theme);
     }
-  }, [isInitialized, currentTheme]);
+  }, [theme, resolvedTheme]);
 
   return {
     currentGradient,
-    currentTheme,
-    changeTheme,
+    currentTheme: theme,
+    changeTheme: () => {}, // This is now handled by the ThemeProvider
     randomizeGradient
   };
 }

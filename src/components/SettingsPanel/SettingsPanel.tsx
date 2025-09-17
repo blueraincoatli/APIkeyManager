@@ -1,5 +1,5 @@
 import { CheckIcon, SunIcon, MoonIcon, ComputerIcon } from '../Icon/Icon';
-import { useBackgroundGradient } from '../../hooks/useBackgroundGradient';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useEffect, useRef } from 'react';
 import './SettingsPanel.css';
 
@@ -47,7 +47,7 @@ const shortcutOptions: ShortcutOption[] = [
 ];
 
 export function SettingsPanel({ open, onClose, position, toolbarWidth }: SettingsPanelProps) {
-  const { currentTheme, changeTheme } = useBackgroundGradient();
+  const { theme: currentTheme, setTheme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // 计算面板位置（在工具栏下方）
@@ -65,7 +65,12 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
   }, [panelPosition.left, panelPosition.top]);
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
-    changeTheme(theme);
+    setTheme(theme);
+  };
+
+  // 阻止事件冒泡，防止点击面板内部时关闭面板
+  const handlePanelClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   if (!open) {
@@ -78,6 +83,7 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
       <div
         ref={panelRef}
         className="settings-panel positioned"
+        onClick={handlePanelClick}
       >
         <div className="settings-panel-header">
           <h2 className="settings-panel-title">设置</h2>
@@ -106,7 +112,6 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
                   className={`settings-panel-theme-option ${
                     currentTheme === option.id ? 'selected' : ''
                   }`}
-                  style={{ position: 'relative' }}
                 >
                   <div className="settings-panel-theme-option-icon">
                     {option.icon}

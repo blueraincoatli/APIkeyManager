@@ -36,10 +36,10 @@
 }
 
 /* 支持backdrop-filter的浏览器 */
-@supports (backdrop-filter: blur(20px)) {
+@supports (-webkit-backdrop-filter: blur(20px)) {
   .settings-panel {
-    backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
   }
 }
 
@@ -233,6 +233,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.settings-panel-theme-option {
+  position: relative;
 }
 
 .settings-panel-selected-icon {
