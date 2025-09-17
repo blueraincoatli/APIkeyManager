@@ -80,13 +80,12 @@
 .search-results-item {
   display: flex;
   justify-content: center;
-  padding: var(--space-xs) var(--space-m);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+  padding: var(--space-m) var(--space-m);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: background-color var(--transition-fast);
   height: 40px;
-  margin-top: var(--space-xs);
-  margin-bottom: var(--space-xs);
+
 }
 
 .search-results-item:last-child {
@@ -109,7 +108,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-m);
+  gap: var(--space-xs);
 }
 
 .search-results-item-info {
@@ -134,7 +133,6 @@
   font-size: var(--font-size-s);
   opacity: 0.8;
   font-family: monospace;
-  margin-top: var(--space-xs);
   color: rgba(55, 65, 81, 1);
 }
 

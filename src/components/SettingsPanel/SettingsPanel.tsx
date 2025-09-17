@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { CheckIcon, SunIcon, MoonIcon, ComputerIcon, ShuffleIcon } from '../Icon/Icon';
 import { useBackgroundGradient } from '../../hooks/useBackgroundGradient';
 import './SettingsPanel.css';

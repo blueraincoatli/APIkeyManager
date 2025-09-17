@@ -13,20 +13,6 @@ import "./FloatingToolbar.css";
 // 检查是否在Tauri环境中
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
 
-// 条件导入Tauri API
-let getCurrentWebviewWindow: any = null;
-if (isTauri) {
-  try {
-    import("@tauri-apps/api/webviewWindow").then(module => {
-      getCurrentWebviewWindow = module.getCurrentWebviewWindow;
-    }).catch(error => {
-      console.warn("Failed to import Tauri webviewWindow API:", error);
-    });
-  } catch (error) {
-    console.warn("Failed to import Tauri webviewWindow API:", error);
-  }
-}
-
 interface FloatingToolbarProps {
   onClose: () => void;
 }
@@ -36,7 +22,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
   const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
   const [showRadialMenu, setShowRadialMenu] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth / 2 - 208, y: window.innerHeight / 2 - 28 });
+  const [position, setPosition] = useState({ 
+    x: window.innerWidth / 2 - 208, 
+    y: window.innerHeight / 4 - 28 // 将位置从正中央移到上半部分（1/4处）
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -80,7 +69,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       setPosition(clamped);
     }
   };
+  
   const handleDragEnd = () => setIsDragging(false);
+  
   useEffect(() => {
     if (isDragging) {
       document.addEventListener("mousemove", handleDragMove);
@@ -165,109 +156,114 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   }, [position]);
 
   return (
-    <div ref={wrapperRef} className="floating-toolbar-wrapper">
-      {/* 工具条本体（无全屏遮罩） */}
-      <div
-        ref={toolbarRef}
-        className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
-        onMouseDown={handleDragStart}
-      >
-        {/* 搜索输入（内置前缀图标，圆角矩形） */}
-        <div className="floating-toolbar-search-container">
-          {/* 放大镜：固定在输入框左侧 16px 位置 */}
-          <SearchIcon className="floating-toolbar-search-icon" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search API keys..."
-            className="floating-toolbar-search-input"
-          />
-        </div>
-        <div className="floating-toolbar-buttons">
-          {/* 加号 */}
-          <button
-            className="floating-toolbar-button"
-            onClick={() => setShowAddDialog(true)}
-            aria-label="Add API Key"
-          >
-            <PlusIcon />
-          </button>
-
-          {/* 更多（环形菜单） */}
-          <button
-            className="floating-toolbar-button"
-            onClick={() => setShowRadialMenu(true)}
-            ref={moreBtnRef}
-            aria-label="More"
-          >
-            <EllipsisIcon />
-          </button>
-
-          {/* 设置 */}
-          <button
-            className="floating-toolbar-button"
-            onClick={() => setShowSettingsPanel(true)}
-            aria-label="Settings"
-          >
-            <GearIcon />
-          </button>
-
-          {/* 最小化 */}
-          <button
-            className="floating-toolbar-button"
-            onClick={async () => {
-              // 仅在Tauri环境中调用
-              if (isTauri && getCurrentWebviewWindow) {
-                try {
-                  // 隐藏窗口而不是关闭应用
-                  await getCurrentWebviewWindow().hide();
-                } catch (error) {
-                  console.warn("Failed to hide window:", error);
-                }
-              }
-            }}
-            aria-label="Minimize"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        {/* 拖拽说明：点击输入框或按钮不会触发拖拽 */}
-        
-        {/* 环形菜单 */}
-        {showRadialMenu && (
-          <div className="floating-toolbar-radial-menu">
-            <RadialMenu
-              options={PROVIDERS.slice(0,6).map(p => ({
-                id: p.id,
-                label: p.label,
-                count: providerCounts[p.id] ?? 0,
-              }))}
-              onSelect={handleRadialSelect}
-              onClose={() => setShowRadialMenu(false)}
-              anchor={() => {
-                const rect = moreBtnRef.current?.getBoundingClientRect();
-                if (!rect) return undefined;
-                // 返回相对于工具条容器的坐标
-                const toolbarRect = toolbarRef.current?.getBoundingClientRect();
-                if (!toolbarRect) return undefined;
-                return { 
-                  x: rect.left - toolbarRect.left + rect.width/2, 
-                  y: rect.top - toolbarRect.top + rect.height / 2 
-                };
-              }}
+    <>
+      <div ref={wrapperRef} className="floating-toolbar-wrapper">
+        {/* 工具条本体（无全屏遮罩） */}
+        <div
+          ref={toolbarRef}
+          className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
+          onMouseDown={handleDragStart}
+        >
+          {/* 搜索输入（内置前缀图标，圆角矩形） */}
+          <div className="floating-toolbar-search-container">
+            {/* 放大镜：固定在输入框左侧 16px 位置 */}
+            <SearchIcon className="floating-toolbar-search-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search API keys..."
+              className="floating-toolbar-search-input"
             />
           </div>
+          <div className="floating-toolbar-buttons">
+            {/* 加号 */}
+            <button
+              className="floating-toolbar-button"
+              onClick={() => setShowAddDialog(true)}
+              aria-label="Add API Key"
+            >
+              <PlusIcon />
+            </button>
+
+            {/* 更多（环形菜单） */}
+            <button
+              className="floating-toolbar-button"
+              onClick={() => setShowRadialMenu(true)}
+              ref={moreBtnRef}
+              aria-label="More"
+            >
+              <EllipsisIcon />
+            </button>
+
+            {/* 设置 */}
+            <button
+              className="floating-toolbar-button"
+              onClick={() => setShowSettingsPanel(true)}
+              aria-label="Settings"
+            >
+              <GearIcon />
+            </button>
+
+            {/* 最小化 */}
+            <button
+              className="floating-toolbar-button"
+              onClick={async () => {
+                // 仅在Tauri环境中调用
+                if (isTauri) {
+                  try {
+                    // 动态导入模块并获取当前webview窗口实例
+                    const webviewWindow = await import("@tauri-apps/api/webviewWindow");
+                    const currentWindow = webviewWindow.getCurrentWebviewWindow();
+                    // 隐藏窗口而不是关闭应用
+                    await currentWindow.hide();
+                  } catch (error) {
+                    console.warn("Failed to hide window:", error);
+                  }
+                }
+              }}
+              aria-label="Minimize"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          {/* 拖拽说明：点击输入框或按钮不会触发拖拽 */}
+          
+          {/* 环形菜单 */}
+          {showRadialMenu && (
+            <div className="floating-toolbar-radial-menu">
+              <RadialMenu
+                options={PROVIDERS.slice(0,6).map(p => ({
+                  id: p.id,
+                  label: p.label,
+                  count: providerCounts[p.id] ?? 0,
+                }))}
+                onSelect={handleRadialSelect}
+                onClose={() => setShowRadialMenu(false)}
+                anchor={() => {
+                  const rect = moreBtnRef.current?.getBoundingClientRect();
+                  if (!rect) return undefined;
+                  // 返回相对于工具条容器的坐标
+                  const toolbarRect = toolbarRef.current?.getBoundingClientRect();
+                  if (!toolbarRect) return undefined;
+                  return { 
+                    x: rect.left - toolbarRect.left + rect.width/2, 
+                    y: rect.top - toolbarRect.top + rect.height / 2 
+                  };
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 结果面板（统一组件） */}
+        {searchResults.length > 0 && (
+          <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 360} providerLabel={providerLabel} />
         )}
       </div>
-
-      {/* 结果面板（统一组件） */}
-      {searchResults.length > 0 && (
-        <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 360} providerLabel={providerLabel} />
-      )}
 
       {showAddDialog && (
         <AddApiKeyDialog 
@@ -292,7 +288,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
         />
       )}
-    </div>
+    </>
   );
 
 }

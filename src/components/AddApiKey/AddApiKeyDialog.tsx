@@ -191,6 +191,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   };
 
   // 共享的容器组件
+  /*
   const DialogContainer = ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
     <div className="add-api-key-dialog-container">
       <div className="add-api-key-dialog-overlay" onClick={onClose} />
@@ -198,9 +199,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
     </div>
   );
 
+  */
+
   // 预览窗口组件
   const PreviewWindow = () => (
-    <DialogContainer onClose={() => setShowPreview(false)}>
+    <div className="add-api-key-dialog-container">
+      <div className="add-api-key-dialog-overlay" onClick={() => setShowPreview(false)} />
       <div 
         className="add-api-key-preview-window custom-position"
         style={positionStyle}
@@ -251,7 +255,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
               onClick={() => setShowPreview(false)}
               className="add-api-key-button"
             >
-              取消
+              关闭
             </button>
             <button
               type="button"
@@ -263,7 +267,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
           </div>
         </div>
       </div>
-    </DialogContainer>
+    </div>
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -390,7 +394,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
 
   return (
     <>
-      <DialogContainer onClose={onClose}>
+      <div className="add-api-key-dialog-container">
+        <div className="add-api-key-dialog-overlay" onClick={onClose} />
         <div 
           className="add-api-key-dialog-panel custom-position"
           style={positionStyle}
@@ -399,7 +404,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
             onSubmit={handleSubmit}
             className="add-api-key-dialog-form"
           >
-          {showBatchImport ? (
+            {showBatchImport ? (
             // 批量导入说明面板
             <>
               <h5 className="add-api-key-dialog-title">批量导入API Key</h5>
@@ -567,7 +572,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
           )}
           </form>
         </div>
-      </DialogContainer>
+      </div>
       
       {/* 预览窗口 */}
       {showPreview && <PreviewWindow />}

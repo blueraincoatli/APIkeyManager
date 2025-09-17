@@ -108,11 +108,6 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
       <div
         ref={menuRef}
         className="radial-menu-container"
-        style={{ 
-          opacity: animationStage === 'initial' ? 0 : 1,
-          transform: animationStage === 'initial' ? 'scale(0.8)' : 'scale(1)',
-          transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        }}
       >
         <svg className="radial-menu-svg">
           {hoverIndex !== null && (() => {
