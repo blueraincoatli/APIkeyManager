@@ -19,7 +19,7 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
   useEffect(() => {
     // Set the position dynamically
     if (resultsRef.current) {
-      const x = position.x + (toolbarWidth - 360) / 2 + 12;
+      const x = position.x + (toolbarWidth - 360) / 2;
       const y = position.y + 72;
       resultsRef.current.style.left = `${x}px`;
       resultsRef.current.style.top = `${y}px`;

@@ -19,6 +19,7 @@
   --size-button-height: 40px;
   
   /* Border radius tokens */
+  --radius-2xs: 2px;
   --radius-xs: 4px;
   --radius-s: 8px;
   --radius-m: 12px;
@@ -43,6 +44,26 @@
   --shadow-m: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-l: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-2xl: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+  
+  /* Glassmorphism tokens */
+  --glass-bg-light: rgba(255, 255, 255, 0.85);
+  --glass-bg-dark: rgba(30, 41, 59, 0.85);
+  --glass-border-light: rgba(255, 255, 255, 0.3);
+  --glass-border-dark: rgba(100, 116, 139, 0.3);
+  --glass-blur: blur(24px) saturate(160%);
+  --glass-blur-light: blur(16px) saturate(140%);
+  
+  /* Backdrop filter tokens */
+  --backdrop-filter-glass: blur(24px) saturate(160%);
+  --backdrop-filter-light: blur(16px) saturate(140%);
+  
+  /* Border tokens */
+  --border-width-s: 1px;
+  --border-width-m: 2px;
+  --border-color-light: rgba(255, 255, 255, 0.3);
+  --border-color-dark: rgba(100, 116, 139, 0.3);
+  --border-color-focus: rgba(59, 130, 246, 0.5);
   
   /* Z-index tokens */
   --z-dialog: 50;

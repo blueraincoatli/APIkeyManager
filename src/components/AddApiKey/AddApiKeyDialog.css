@@ -18,40 +18,45 @@
 
 /* Dialog panel styles */
 .add-api-key-dialog-panel {
-  width: var(--size-dialog-width);
-  background-color: rgba(255, 255, 255, 0.8);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  border-radius: var(--radius-xl);
+  position: absolute;
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  background-color: var(--glass-bg-light);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: var(--border-width-s) solid var(--glass-border-light);
   padding: var(--space-m) var(--space-l);
+  box-sizing: border-box !important;
 }
 
 .dark .add-api-key-dialog-panel {
-  background-color: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(100, 116, 139, 0.3);
+  background-color: var(--glass-bg-dark);
+  border: var(--border-width-s) solid var(--glass-border-dark);
 }
 
 /* Preview window styles */
 .add-api-key-preview-window {
-  width: var(--size-preview-width);
+  position: absolute;
+  width: 800px;
   max-width: 90vw;
-  height: var(--size-preview-height);
+  height: 600px;
   max-height: 90vh;
-  background-color: rgba(255, 255, 255, 0.8);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  border-radius: var(--radius-xl);
+  background-color: var(--glass-bg-light);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: var(--border-width-s) solid var(--glass-border-light);
   display: flex;
   flex-direction: column;
 }
 
 .dark .add-api-key-preview-window {
-  background-color: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(100, 116, 139, 0.3);
+  background-color: var(--glass-bg-dark);
+  border: var(--border-width-s) solid var(--glass-border-dark);
 }
 
 .add-api-key-preview-header {
@@ -100,12 +105,12 @@
 
 .add-api-key-preview-table-container {
   overflow: hidden;
-  border-radius: var(--radius-s);
-  border: 1px solid rgba(229, 231, 235, 1);
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
 }
 
 .dark .add-api-key-preview-table-container {
-  border: 1px solid rgba(55, 65, 81, 1);
+  border: var(--border-width-s) solid var(--glass-border-dark);
 }
 
 .add-api-key-preview-table {
@@ -220,7 +225,7 @@
 
 .add-api-key-form-input {
   width: var(--size-input-width);
-  padding: var(--space-s) var(--space-m);
+  padding: var(--space-3xs) var(--space-m);
   border-radius: var(--radius-full);
   border: 1px solid rgba(209, 213, 219, 1);
   background-color: rgba(255, 255, 255, 0.7);
@@ -296,7 +301,7 @@
 }
 
 .add-api-key-button {
-  padding: var(--space-s) var(--space-m);
+  padding: var(--space-3xs) var(--space-m);
   border-radius: var(--radius-full);
   font-size: var(--font-size-s);
   font-weight: var(--font-weight-medium);
@@ -386,7 +391,7 @@
 
 .add-api-key-file-button {
   width: var(--size-input-width);
-  padding: var(--space-s) var(--space-m);
+  padding: var(--space-3xs) var(--space-m);
   border-radius: var(--radius-full);
   border: 1px solid rgba(209, 213, 219, 1);
   background-color: transparent;
@@ -433,8 +438,8 @@
   margin-bottom: var(--space-m);
   padding: var(--space-m);
   background: linear-gradient(to right, rgba(240, 253, 244, 1), rgba(236, 253, 245, 1));
-  border: 1px solid rgba(187, 247, 208, 1);
-  border-radius: var(--radius-m);
+  border: var(--border-width-s) solid rgba(187, 247, 208, 1);
+  border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-s);
 }
 
@@ -477,7 +482,7 @@
   font-size: var(--font-size-s);
   background: linear-gradient(to right, rgba(34, 197, 94, 1), rgba(22, 163, 74, 1));
   color: rgba(255, 255, 255, 1);
-  border-radius: var(--radius-s);
+  border-radius: var(--radius-2xs);
   transition: all var(--transition-fast);
   font-weight: var(--font-weight-medium);
   box-shadow: var(--shadow-s);
@@ -522,4 +527,32 @@
 
 .add-api-key-preview-window.positioned.top-0 {
   top: 0;
+}
+
+/* Positioning utility classes */
+.add-api-key-dialog-panel.centered:not(.custom-position) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.add-api-key-preview-window.centered:not(.custom-position) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Custom positioning classes */
+.add-api-key-dialog-panel.custom-position {
+  position: absolute;
+  left: var(--dialog-left, 50%);
+  top: var(--dialog-top, 50%);
+}
+
+.add-api-key-preview-window.custom-position {
+  position: absolute;
+  left: var(--preview-left, 50%);
+  top: var(--preview-top, 50%);
 }

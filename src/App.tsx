@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { FloatingToolbar } from "./components/FloatingToolbar/FloatingToolbar";
-import { ThemeProvider } from "./contexts/ThemeContext";
 import ToastContainer from "./components/Toast/ToastContainer";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { useBackgroundGradient } from "./hooks/useBackgroundGradient";
 import "./App.css";
 import "./styles/theme.css";
 
@@ -13,7 +13,11 @@ const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
 let getCurrentWebviewWindow: any = null;
 if (isTauri) {
   try {
-    getCurrentWebviewWindow = (await import("@tauri-apps/api/webviewWindow")).getCurrentWebviewWindow;
+    import("@tauri-apps/api/webviewWindow").then(module => {
+      getCurrentWebviewWindow = module.getCurrentWebviewWindow;
+    }).catch(error => {
+      console.warn("Failed to import Tauri webviewWindow API:", error);
+    });
   } catch (error) {
     console.warn("Failed to import Tauri webviewWindow API:", error);
   }
@@ -21,6 +25,7 @@ if (isTauri) {
 
 function App() {
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(true);
+  useBackgroundGradient();
 
   // 注册全局快捷键 - Ctrl+Shift+K 显示/隐藏工具条
   useEffect(() => {
@@ -52,30 +57,28 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="system">
-      <ErrorBoundary>
-        <div className="min-h-screen" id="app-bg">
-          {/* 浮动工具条作为主界面 */}
-          {showFloatingToolbar && (
-            <FloatingToolbar onClose={async () => {
-              setShowFloatingToolbar(false);
-              // 仅在Tauri环境中调用
-              if (isTauri && getCurrentWebviewWindow) {
-                try {
-                  // 隐藏窗口而不是关闭应用
-                  await getCurrentWebviewWindow().hide();
-                } catch (error) {
-                  console.warn("Failed to hide window:", error);
-                }
+    <ErrorBoundary>
+      <div className="min-h-screen" id="app-bg">
+        {/* 浮动工具条作为主界面 */}
+        {showFloatingToolbar && (
+          <FloatingToolbar onClose={async () => {
+            setShowFloatingToolbar(false);
+            // 仅在Tauri环境中调用
+            if (isTauri && getCurrentWebviewWindow) {
+              try {
+                // 隐藏窗口而不是关闭应用
+                await getCurrentWebviewWindow().hide();
+              } catch (error) {
+                console.warn("Failed to hide window:", error);
               }
-            }} />
-          )}
+            }
+          }} />
+        )}
 
-          {/* Toast 通知容器 */}
-          <ToastContainer />
-        </div>
-      </ErrorBoundary>
-    </ThemeProvider>
+        {/* Toast 通知容器 */}
+        <ToastContainer />
+      </div>
+    </ErrorBoundary>
   );
 }
 

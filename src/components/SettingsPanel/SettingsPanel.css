@@ -1,0 +1,336 @@
+/* SettingsPanel Component Styles */
+
+/* Settings panel container */
+.settings-panel-container {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.settings-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+/* Settings panel */
+.settings-panel {
+  position: absolute;
+  width: 360px;
+  max-width: 90vw;
+  max-height: 90vh;
+  background-color: var(--glass-bg-light);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-2xs);
+  box-shadow: var(--shadow-xl);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.dark .settings-panel {
+  background-color: var(--glass-bg-dark);
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+/* Settings panel header */
+.settings-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-m) var(--space-l);
+  border-bottom: var(--border-width-s) solid rgba(229, 231, 235, 1);
+}
+
+.dark .settings-panel-header {
+  border-bottom: var(--border-width-s) solid rgba(55, 65, 81, 1);
+}
+
+.settings-panel-title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(31, 41, 55, 1);
+  margin: 0;
+}
+
+.dark .settings-panel-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-close-button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  border: var(--border-width-s) solid var(--glass-border-light);
+  color: rgba(107, 114, 128, 1);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  padding: 0;
+}
+
+.settings-panel-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-close-button {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+  color: rgba(156, 163, 175, 1);
+}
+
+.dark .settings-panel-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(209, 213, 219, 1);
+}
+
+/* Settings panel content */
+.settings-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-l);
+}
+
+/* Settings panel section */
+.settings-panel-section {
+  margin-bottom: var(--space-xl);
+}
+
+.settings-panel-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-panel-section-title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-medium);
+  color: rgba(55, 65, 81, 1);
+  margin: 0 0 var(--space-m) 0;
+}
+
+.dark .settings-panel-section-title {
+  color: rgba(209, 213, 219, 1);
+}
+
+/* Theme options */
+.settings-panel-theme-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.settings-panel-theme-option {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-m);
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-panel-theme-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.settings-panel-theme-option.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.dark .settings-panel-theme-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.dark .settings-panel-theme-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .settings-panel-theme-option.selected {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* Theme option header */
+.settings-panel-theme-option-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+/* Theme option icon */
+.settings-panel-theme-option-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-2xs);
+  background-color: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.dark .settings-panel-theme-option-icon {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.settings-panel-theme-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-theme-icon {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Theme option info */
+.settings-panel-theme-option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-panel-theme-option-label {
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  color: rgba(31, 41, 55, 1);
+  margin-bottom: var(--space-2xs);
+}
+
+.dark .settings-panel-theme-option-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-theme-option-description {
+  font-size: var(--font-size-xs);
+  color: rgba(107, 114, 128, 1);
+  line-height: 1.4;
+}
+
+.dark .settings-panel-theme-option-description {
+  color: rgba(156, 163, 175, 1);
+}
+
+/* Theme option selected indicator */
+.settings-panel-theme-option-selected {
+  flex-shrink: 0;
+  margin-left: var(--space-s);
+}
+
+.settings-panel-selected-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-selected-icon {
+  color: rgba(96, 165, 250, 1);
+}
+
+/* Background options */
+.settings-panel-background-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.settings-panel-background-option {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-m);
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-panel-background-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .settings-panel-background-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.dark .settings-panel-background-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Background option header */
+.settings-panel-background-option-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+/* Background option icon */
+.settings-panel-background-option-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-2xs);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+  flex-shrink: 0;
+}
+
+.dark .settings-panel-background-option-icon {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(196, 181, 253, 0.2));
+}
+
+.settings-panel-background-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-background-icon {
+  color: rgba(96, 165, 250, 1);
+}
+
+/* Background option info */
+.settings-panel-background-option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-panel-background-option-label {
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  color: rgba(31, 41, 55, 1);
+  margin-bottom: var(--space-2xs);
+}
+
+.dark .settings-panel-background-option-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-background-option-description {
+  font-size: var(--font-size-xs);
+  color: rgba(107, 114, 128, 1);
+  line-height: 1.4;
+}
+
+.dark .settings-panel-background-option-description {
+  color: rgba(156, 163, 175, 1);
+}

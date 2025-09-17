@@ -6,6 +6,7 @@ import { SearchResults } from "../SearchResults/SearchResults";
 import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon/Icon";
 import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
+import { SettingsPanel } from "../SettingsPanel/SettingsPanel";
 import { apiKeyService } from "../../services/apiKeyService";
 import "./FloatingToolbar.css";
 
@@ -43,6 +44,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const moreBtnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -207,6 +209,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           {/* 设置 */}
           <button
             className="floating-toolbar-button"
+            onClick={() => setShowSettingsPanel(true)}
             aria-label="Settings"
           >
             <GearIcon />
@@ -276,6 +279,15 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               setSearchResults(res.data);
             }
           }} 
+          position={position} 
+          toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
+        />
+      )}
+
+      {showSettingsPanel && (
+        <SettingsPanel 
+          open={showSettingsPanel} 
+          onClose={() => setShowSettingsPanel(false)} 
           position={position} 
           toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
         />

@@ -59,24 +59,21 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
   
-  // 计算面板位置类（如果提供了position和toolbarWidth）
-  const panelPositionClasses = useMemo(() => {
-    if (position && toolbarWidth) {
-      const left = position.x + (toolbarWidth - 360) / 2 + 12;
-      const top = position.y + 72;
-      return `left-${Math.round(left)} top-${Math.round(top)}`;
-    }
-    return '';
-  }, [position, toolbarWidth]);
-
-  // 计算预览窗口位置类（居中于工具栏下方）
-  const previewPositionClasses = useMemo(() => {
-    if (position && toolbarWidth) {
-      const left = position.x + (toolbarWidth - 800) / 2;
-      const top = position.y + 72;
-      return `left-${Math.round(left)} top-${Math.round(top)}`;
-    }
-    return '';
+  // 获取位置样式属性
+  const positionStyle = useMemo(() => {
+    if (!position || !toolbarWidth) return {};
+    
+    const dialogLeft = position.x + (toolbarWidth - 360) / 2;
+    const dialogTop = position.y + 72;
+    const previewLeft = position.x + (toolbarWidth - 800) / 2;
+    const previewTop = position.y + 72;
+    
+    return {
+      '--dialog-left': `${dialogLeft}px`,
+      '--dialog-top': `${dialogTop}px`,
+      '--preview-left': `${previewLeft}px`,
+      '--preview-top': `${previewTop}px`
+    } as React.CSSProperties;
   }, [position, toolbarWidth]);
   
   // 表单验证
@@ -205,7 +202,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   const PreviewWindow = () => (
     <DialogContainer onClose={() => setShowPreview(false)}>
       <div 
-        className={`add-api-key-preview-window ${position && toolbarWidth ? 'positioned ' + previewPositionClasses : ''}`}
+        className="add-api-key-preview-window custom-position"
+        style={positionStyle}
       >
         <div className="add-api-key-preview-header">
           <h2 className="add-api-key-preview-title">数据预览</h2>
@@ -394,7 +392,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
     <>
       <DialogContainer onClose={onClose}>
         <div 
-          className={`add-api-key-dialog-panel ${position && toolbarWidth ? 'positioned ' + panelPositionClasses : ''}`}
+          className="add-api-key-dialog-panel custom-position"
+          style={positionStyle}
         >
           <form
             onSubmit={handleSubmit}
