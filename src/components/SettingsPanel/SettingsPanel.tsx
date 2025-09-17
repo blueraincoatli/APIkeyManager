@@ -41,16 +41,8 @@ const themeOptions: ThemeOption[] = [
 
 const shortcutOptions: ShortcutOption[] = [
   {
-    label: '打开搜索',
+    label: '召唤/隐藏',
     key: 'Ctrl+Shift+K'
-  },
-  {
-    label: '最小化窗口',
-    key: 'Esc'
-  },
-  {
-    label: '关闭面板',
-    key: 'Ctrl+W'
   }
 ];
 
