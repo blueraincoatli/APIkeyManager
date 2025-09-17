@@ -23,7 +23,7 @@
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xl);
   background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
-  border: 2px solid rgba(100, 116, 139, 0.5); /* 使用深一些的颜色 */
+  border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
   padding: 0 var(--space-l);
   gap: var(--space-m);
   color: rgba(17, 24, 39, 1);

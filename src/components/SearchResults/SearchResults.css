@@ -10,7 +10,7 @@
   overflow: hidden;
   transition: all var(--transition-medium);
   background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
-  border: 2px solid rgba(100, 116, 139, 0.5); /* 使用深一些的颜色 */
+  border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
   /* Force hardware acceleration */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);

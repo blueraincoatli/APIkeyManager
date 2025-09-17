@@ -42,7 +42,7 @@
   background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
   border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
-  border: 2px solid rgba(255, 255, 255, 0.5); /* 更明显的边框 */
+  border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
   padding: var(--space-m) var(--space-l);
   box-sizing: border-box !important;
   /* Force hardware acceleration */
