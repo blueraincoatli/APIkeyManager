@@ -82,8 +82,8 @@
 }
 
 .settings-panel-close-button {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -143,20 +143,24 @@
 /* Theme options */
 .settings-panel-theme-options {
   display: flex;
-  flex-direction: column;
   gap: var(--space-s);
+  justify-content: center;
 }
 
 .settings-panel-theme-option {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: var(--space-m);
   border-radius: var(--radius-2xs);
   border: var(--border-width-s) solid var(--glass-border-light);
   background-color: transparent;
   transition: all var(--transition-fast);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
+  width: 80px;
+  height: 80px;
 }
 
 .settings-panel-theme-option:hover {
@@ -183,23 +187,17 @@
   border-color: rgba(59, 130, 246, 0.6);
 }
 
-/* Theme option header */
-.settings-panel-theme-option-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-m);
-}
-
 /* Theme option icon */
 .settings-panel-theme-option-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-2xs);
   background-color: rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  margin-bottom: var(--space-xs);
 }
 
 .dark .settings-panel-theme-option-icon {
@@ -207,8 +205,8 @@
 }
 
 .settings-panel-theme-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   color: rgba(55, 65, 81, 1);
 }
 
@@ -216,37 +214,37 @@
   color: rgba(255, 255, 255, 1);
 }
 
-/* Theme option info */
-.settings-panel-theme-option-info {
-  flex: 1;
-  min-width: 0;
-}
-
+/* Theme option label */
 .settings-panel-theme-option-label {
-  font-size: var(--font-size-s);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: rgba(31, 41, 55, 1);
-  margin-bottom: var(--space-2xs);
 }
 
 .dark .settings-panel-theme-option-label {
   color: rgba(255, 255, 255, 1);
 }
 
-.settings-panel-theme-option-description {
-  font-size: var(--font-size-xs);
-  color: rgba(107, 114, 128, 1);
-  line-height: 1.4;
-}
-
-.dark .settings-panel-theme-option-description {
-  color: rgba(156, 163, 175, 1);
-}
-
 /* Theme option selected indicator */
 .settings-panel-theme-option-selected {
-  flex-shrink: 0;
-  margin-left: var(--space-s);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel-selected-icon {
+  width: 12px;
+  height: 12px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-selected-icon {
+  color: rgba(96, 165, 250, 1);
 }
 
 .settings-panel-selected-icon {
@@ -349,6 +347,102 @@
 }
 
 .dark .settings-panel-background-option-description {
+  color: rgba(156, 163, 175, 1);
+}
+
+/* Shortcut options */
+.settings-panel-shortcut-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.settings-panel-shortcut-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+}
+
+.dark .settings-panel-shortcut-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.settings-panel-shortcut-label {
+  font-size: var(--font-size-s);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-shortcut-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-shortcut-key {
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  border-radius: var(--radius-xs);
+  padding: var(--space-3xs) var(--space-xs);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-shortcut-key {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: var(--border-width-s) solid var(--glass-border-dark);
+  color: rgba(255, 255, 255, 1);
+}
+
+/* About section */
+.settings-panel-about {
+  text-align: center;
+  padding: var(--space-l) var(--space-m);
+  border-top: var(--border-width-s) solid var(--glass-border-light);
+  margin-top: var(--space-l);
+}
+
+.dark .settings-panel-about {
+  border-top: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.settings-panel-about-logo {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--space-m);
+}
+
+.settings-panel-about-title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(31, 41, 55, 1);
+  margin: 0 0 var(--space-s);
+}
+
+.dark .settings-panel-about-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-about-version {
+  font-size: var(--font-size-xs);
+  color: rgba(107, 114, 128, 1);
+  margin: 0 0 var(--space-m);
+}
+
+.dark .settings-panel-about-version {
+  color: rgba(156, 163, 175, 1);
+}
+
+.settings-panel-about-description {
+  font-size: var(--font-size-s);
+  color: rgba(107, 114, 128, 1);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.dark .settings-panel-about-description {
   color: rgba(156, 163, 175, 1);
 }
 
