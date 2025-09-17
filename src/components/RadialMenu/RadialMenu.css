@@ -68,7 +68,7 @@
 .radial-menu-option-button:hover {
   transform: scale(1.08) translateY(-2px);
   box-shadow: var(--shadow-2xl), 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(100, 116, 139, 0.6);
   z-index: 20;
   filter: brightness(1.05);
 }
@@ -158,7 +158,7 @@
   width: 1.5rem; /* 24px */
   height: 1.5rem; /* 24px */
   border-radius: 9999px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(100, 116, 139, 0.5);
 }
 
 /* Animation states for radial menu items */
@@ -269,6 +269,7 @@
 .radial-menu__item:hover {
   transform: scale(1.1);
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  border-color: rgba(100, 116, 139, 0.6);
 }
 
 .radial-menu__icon {
