@@ -82,9 +82,6 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Light theme gradient to showcase glass */
-    background-image: linear-gradient(135deg, #f8fafc 0%, #eef2f7 50%, #e5e7eb 100%);
-    background-attachment: fixed;
   }
 }
 
@@ -127,6 +124,10 @@
   backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--glass-border);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  /* Ensure the element is positioned to show glass effect */
+  position: relative;
+  /* Add transform to create a new stacking context */
+  transform: translateZ(0);
 }
 
 .glass-chip {
@@ -134,6 +135,10 @@
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid var(--glass-border);
+  /* Ensure the element is positioned to show glass effect */
+  position: relative;
+  /* Add transform to create a new stacking context */
+  transform: translateZ(0);
 }
 
 /* 纤细滚动条（与设计图接近） */
@@ -169,11 +174,25 @@
   background-size: cover !important;
 }
 :root[data-theme="light"] #app-bg::before {
-  /* Stronger contrast for easy visual check */
-  background-image: linear-gradient(135deg, #ffffff 0%, #e5eefc 50%, #d1d5db 100%) !important;
+  /* Full window checkerboard pattern for better glass effect visualization */
+  background-image: 
+    linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%),
+    linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%),
+    linear-gradient(135deg, #64b5f6 0%, #bbdefb 50%, #e3f2fd 100%) !important;
+  background-size: 60px 60px, 60px 60px, 100% 100% !important;
+  background-position: 0 0, 30px 30px, 0 0 !important;
+  background-repeat: repeat !important;
+  background-color: #f5f5f5 !important;
 }
 :root[data-theme="dark"] #app-bg::before {
-  /* Stronger tri-color gradient for dark theme */
-  background-image: linear-gradient(135deg, #020617 0%, #1e293b 50%, #0b1220 100%) !important;
+  /* Full window checkerboard pattern for dark theme */
+  background-image: 
+    linear-gradient(45deg, #2d2d2d 25%, transparent 25%, transparent 75%, #2d2d2d 75%),
+    linear-gradient(45deg, #2d2d2d 25%, transparent 25%, transparent 75%, #2d2d2d 75%),
+    linear-gradient(135deg, #1565c0 0%, #0d47a1 50%, #082754 100%) !important;
+  background-size: 60px 60px, 60px 60px, 100% 100% !important;
+  background-position: 0 0, 30px 30px, 0 0 !important;
+  background-repeat: repeat !important;
+  background-color: #121212 !important;
 }
 

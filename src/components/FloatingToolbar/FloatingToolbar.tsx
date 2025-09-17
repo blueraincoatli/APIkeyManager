@@ -36,6 +36,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
 
+  // 新增：用于管理当前显示的面板类型
+  type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
+  const [activePanel, setActivePanel] = useState<ActivePanel>('none');
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -89,21 +93,31 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setProviderLabel(undefined);
     if (term.trim() === "") {
       setSearchResults([]);
+      setActivePanel('none');
       return;
     }
     const results = await searchService.searchKeys(term);
     setSearchResults(results.data);
+    // 隐藏其他面板
+    setShowRadialMenu(false);
+    setShowAddDialog(false);
+    setShowSettingsPanel(false);
+    setActivePanel('search');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") onClose();
   };
 
-  // 点击外部区域隐藏搜索结果
+  // 点击外部区域隐藏所有面板
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setSearchResults([]);
+        setShowRadialMenu(false);
+        setShowAddDialog(false);
+        setShowSettingsPanel(false);
+        setActivePanel('none');
       }
     };
 
@@ -117,6 +131,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     await apiKeyService.copyToClipboard(key.id);
     // 复制后隐藏搜索结果面板
     setSearchResults([]);
+    setActivePanel('none');
   };
 
   // 选择环形菜单项（按提供商过滤）
@@ -128,6 +143,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     const res = await searchService.searchKeys(label);
     const filtered = (res.data || []).filter((k) => matchProvider(k.name, k.platform, k.tags, id));
     setSearchResults(filtered.length ? filtered : res.data);
+    // 隐藏环形菜单，显示搜索结果
+    setShowRadialMenu(false);
+    setActivePanel('search');
   };
 
   // 打开环形菜单时，统计各提供商的 key 数量并展示在按钮上
@@ -148,10 +166,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   useEffect(() => {
     const el = wrapperRef.current;
     if (el) {
-      el.style.left = `${position.x}px`;
-      el.style.top = `${position.y}px`;
-      el.style.position = 'fixed';
-      el.style.zIndex = '50';
+      el.style.setProperty('--wrapper-left', `${position.x}px`);
+      el.style.setProperty('--wrapper-top', `${position.y}px`);
+      el.classList.add('positioned');
     }
   }, [position]);
 
@@ -181,8 +198,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           <div className="floating-toolbar-buttons">
             {/* 加号 */}
             <button
+              type="button"
               className="floating-toolbar-button"
-              onClick={() => setShowAddDialog(true)}
+              onClick={() => {
+                // 隐藏其他面板
+                setSearchResults([]);
+                setShowRadialMenu(false);
+                setShowSettingsPanel(false);
+                // 显示添加对话框
+                setShowAddDialog(true);
+                setActivePanel('add');
+              }}
               aria-label="Add API Key"
             >
               <PlusIcon />
@@ -190,8 +216,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
             {/* 更多（环形菜单） */}
             <button
+              type="button"
               className="floating-toolbar-button"
-              onClick={() => setShowRadialMenu(true)}
+              onClick={() => {
+                // 隐藏其他面板
+                setSearchResults([]);
+                setShowAddDialog(false);
+                setShowSettingsPanel(false);
+                // 显示径向菜单
+                setShowRadialMenu(true);
+                setActivePanel('radial');
+              }}
               ref={moreBtnRef}
               aria-label="More"
             >
@@ -200,8 +235,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
             {/* 设置 */}
             <button
+              type="button"
               className="floating-toolbar-button"
-              onClick={() => setShowSettingsPanel(true)}
+              onClick={() => {
+                // 隐藏其他面板
+                setSearchResults([]);
+                setShowAddDialog(false);
+                setShowRadialMenu(false);
+                // 显示设置面板
+                setShowSettingsPanel(true);
+                setActivePanel('settings');
+              }}
               aria-label="Settings"
             >
               <GearIcon />
@@ -209,6 +253,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
             {/* 最小化 */}
             <button
+              type="button"
               className="floating-toolbar-button"
               onClick={async () => {
                 // 仅在Tauri环境中调用
@@ -233,7 +278,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           {/* 拖拽说明：点击输入框或按钮不会触发拖拽 */}
           
           {/* 环形菜单 */}
-          {showRadialMenu && (
+          {activePanel === 'radial' && (
             <div className="floating-toolbar-radial-menu">
               <RadialMenu
                 options={PROVIDERS.slice(0,6).map(p => ({
@@ -242,7 +287,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                   count: providerCounts[p.id] ?? 0,
                 }))}
                 onSelect={handleRadialSelect}
-                onClose={() => setShowRadialMenu(false)}
+                onClose={() => {
+                  setShowRadialMenu(false);
+                  setActivePanel('none');
+                }}
                 
               />
             </div>
@@ -250,19 +298,25 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         </div>
 
         {/* 结果面板（统一组件） */}
-        {searchResults.length > 0 && (
+        {activePanel === 'search' && searchResults.length > 0 && (
           <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 360} providerLabel={providerLabel} />
         )}
       </div>
 
-      {showAddDialog && (
+      {activePanel === 'add' && showAddDialog && (
         <AddApiKeyDialog 
           open={showAddDialog} 
-          onClose={() => setShowAddDialog(false)} 
+          onClose={() => {
+            setShowAddDialog(false);
+            setActivePanel('none');
+          }} 
           onAdded={async()=>{
             if (searchTerm) {
               const res = await searchService.searchKeys(searchTerm);
               setSearchResults(res.data);
+              setActivePanel('search');
+            } else {
+              setActivePanel('none');
             }
           }} 
           position={position} 
@@ -270,10 +324,13 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         />
       )}
 
-      {showSettingsPanel && (
+      {activePanel === 'settings' && showSettingsPanel && (
         <SettingsPanel 
           open={showSettingsPanel} 
-          onClose={() => setShowSettingsPanel(false)} 
+          onClose={() => {
+            setShowSettingsPanel(false);
+            setActivePanel('none');
+          }} 
           position={position} 
           toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
         />

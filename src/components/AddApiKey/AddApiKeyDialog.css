@@ -1,19 +1,36 @@
 /* AddApiKeyDialog Component Styles */
 
 /* Dialog container styles */
-.add-api-key-dialog-container {
+.add-api-key-dialog {
   position: fixed;
-  inset: 0;
-  z-index: var(--z-dialog);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1003;
 }
 
-.add-api-key-dialog-overlay {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+.add-api-key-dialog__content {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 深色主题 */
+@media (prefers-color-scheme: dark) {
+  .add-api-key-dialog__content {
+    background: #1f2937;
+    color: white;
+  }
 }
 
 /* Dialog panel styles */
@@ -22,19 +39,54 @@
   width: 360px !important;
   min-width: 360px !important;
   max-width: 360px !important;
-  background-color: var(--glass-bg-light);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
   border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
-  border: var(--border-width-s) solid var(--glass-border-light);
+  border: 2px solid rgba(255, 255, 255, 0.5); /* 更明显的边框 */
   padding: var(--space-m) var(--space-l);
   box-sizing: border-box !important;
+  /* Force hardware acceleration */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .add-api-key-dialog-panel {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .add-api-key-dialog-panel {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
 }
 
 .dark .add-api-key-dialog-panel {
-  background-color: var(--glass-bg-dark);
-  border: var(--border-width-s) solid var(--glass-border-dark);
+  background-color: rgba(30, 41, 59, 0.7); /* 更明显的半透明背景 */
+  border: 2px solid rgba(100, 116, 139, 0.5); /* 更明显的边框 */
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .dark .add-api-key-dialog-panel {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .dark .add-api-key-dialog-panel {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
 }
 
 /* Preview window styles */
@@ -45,13 +97,30 @@
   height: 600px;
   max-height: 90vh;
   background-color: var(--glass-bg-light);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  /* Safari fallback */
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
   border: var(--border-width-s) solid var(--glass-border-light);
   display: flex;
   flex-direction: column;
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .add-api-key-preview-window {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .add-api-key-preview-window {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
 }
 
 .dark .add-api-key-preview-window {
@@ -228,10 +297,23 @@
   border-radius: var(--radius-full);
   border: 1px solid rgba(209, 213, 219, 1);
   background-color: rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  backdrop-filter: blur(12px) saturate(140%);
   font-size: var(--font-size-s);
   transition: all var(--transition-fast);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(12px)) {
+  .add-api-key-form-input {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(12px)) {
+  .add-api-key-form-input {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
 }
 
 .add-api-key-form-input:focus {
@@ -555,3 +637,10 @@
   left: var(--preview-left, 50%);
   top: var(--preview-top, 50%);
 }
+
+.add-api-key-dialog-panel.custom-position {
+  position: absolute;
+  left: var(--dialog-left, 50%);
+  top: var(--dialog-top, 50%);
+}
+

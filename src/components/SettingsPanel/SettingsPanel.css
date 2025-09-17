@@ -25,7 +25,8 @@
   max-width: 90vw;
   max-height: 90vh;
   background-color: var(--glass-bg-light);
-  backdrop-filter: var(--glass-blur);
+  /* Safari fallback */
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
   border: var(--border-width-s) solid var(--glass-border-light);
@@ -33,6 +34,22 @@
   flex-direction: column;
   pointer-events: auto;
   overflow: hidden;
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .settings-panel {
+    backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .settings-panel {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
 }
 
 .dark .settings-panel {
@@ -333,4 +350,10 @@
 
 .dark .settings-panel-background-option-description {
   color: rgba(156, 163, 175, 1);
+}
+
+/* Dynamic positioning using CSS variables */
+.settings-panel.positioned {
+  left: var(--panel-left);
+  top: var(--panel-top);
 }

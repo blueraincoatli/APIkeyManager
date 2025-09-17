@@ -1,5 +1,6 @@
 import { CheckIcon, SunIcon, MoonIcon, ComputerIcon, ShuffleIcon } from '../Icon/Icon';
 import { useBackgroundGradient } from '../../hooks/useBackgroundGradient';
+import { useEffect, useRef } from 'react';
 import './SettingsPanel.css';
 
 interface ThemeOption {
@@ -39,12 +40,21 @@ const themeOptions: ThemeOption[] = [
 
 export function SettingsPanel({ open, onClose, position, toolbarWidth }: SettingsPanelProps) {
   const { currentTheme, changeTheme, randomizeGradient } = useBackgroundGradient();
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // 计算面板位置（在工具栏下方）
   const panelPosition = {
     left: position.x + (toolbarWidth - 360) / 2, // 与工具条居中对齐
-    top: position.y + 72, // 工具条下方固定距离
+    top: position.y + 10, // 工具条下方固定距离
   };
+
+  // 使用useEffect来设置CSS变量，避免内联样式
+  useEffect(() => {
+    if (panelRef.current) {
+      panelRef.current.style.setProperty('--panel-left', `${panelPosition.left}px`);
+      panelRef.current.style.setProperty('--panel-top', `${panelPosition.top}px`);
+    }
+  }, [panelPosition.left, panelPosition.top]);
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     changeTheme(theme);
@@ -57,9 +67,9 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
   return (
     <div className="settings-panel-container">
       <div className="settings-panel-overlay" onClick={onClose} />
-      <div 
-        className="settings-panel"
-        style={panelPosition}
+      <div
+        ref={panelRef}
+        className="settings-panel positioned"
       >
         <div className="settings-panel-header">
           <h2 className="settings-panel-title">设置</h2>

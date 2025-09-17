@@ -37,11 +37,32 @@
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xl);
   background-color: var(--glass-bg-light);
-  backdrop-filter: var(--glass-blur-light);
+  /* Safari fallback */
+  background-color: rgba(255, 255, 255, 0.85);
   border: var(--border-width-s) solid var(--glass-border-light);
   transition: all var(--transition-fast);
   min-width: 120px;
   max-width: 180px;
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .radial-menu-option-button {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .radial-menu-option-button {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
 }
 
 .radial-menu-option-button:hover {
@@ -56,6 +77,23 @@
 .dark .radial-menu-option-button {
   background-color: var(--glass-bg-dark);
   border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .dark .radial-menu-option-button {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-dark);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .dark .radial-menu-option-button {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-dark);
+  }
 }
 
 .dark .radial-menu-option-button:hover {
@@ -121,4 +159,144 @@
   height: 1.5rem; /* 24px */
   border-radius: 9999px;
   border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Animation states for radial menu items */
+.radial-menu-option-button.initial {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.radial-menu-option-button.animating {
+  opacity: 1;
+  transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Dynamic positioning using CSS variables */
+.radial-menu-option-button.positioned {
+  left: var(--item-left);
+  top: var(--item-top);
+  z-index: 10;
+}
+
+/* Animation delay classes */
+.radial-menu-option-button.delay-0 {
+  transition-delay: 0ms;
+}
+
+.radial-menu-option-button.delay-1 {
+  transition-delay: 30ms;
+}
+
+.radial-menu-option-button.delay-2 {
+  transition-delay: 60ms;
+}
+
+.radial-menu-option-button.delay-3 {
+  transition-delay: 90ms;
+}
+
+.radial-menu-option-button.delay-4 {
+  transition-delay: 120ms;
+}
+
+.radial-menu-option-button.delay-5 {
+  transition-delay: 150ms;
+}
+
+.radial-menu-option-button.delay-6 {
+  transition-delay: 180ms;
+}
+
+.radial-menu-option-button.delay-7 {
+  transition-delay: 210ms;
+}
+
+.radial-menu-option-button.delay-8 {
+  transition-delay: 240ms;
+}
+
+.radial-menu-option-button.delay-9 {
+  transition-delay: 270ms;
+}
+
+.radial-menu {
+  position: fixed;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.radial-menu__container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  pointer-events: auto;
+}
+
+.radial-menu__item {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--glass-bg-light);
+  /* Safari fallback */
+  background: rgba(255, 255, 255, 0.85);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(10px)) {
+  .radial-menu__item {
+    backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .radial-menu__item {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-light);
+  }
+}
+
+.radial-menu__item:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.radial-menu__icon {
+  width: 20px;
+  height: 20px;
+  color: #374151;
+}
+
+/* 暗色主题 */
+@media (prefers-color-scheme: dark) {
+  .radial-menu__item {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+  }
+  
+  @supports (backdrop-filter: blur(10px)) {
+    .radial-menu__item {
+      background: var(--glass-bg-dark);
+    }
+  }
+  
+  @supports (-webkit-backdrop-filter: blur(10px)) {
+    .radial-menu__item {
+      background: var(--glass-bg-dark);
+    }
+  }
+  
+  .radial-menu__icon {
+    color: #d1d5db;
+  }
 }

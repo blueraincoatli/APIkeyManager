@@ -81,12 +81,14 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
     return icons[toast.type];
   };
 
+  const ariaLiveValue = toast.type === 'error' ? 'assertive' as const : 'polite' as const;
+
   return (
     <div
       className={getToastStyles()}
       onClick={handleRemove}
       role="alert"
-      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      aria-live={ariaLiveValue}
     >
       <div className="flex items-start space-x-3">
         <div className="flex-shrink-0">
@@ -106,6 +108,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
               {toast.title}
             </h4>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRemove();

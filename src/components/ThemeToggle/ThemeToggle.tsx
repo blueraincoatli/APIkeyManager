@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import './ThemeToggle.css';
 
 interface ThemeToggleProps {
   className?: string;
@@ -9,31 +10,21 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
   const { theme, resolvedTheme, setTheme } = useTheme();
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    // 使用requestAnimationFrame确保平滑切换
     requestAnimationFrame(() => {
       setTheme(newTheme);
     });
   };
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={`theme-toggle ${className}`}>
       <button
+        type="button"
         onClick={() => handleThemeChange('light')}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === 'light'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-        }`}
+        className={`theme-toggle__button ${theme === 'light' ? 'theme-toggle__button--active' : ''}`}
         title="浅色主题"
         aria-label="切换到浅色主题"
       >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -44,22 +35,13 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
       </button>
 
       <button
+        type="button"
         onClick={() => handleThemeChange('dark')}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === 'dark'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-        }`}
+        className={`theme-toggle__button ${theme === 'dark' ? 'theme-toggle__button--active' : ''}`}
         title="深色主题"
         aria-label="切换到深色主题"
       >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -70,22 +52,13 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
       </button>
 
       <button
+        type="button"
         onClick={() => handleThemeChange('system')}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === 'system'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-        }`}
+        className={`theme-toggle__button ${theme === 'system' ? 'theme-toggle__button--active' : ''}`}
         title="系统主题"
         aria-label="跟随系统主题"
       >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -95,7 +68,7 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
         </svg>
       </button>
 
-      <div className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="theme-toggle__status">
         {theme === 'system' ? `系统 (${resolvedTheme})` : theme === 'dark' ? '深色' : '浅色'}
       </div>
     </div>

@@ -6,6 +6,12 @@
   z-index: 50;
 }
 
+/* Dynamic positioning using CSS variables */
+.floating-toolbar-wrapper.positioned {
+  left: var(--wrapper-left);
+  top: var(--wrapper-top);
+}
+
 /* Toolbar container */
 .floating-toolbar-container {
   position: relative;
@@ -16,18 +22,54 @@
   width: 360px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xl);
-  background-color: var(--glass-bg-light);
-  backdrop-filter: var(--glass-blur);
-  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
+  border: 2px solid rgba(255, 255, 255, 0.5); /* 更明显的边框 */
   padding: 0 var(--space-l);
   gap: var(--space-m);
   color: rgba(17, 24, 39, 1);
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .floating-toolbar-container {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .floating-toolbar-container {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
 }
 
 .dark .floating-toolbar-container {
-  background-color: var(--glass-bg-dark);
-  border: var(--border-width-s) solid var(--glass-border-dark);
+  background-color: rgba(30, 41, 59, 0.7); /* 更明显的半透明背景 */
+  border: 2px solid rgba(100, 116, 139, 0.5); /* 更明显的边框 */
   color: rgba(255, 255, 255, 1);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .dark .floating-toolbar-container {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .dark .floating-toolbar-container {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
 }
 
 .floating-toolbar-container.dragging {
@@ -60,7 +102,6 @@
   width: calc(100% - 3rem);
   padding: var(--space-3xs) var(--space-m) var(--space-3xs) 2rem;
   background-color: transparent;
-  backdrop-filter: var(--backdrop-filter-glass);
   background-clip: padding-box;
   border: var(--border-width-s) solid var(--glass-border-light);
   border-radius: var(--radius-full);
@@ -68,6 +109,20 @@
   box-shadow: none;
   color: rgba(55, 65, 81, 1);
   font-size: var(--font-size-s);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(10px)) {
+  .floating-toolbar-search-input {
+    backdrop-filter: var(--backdrop-filter-glass);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .floating-toolbar-search-input {
+    -webkit-backdrop-filter: var(--backdrop-filter-glass);
+  }
 }
 
 .floating-toolbar-search-input:focus {
@@ -137,5 +192,56 @@
 @media (min-width: 768px) {
   .floating-toolbar-container {
     padding: 0 40px;
+  }
+}
+
+.floating-toolbar {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  /* Safari fallback */
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .floating-toolbar {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .floating-toolbar {
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* 深色主题 */
+@media (prefers-color-scheme: dark) {
+  .floating-toolbar {
+    background: rgba(26, 28, 65, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  @supports (backdrop-filter: blur(20px)) {
+    .floating-toolbar {
+      background: rgba(26, 28, 65, 0.85);
+    }
+  }
+  
+  @supports (-webkit-backdrop-filter: blur(20px)) {
+    .floating-toolbar {
+      background: rgba(26, 28, 65, 0.85);
+    }
   }
 }

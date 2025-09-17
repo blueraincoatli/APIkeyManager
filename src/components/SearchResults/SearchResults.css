@@ -9,10 +9,28 @@
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   transition: all var(--transition-medium);
-  background-color: var(--glass-bg-light);
-  -webkit-backdrop-filter: var(--glass-blur-light);
-  backdrop-filter: var(--glass-blur-light);
-  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
+  border: 2px solid rgba(255, 255, 255, 0.5); /* 更明显的边框 */
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .search-results-container {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .search-results-container {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+  }
 }
 
 .search-results-container.positioned {
@@ -20,8 +38,25 @@
 }
 
 .dark .search-results-container {
-  background-color: var(--glass-bg-dark);
-  border: var(--border-width-s) solid var(--glass-border-dark);
+  background-color: rgba(30, 41, 59, 0.7); /* 更明显的半透明背景 */
+  border: 2px solid rgba(100, 116, 139, 0.5); /* 更明显的边框 */
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .dark .search-results-container {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .dark .search-results-container {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+  }
 }
 
 /* Provider label container */

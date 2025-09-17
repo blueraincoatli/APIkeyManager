@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { apiKeyService, batchImportService } from "../../services/apiKeyService";
 import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
@@ -58,22 +58,31 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
-  
-  // 获取位置样式属性
-  const positionStyle = useMemo(() => {
-    if (!position || !toolbarWidth) return {};
-    
+
+  // 用于设置CSS自定义属性的refs
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // 设置位置样式到DOM元素
+  useEffect(() => {
+    if (!position || !toolbarWidth) return;
+
     const dialogLeft = position.x + (toolbarWidth - 360) / 2;
-    const dialogTop = position.y + 72;
+    const dialogTop = position.y+10; 
     const previewLeft = position.x + (toolbarWidth - 800) / 2;
-    const previewTop = position.y + 72;
-    
-    return {
-      '--dialog-left': `${dialogLeft}px`,
-      '--dialog-top': `${dialogTop}px`,
-      '--preview-left': `${previewLeft}px`,
-      '--preview-top': `${previewTop}px`
-    } as React.CSSProperties;
+    const previewTop = position.y+10; 
+
+    // 设置对话框位置
+    if (dialogRef.current) {
+      dialogRef.current.style.setProperty('--dialog-left', `${dialogLeft}px`);
+      dialogRef.current.style.setProperty('--dialog-top', `${dialogTop}px`);
+    }
+
+    // 设置预览窗口位置
+    if (previewRef.current) {
+      previewRef.current.style.setProperty('--preview-left', `${previewLeft}px`);
+      previewRef.current.style.setProperty('--preview-top', `${previewTop}px`);
+    }
   }, [position, toolbarWidth]);
   
   // 表单验证
@@ -205,9 +214,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   const PreviewWindow = () => (
     <div className="add-api-key-dialog-container">
       <div className="add-api-key-dialog-overlay" onClick={() => setShowPreview(false)} />
-      <div 
+      <div
+        ref={previewRef}
         className="add-api-key-preview-window custom-position"
-        style={positionStyle}
       >
         <div className="add-api-key-preview-header">
           <h2 className="add-api-key-preview-title">数据预览</h2>
@@ -396,9 +405,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
     <>
       <div className="add-api-key-dialog-container">
         <div className="add-api-key-dialog-overlay" onClick={onClose} />
-        <div 
+        <div
+          ref={dialogRef}
           className="add-api-key-dialog-panel custom-position"
-          style={positionStyle}
         >
           <form
             onSubmit={handleSubmit}
