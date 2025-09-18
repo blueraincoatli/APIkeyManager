@@ -46,9 +46,11 @@
   transform: translate3d(0, 0, 0);
   will-change: transform, backdrop-filter;
 
-  /* 毛玻璃效果 - 强制应用 */
+  /* 毛玻璃效果 - 强制应用，增强兼容性 */
   -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
   backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
+  /* 为Tauri环境添加额外的filter支持 */
+  filter: blur(0px); /* 触发硬件加速 */
 
   /* 添加阴影增强玻璃质感 */
   box-shadow:
