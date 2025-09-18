@@ -90,8 +90,6 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
 
   return (
     <div className="radial-menu-overlay">
-      <div className="radial-menu-background" onClick={onClose} />
-
       <div
         ref={menuRef}
         className="radial-menu-container"

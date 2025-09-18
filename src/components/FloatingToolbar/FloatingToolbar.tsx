@@ -100,7 +100,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     // 检查是否点击在交互元素上
     const target = e.target as HTMLElement;
     if (target.closest('.floating-toolbar-search-container') ||
-        target.closest('.floating-toolbar-buttons')) {
+        target.closest('.floating-toolbar-buttons') ||
+        target.closest('.floating-toolbar-radial-menu') ||
+        target.closest('.radial-menu-overlay')) {
       return; // 不处理交互元素的拖拽
     }
 

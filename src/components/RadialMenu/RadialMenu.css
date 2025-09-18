@@ -2,27 +2,20 @@
 
 /* Radial menu overlay */
 .radial-menu-overlay {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 50;
   background: transparent;
+  pointer-events: none; /* 让overlay本身不阻止点击事件 */
 }
 
-/* Radial menu background */
-.radial-menu-background {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.1);
-}
+
 
 /* Radial menu container */
 .radial-menu-container {
-  position: absolute;
+  position: relative;
   width: 20rem; /* 320px */
   height: 16rem; /* 256px */
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%); /* 使用 transform 实现精确垂直居中 */
+  pointer-events: auto; /* 确保菜单容器可以接收点击事件 */
 }
 
 
@@ -43,9 +36,12 @@
   transition: all var(--transition-fast);
   min-width: 120px;
   max-width: 180px;
+  cursor: pointer;
+  pointer-events: auto; /* 确保按钮可以接收点击事件 */
+  z-index: 100; /* 确保按钮在最上层 */
   /* Force hardware acceleration */
-  transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* 支持backdrop-filter的浏览器 */
