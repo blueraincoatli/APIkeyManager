@@ -44,20 +44,32 @@
   transform: translateZ(0);
 }
 
-/* 支持backdrop-filter的浏览器 - 谨慎应用以保持窗口透明 */
-@supports (backdrop-filter: blur(20px)) {
+/* 为Tauri WebView优化的backdrop-filter */
+.radial-menu-option-button {
+  /* 基础设置 - 确保在所有环境中都有效果 */
+  background-color: rgba(255, 255, 255, 0.7);
+
+  /* 尝试多种方式触发模糊效果 */
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+
+  /* 为WebView添加额外的渲染提示 */
+  transform: translateZ(0);
+  will-change: backdrop-filter;
+  isolation: isolate;
+}
+
+/* 支持backdrop-filter的现代浏览器 */
+@supports (backdrop-filter: blur(10px)) {
   .radial-menu-option-button {
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    backdrop-filter: blur(12px) saturate(150%);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.4);
   }
 }
 
-/* Safari特殊处理 */
-@supports (-webkit-backdrop-filter: blur(20px)) {
+/* WebKit特殊处理（包括Tauri的WebView2） */
+@supports (-webkit-backdrop-filter: blur(10px)) {
   .radial-menu-option-button {
-    -webkit-backdrop-filter: var(--glass-blur);
-    background-color: var(--glass-bg-light);
+    background-color: rgba(255, 255, 255, 0.4);
   }
 }
 

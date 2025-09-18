@@ -46,7 +46,12 @@
   transform: translate3d(0, 0, 0);
   will-change: transform, backdrop-filter;
 
-  /* 毛玻璃效果 - 仅在支持的浏览器中应用 */
+  /* 为Tauri WebView优化的毛玻璃效果 */
+  -webkit-backdrop-filter: blur(18px) saturate(160%) brightness(1.05);
+  backdrop-filter: blur(18px) saturate(160%) brightness(1.05);
+
+  /* 如果backdrop-filter不工作，使用伪元素创建模糊背景 */
+  position: relative;
 
   /* 添加阴影增强玻璃质感 */
   box-shadow:
@@ -56,12 +61,33 @@
     inset 0 -1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* 支持backdrop-filter的浏览器 - 谨慎应用以保持窗口透明 */
-@supports (backdrop-filter: blur(20px)) {
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(10px)) {
   .floating-toolbar-container {
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    backdrop-filter: blur(16px) saturate(150%);
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* WebKit特殊处理（包括Tauri的WebView2） */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .floating-toolbar-container {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* 为不支持backdrop-filter的环境提供fallback */
+@supports not (backdrop-filter: blur(10px)) {
+  .floating-toolbar-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: inherit;
+    z-index: -1;
+    filter: blur(2px);
   }
 }
 

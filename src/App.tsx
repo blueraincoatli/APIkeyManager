@@ -12,6 +12,34 @@ function App() {
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(true);
   const [windowLabel, setWindowLabel] = useState<string | null>(null);
 
+  // 检测backdrop-filter支持
+  useEffect(() => {
+    const checkBackdropFilterSupport = () => {
+      const testElement = document.createElement('div');
+      testElement.style.backdropFilter = 'blur(10px)';
+      testElement.style.webkitBackdropFilter = 'blur(10px)';
+
+      const supportsBackdropFilter = testElement.style.backdropFilter !== '';
+      const supportsWebkitBackdropFilter = testElement.style.webkitBackdropFilter !== '';
+
+      console.log('Backdrop-filter support:', {
+        backdropFilter: supportsBackdropFilter,
+        webkitBackdropFilter: supportsWebkitBackdropFilter,
+        userAgent: navigator.userAgent,
+        isTauri: isTauri
+      });
+
+      // 添加CSS类来标识支持情况
+      if (supportsBackdropFilter || supportsWebkitBackdropFilter) {
+        document.body.classList.add('supports-backdrop-filter');
+      } else {
+        document.body.classList.add('no-backdrop-filter');
+      }
+    };
+
+    checkBackdropFilterSupport();
+  }, []);
+
   // 获取当前窗口标签
   useEffect(() => {
     const getWindowLabel = async () => {
