@@ -43,10 +43,7 @@
         "fullscreen": false,
         "titleBarStyle": "Overlay",
         "visibleOnAllWorkspaces": false,
-        "contentProtected": false,
-        "webviewOptions": {
-          "additionalBrowserArgs": "--enable-features=VaapiVideoDecoder --enable-gpu-rasterization --enable-zero-copy"
-        }
+        "contentProtected": false
       }
     ],
     "security": {
