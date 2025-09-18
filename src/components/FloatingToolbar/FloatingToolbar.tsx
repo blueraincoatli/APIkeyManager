@@ -58,6 +58,42 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     console.log("- isTauri result:", isTauri);
   }, []);
 
+  // 初始化窗口位置 - 设置到屏幕上1/3处并水平居中
+  useEffect(() => {
+    const initializeWindowPosition = async () => {
+      if (!isTauri) return;
+
+      try {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { LogicalPosition } = await import("@tauri-apps/api/dpi");
+        const { currentMonitor } = await import("@tauri-apps/api/window");
+        const window = getCurrentWebviewWindow();
+
+        // 获取屏幕尺寸
+        const monitor = await currentMonitor();
+        if (monitor) {
+          const screenWidth = monitor.size.width;
+          const screenHeight = monitor.size.height;
+          const scaleFactor = await window.scaleFactor();
+
+          // 计算窗口位置：水平居中，垂直在屏幕上1/3处
+          const windowWidth = 400; // 从配置文件中的宽度
+          const windowHeight = 80;  // 从配置文件中的高度
+
+          const x = (screenWidth / scaleFactor - windowWidth) / 2;
+          const y = (screenHeight / scaleFactor) / 3 - windowHeight / 2;
+
+          await window.setPosition(new LogicalPosition(x, y));
+          console.log(`Window positioned at: x=${x}, y=${y}`);
+        }
+      } catch (error) {
+        console.warn("Failed to initialize window position:", error);
+      }
+    };
+
+    initializeWindowPosition();
+  }, []);
+
   // 处理鼠标进入工具条区域 - 重新获得窗口焦点
   const handleMouseEnter = async () => {
     // 重新获得窗口焦点

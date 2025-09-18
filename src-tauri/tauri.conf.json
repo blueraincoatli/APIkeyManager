@@ -31,8 +31,6 @@
         "visible": true,
         "alwaysOnTop": true,
         "center": false,
-        "x": null,
-        "y": 200,
         "shadow": false,
         "theme": "Light",
         "acceptFirstMouse": false,

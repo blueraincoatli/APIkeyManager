@@ -3,7 +3,7 @@
 /* Toolbar wrapper - positioned absolutely within the full-screen window */
 .floating-toolbar-wrapper {
   position: absolute;
-  top: 50%; /* 默认50%高度定位 */
+  top: 33%; /* 调整为33%高度定位，使工具条位于屏幕的上1/3处 */
   left: 1.5em; /* 固定距离左边的距离 */
   transform: translateY(-50%); /* 垂直居中 */
   z-index: 50;
