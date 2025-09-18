@@ -22,11 +22,15 @@ function App() {
       const supportsBackdropFilter = testElement.style.backdropFilter !== '';
       const supportsWebkitBackdropFilter = testElement.style.webkitBackdropFilter !== '';
 
-      console.log('Backdrop-filter support:', {
+      console.log('Backdrop-filter support details:', {
         backdropFilter: supportsBackdropFilter,
         webkitBackdropFilter: supportsWebkitBackdropFilter,
+        testElementBackdropFilter: testElement.style.backdropFilter,
+        testElementWebkitBackdropFilter: testElement.style.webkitBackdropFilter,
         userAgent: navigator.userAgent,
-        isTauri: isTauri
+        isTauri: isTauri,
+        protocol: window.location.protocol,
+        href: window.location.href
       });
 
       // 添加CSS类来标识支持情况
