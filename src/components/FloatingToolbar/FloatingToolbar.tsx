@@ -8,33 +8,25 @@ import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
 import { SettingsPanel } from "../SettingsPanel/SettingsPanel";
 import { apiKeyService } from "../../services/apiKeyService";
-import { useTheme } from "../../contexts/ThemeContext";
 import "./FloatingToolbar.css";
 
-// 检查是否在Tauri环境中
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+// 检查是否在Tauri环境中 - 更可靠的检测方法
+const isTauri = typeof window !== 'undefined' && (
+  '__TAURI__' in window ||
+  '__TAURI_INTERNALS__' in window ||
+  window.location.protocol === 'tauri:'
+);
 
 interface FloatingToolbarProps {
   onClose: () => void;
 }
 
 export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
-  const { resolvedTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
   const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
   const [showRadialMenu, setShowRadialMenu] = useState(false);
-  const [position, setPosition] = useState(() => {
-    // 使用屏幕尺寸而不是窗口尺寸来计算初始位置
-    const screenWidth = window.screen.width;
-    const screenHeight = window.screen.height;
-    return {
-      x: screenWidth / 2 - 180, // 工具条宽度360px的一半
-      y: screenHeight / 4 - 28   // 工具条高度56px的一半，放在屏幕上1/4处
-    };
-  });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const moreBtnRef = useRef<HTMLButtonElement>(null);
@@ -47,18 +39,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
 
-  // 点击穿透状态管理 - 初始状态为false，确保工具条可以正常交互
-  const [isClickThrough, setIsClickThrough] = useState(false);
 
-  // 设置点击穿透模式 - 重新设计逻辑
-  const setClickThrough = async (enabled: boolean) => {
-    // 暂时禁用全局点击穿透，改为使用CSS pointer-events控制
-    // 这样可以精确控制哪些区域可以点击
-    setIsClickThrough(enabled);
-  };
 
   useEffect(() => {
     inputRef.current?.focus();
+
+    // 调试信息
+    console.log("Tauri environment check:");
+    console.log("- window.__TAURI__:", typeof window !== 'undefined' && '__TAURI__' in window);
+    console.log("- window.__TAURI_INTERNALS__:", typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window);
+    console.log("- window.location.protocol:", typeof window !== 'undefined' ? window.location.protocol : 'undefined');
+    console.log("- isTauri result:", isTauri);
   }, []);
 
   // 处理鼠标进入工具条区域 - 重新获得窗口焦点
@@ -75,69 +66,62 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     }
   };
 
+  const handleExitClick = async () => {
+    if (!isTauri) {
+      onClose();
+      return;
+    }
+
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("exit_application");
+    } catch (error) {
+      console.error("Failed to exit application via Tauri command:", error);
+      onClose();
+    }
+  };
+
   const handleMouseLeave = () => {
     // 使用CSS pointer-events控制，不需要额外逻辑
   };
 
-  // 辅助：获取屏幕尺寸并限制位置（允许在整个屏幕范围内拖拽）
-  const clamp = (x: number, y: number) => {
-    const width = toolbarRef.current?.offsetWidth || 360;
-    const height = toolbarRef.current?.offsetHeight || 56;
 
-    // 获取屏幕尺寸（而不是窗口尺寸）
-    const screenWidth = window.screen.width;
-    const screenHeight = window.screen.height;
 
-    // 允许工具条在整个屏幕范围内移动，但保留一定可见区域
-    const maxX = screenWidth - 50; // 保留50px可见区域
-    const maxY = screenHeight - 50;
-    return {
-      x: Math.min(Math.max(-width + 50, x), maxX),
-      y: Math.min(Math.max(-height + 50, y), maxY)
-    };
-  };
-
-  // 拖拽：仅当点击不在 input 或 button 上时启动
+  // 拖拽：简化实现
   const handleDragStart = async (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.tagName === 'INPUT' || target.closest('input')) return;
+    if (e.button !== 0) return; // 只响应左键
 
-    // 点击工具条时重新获得焦点
+    console.log("Drag start triggered, isTauri:", isTauri);
+
     if (isTauri) {
       try {
         const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const window = getCurrentWebviewWindow();
-        await window.setFocus();
+        console.log("Starting window drag...");
+        await window.startDragging();
       } catch (error) {
-        console.warn("Failed to set window focus on drag start:", error);
+        console.warn("Failed to start window drag:", error);
       }
+    } else {
+      console.log("Not in Tauri environment, drag not available");
+      // 在非Tauri环境中，可以显示提示信息
+      alert("拖拽功能仅在Tauri应用中可用");
     }
 
     setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     e.preventDefault();
+    e.stopPropagation();
   };
-  const handleDragMove = (e: MouseEvent) => {
-    if (isDragging) {
-      const next = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
-      const clamped = clamp(next.x, next.y);
-      setPosition(clamped);
-    }
-  };
-  
   const handleDragEnd = () => setIsDragging(false);
-  
+
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener("mousemove", handleDragMove);
       document.addEventListener("mouseup", handleDragEnd);
     }
     return () => {
-      document.removeEventListener("mousemove", handleDragMove);
       document.removeEventListener("mouseup", handleDragEnd);
     };
-  }, [isDragging, dragStart]);
+  }, [isDragging]);
 
   // 搜索
   const handleSearch = async (term: string) => {
@@ -236,14 +220,55 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     loadCounts();
   }, [showRadialMenu]);
 
+  // 动态调整窗口大小以适应弹出内容
   useEffect(() => {
-    const el = wrapperRef.current;
-    if (el) {
-      el.style.setProperty('--wrapper-left', `${position.x}px`);
-      el.style.setProperty('--wrapper-top', `${position.y}px`);
-      el.classList.add('positioned');
-    }
-  }, [position]);
+    const adjustWindowSize = async () => {
+      // 重新检查Tauri环境
+      const isInTauri = typeof window !== 'undefined' && (
+        '__TAURI__' in window ||
+        '__TAURI_INTERNALS__' in window ||
+        window.location.protocol === 'tauri:'
+      );
+
+      console.log("Window resize check - isInTauri:", isInTauri, "activePanel:", activePanel);
+
+      if (!isInTauri) {
+        console.log("Not in Tauri environment, skipping window resize");
+        return;
+      }
+
+      try {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { LogicalSize } = await import("@tauri-apps/api/dpi");
+        const window = getCurrentWebviewWindow();
+
+        if (activePanel === 'radial') {
+          // 显示径向菜单时扩展窗口 - 360px工具条 + 320px菜单 + 边距
+          console.log("Setting window size for radial menu: 720x300");
+          await window.setSize(new LogicalSize(640, 300));
+        } else if (activePanel === 'search') {
+          // 搜索结果面板 - 与工具条同宽
+          console.log("Setting window size for search: 400x500");
+          await window.setSize(new LogicalSize(420, 500));
+        } else if (activePanel === 'add' || activePanel === 'settings') {
+          // 添加/设置面板 - 需要更大的空间
+          console.log("Setting window size for dialog panels: 600x600");
+          await window.setSize(new LogicalSize(420, 600));
+        } else {
+          // 默认小窗口 - 360px工具条 + 边距
+          console.log("Setting window size for default: 420x80");
+          await window.setSize(new LogicalSize(420, 72));
+        }
+        console.log("Window size adjustment completed successfully");
+      } catch (error) {
+        console.warn("Failed to adjust window size:", error);
+      }
+    };
+
+    adjustWindowSize();
+  }, [activePanel]);
+
+
 
   return (
     <>
@@ -252,10 +277,16 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         <div
           ref={toolbarRef}
           className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
-          onMouseDown={handleDragStart}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
+          {/* 拖拽区域 - 左侧空白区域 */}
+          <div
+            className="floating-toolbar-drag-area"
+            data-tauri-drag-region
+            onMouseDown={handleDragStart}
+          />
+
           {/* 搜索输入（内置前缀图标，圆角矩形） */}
           <div className="floating-toolbar-search-container">
             {/* 放大镜：固定在输入框左侧 16px 位置 */}
@@ -330,23 +361,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
             <button
               type="button"
               className="floating-toolbar-button"
-              onClick={async () => {
-                console.log("Exit button clicked");
-                // 仅在Tauri环境中调用
-                if (isTauri) {
-                  try {
-                    console.log("Calling exit_application command");
-                    // 调用Tauri命令退出应用程序
-                    const { invoke } = await import("@tauri-apps/api/core");
-                    await invoke("exit_application");
-                    console.log("Exit command completed");
-                  } catch (error) {
-                    console.error("Failed to exit application:", error);
-                  }
-                } else {
-                  console.log("Not in Tauri environment");
-                }
-              }}
+              onClick={handleExitClick}
               aria-label="Exit Application"
               title="退出应用程序"
             >
@@ -378,17 +393,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
         {/* 结果面板（统一组件） */}
         {activePanel === 'search' && searchResults.length > 0 && (
-          <SearchResults results={searchResults} onCopy={copyToClipboard} position={position} toolbarWidth={toolbarRef.current?.offsetWidth || 360} providerLabel={providerLabel} />
+          <SearchResults results={searchResults} onCopy={copyToClipboard} providerLabel={providerLabel} />
         )}
       </div>
 
       {activePanel === 'add' && showAddDialog && (
-        <AddApiKeyDialog 
-          open={showAddDialog} 
+        <AddApiKeyDialog
+          open={showAddDialog}
           onClose={() => {
             setShowAddDialog(false);
             setActivePanel('none');
-          }} 
+          }}
           onAdded={async()=>{
             if (searchTerm) {
               const res = await searchService.searchKeys(searchTerm);
@@ -397,21 +412,17 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
             } else {
               setActivePanel('none');
             }
-          }} 
-          position={position} 
-          toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
+          }}
         />
       )}
 
       {activePanel === 'settings' && showSettingsPanel && (
-        <SettingsPanel 
-          open={showSettingsPanel} 
+        <SettingsPanel
+          open={showSettingsPanel}
           onClose={() => {
             setShowSettingsPanel(false);
             setActivePanel('none');
-          }} 
-          position={position} 
-          toolbarWidth={toolbarRef.current?.offsetWidth || 360} 
+          }}
         />
       )}
     </>

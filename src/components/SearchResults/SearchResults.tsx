@@ -6,25 +6,15 @@ import "./SearchResults.css";
 interface SearchResultsProps {
   results: ApiKey[];
   onCopy: (key: ApiKey) => void;
-  position: { x: number; y: number };
-  toolbarWidth: number;
   providerLabel?: string;
 }
 
-export function SearchResults({ results, onCopy, position, toolbarWidth, providerLabel }: SearchResultsProps) {
+export function SearchResults({ results, onCopy, providerLabel }: SearchResultsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    // Set the position dynamically
-    if (resultsRef.current) {
-      const x = position.x + (toolbarWidth - 360) / 2;
-      const y = position.y + 72;
-      resultsRef.current.style.left = `${x}px`;
-      resultsRef.current.style.top = `${y}px`;
-    }
-  }, [position, toolbarWidth]);
+
 
   useEffect(() => {
     return () => {
@@ -54,7 +44,7 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
   return (
     <div
       ref={resultsRef}
-      className="search-results-container positioned"
+      className="search-results-container"
     >
       {providerLabel && (
         <div className="search-results-provider-label-container">

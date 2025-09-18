@@ -1,6 +1,5 @@
 import { CheckIcon, SunIcon, MoonIcon, ComputerIcon } from '../Icon/Icon';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useEffect, useRef } from 'react';
 import './SettingsPanel.css';
 
 interface ThemeOption {
@@ -17,8 +16,6 @@ interface ShortcutOption {
 interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
-  position: { x: number; y: number };
-  toolbarWidth: number;
 }
 
 const themeOptions: ThemeOption[] = [
@@ -46,23 +43,8 @@ const shortcutOptions: ShortcutOption[] = [
   }
 ];
 
-export function SettingsPanel({ open, onClose, position, toolbarWidth }: SettingsPanelProps) {
+export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { theme: currentTheme, setTheme } = useTheme();
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // 计算面板位置（在工具栏下方）
-  const panelPosition = {
-    left: position.x + (toolbarWidth - 360) / 2, // 与工具条居中对齐
-    top: position.y + 10, // 工具条下方固定距离
-  };
-
-  // 使用useEffect来设置CSS变量，避免内联样式
-  useEffect(() => {
-    if (panelRef.current) {
-      panelRef.current.style.setProperty('--panel-left', `${panelPosition.left}px`);
-      panelRef.current.style.setProperty('--panel-top', `${panelPosition.top}px`);
-    }
-  }, [panelPosition.left, panelPosition.top]);
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     setTheme(theme);
@@ -81,8 +63,7 @@ export function SettingsPanel({ open, onClose, position, toolbarWidth }: Setting
     <div className="settings-panel-container">
       <div className="settings-panel-overlay" onClick={onClose} />
       <div
-        ref={panelRef}
-        className="settings-panel positioned"
+        className="settings-panel"
         onClick={handlePanelClick}
       >
         <div className="settings-panel-header">

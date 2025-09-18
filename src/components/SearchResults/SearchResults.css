@@ -2,9 +2,11 @@
 
 /* Search results container */
 .search-results-container {
-  position: fixed;
+  position: absolute;
+  top: 65px;
+  left: 20px; /* 与工具条左边距对齐 */
+  width: 360px; /* 与工具条宽度一致 */
   z-index: 30;
-  width: 360px;
   border-radius: var(--radius-2xs);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
@@ -12,15 +14,15 @@
   background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
   border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
   /* Force hardware acceleration */
-  transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* 支持backdrop-filter的浏览器 */
 @supports (backdrop-filter: blur(20px)) {
   .search-results-container {
-    backdrop-filter: blur(10px) saturate(180%);
     -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
     background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
   }
 }
@@ -33,9 +35,7 @@
   }
 }
 
-.search-results-container.positioned {
-  /* Position will be set dynamically via JavaScript */
-}
+
 
 .dark .search-results-container {
   background-color: rgba(30, 41, 59, 0.7); /* 更明显的半透明背景 */
@@ -45,8 +45,8 @@
 /* 支持backdrop-filter的浏览器 */
 @supports (backdrop-filter: blur(20px)) {
   .dark .search-results-container {
-    backdrop-filter: blur(10px) saturate(180%);
     -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
     background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
   }
 }

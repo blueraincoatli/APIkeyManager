@@ -20,13 +20,20 @@ function App() {
           const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
           const window = getCurrentWebviewWindow();
           setWindowLabel(window.label);
+
+          // 为浮动工具条窗口添加特殊类名
+          if (window.label === "floating-toolbar") {
+            document.body.classList.add("floating-toolbar-window");
+          }
         } catch (error) {
           console.warn("Failed to get window label:", error);
           setWindowLabel("floating-toolbar"); // 默认为浮动工具条
+          document.body.classList.add("floating-toolbar-window");
         }
       } else {
         // 非Tauri环境，默认为浮动工具条用于开发测试
         setWindowLabel("floating-toolbar");
+        document.body.classList.add("floating-toolbar-window");
       }
     };
 

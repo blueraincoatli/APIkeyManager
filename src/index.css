@@ -80,6 +80,8 @@
   }
   body {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     margin: 0;
@@ -90,25 +92,13 @@
   /* 确保所有容器都是透明的 */
   html, body, #root {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
   }
 
-  /* 点击穿透控制 - 让透明区域可以穿透点击 */
-  #root {
-    pointer-events: none;
-  }
-
-  /* 工具条组件区域恢复点击事件 */
-  .floating-toolbar-container,
-  .floating-toolbar-container *,
-  .radial-menu,
-  .radial-menu *,
-  .search-results,
-  .search-results *,
-  .add-api-key-dialog,
-  .add-api-key-dialog *,
-  .settings-panel,
-  .settings-panel * {
-    pointer-events: auto;
+  /* 强制所有元素透明背景 */
+  * {
+    background-attachment: initial !important;
   }
 }
 
@@ -138,11 +128,22 @@
   --glass-border: rgba(255, 255, 255, 0.14);
 }
 
-/* Dark theme gradient background */
+/* 完全禁用深色主题背景 - 浮动工具条必须保持透明 */
 .dark body {
-  background-color: hsl(var(--background));
-  background-image: linear-gradient(135deg, #0b1220 0%, #111827 50%, #0a0f1e 100%);
-  background-attachment: fixed;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  background-attachment: initial !important;
+}
+
+/* 确保浮动工具条窗口在深色主题下也保持透明 */
+.dark .floating-toolbar-window,
+.dark .floating-toolbar-window body,
+.dark html,
+.dark #root {
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
 }
 
 .glass {
@@ -184,9 +185,9 @@
 /* App container - completely transparent for floating toolbar */
 .app-container {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
   padding: 0;
   margin: 0;
   box-sizing: border-box;

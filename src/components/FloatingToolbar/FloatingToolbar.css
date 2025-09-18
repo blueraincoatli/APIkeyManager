@@ -3,30 +3,22 @@
 /* Toolbar wrapper - positioned absolutely within the full-screen window */
 .floating-toolbar-wrapper {
   position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 50;
   /* Ensure it can be positioned anywhere in the window */
-  pointer-events: none;
-}
-
-/* Enable pointer events only for the toolbar itself */
-.floating-toolbar-wrapper > * {
   pointer-events: auto;
-}
-
-/* Dynamic positioning using CSS variables */
-.floating-toolbar-wrapper.positioned {
-  left: var(--wrapper-left);
-  top: var(--wrapper-top);
 }
 
 /* Toolbar container - 增强的毛玻璃效果 */
 .floating-toolbar-container {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   height: 56px;
-  width: 360px;
+  width: 360px; /* 恢复原始宽度，不包括圆头 */
   border-radius: var(--radius-full);
 
   /* 创建层叠上下文以支持backdrop-filter */
@@ -97,6 +89,20 @@
 
 .floating-toolbar-container:not(.dragging) {
   cursor: grab;
+}
+
+/* 拖拽区域 */
+.floating-toolbar-drag-area {
+  width: 10px;
+  height: 100%;
+  cursor: grab;
+  position: relative;
+  z-index: 0;
+}
+
+.floating-toolbar-drag-area:active,
+.floating-toolbar-container.dragging .floating-toolbar-drag-area {
+  cursor: grabbing;
 }
 
 /* Search input container */
@@ -204,11 +210,11 @@
 /* Radial menu container */
 .floating-toolbar-radial-menu {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: var(--space-s);
+  left: 200px; /* 在360px工具条右侧展开，留20px边距 */
+  top: -100px; /* 从顶部开始，留一些边距 */
   z-index: 50;
+  width: 320px;
+  height: 280px;
 }
 
 /* Media queries for larger screens */

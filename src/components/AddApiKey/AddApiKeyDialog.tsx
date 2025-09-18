@@ -42,11 +42,9 @@ interface AddApiKeyDialogProps {
   open: boolean;
   onClose: () => void;
   onAdded?: () => void; // 可选：回调刷新列表/结果
-  position?: { x: number; y: number }; // 可选：面板位置
-  toolbarWidth?: number; // 可选：工具栏宽度
 }
 
-export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth }: AddApiKeyDialogProps) {
+export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps) {
   const toast = useApiToast();
   const [name, setName] = useState("");
   const [keyValue, setKeyValue] = useState("");
@@ -59,31 +57,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
   const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
 
-  // 用于设置CSS自定义属性的refs
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
 
-  // 设置位置样式到DOM元素
-  useEffect(() => {
-    if (!position || !toolbarWidth) return;
-
-    const dialogLeft = position.x + (toolbarWidth - 360) / 2;
-    const dialogTop = position.y+10; 
-    const previewLeft = position.x + (toolbarWidth - 800) / 2;
-    const previewTop = position.y+10; 
-
-    // 设置对话框位置
-    if (dialogRef.current) {
-      dialogRef.current.style.setProperty('--dialog-left', `${dialogLeft}px`);
-      dialogRef.current.style.setProperty('--dialog-top', `${dialogTop}px`);
-    }
-
-    // 设置预览窗口位置
-    if (previewRef.current) {
-      previewRef.current.style.setProperty('--preview-left', `${previewLeft}px`);
-      previewRef.current.style.setProperty('--preview-top', `${previewTop}px`);
-    }
-  }, [position, toolbarWidth]);
   
   // 表单验证
   const errors = useMemo(() => {
@@ -215,8 +189,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
     <div className="add-api-key-dialog-container">
       <div className="add-api-key-dialog-overlay" onClick={() => setShowPreview(false)} />
       <div
-        ref={previewRef}
-        className="add-api-key-preview-window custom-position"
+        className="add-api-key-preview-window"
       >
         <div className="add-api-key-preview-header">
           <h2 className="add-api-key-preview-title">数据预览</h2>
@@ -406,8 +379,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded, position, toolbarWidth
       <div className="add-api-key-dialog-container">
         <div className="add-api-key-dialog-overlay" onClick={onClose} />
         <div
-          ref={dialogRef}
-          className="add-api-key-dialog-panel custom-position"
+          className="add-api-key-dialog-panel"
         >
           <form
             onSubmit={handleSubmit}

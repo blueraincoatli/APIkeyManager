@@ -2,7 +2,7 @@
 
 /* Radial menu overlay */
 .radial-menu-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 50;
   background: transparent;
@@ -10,7 +10,7 @@
 
 /* Radial menu background */
 .radial-menu-background {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.1);
 }

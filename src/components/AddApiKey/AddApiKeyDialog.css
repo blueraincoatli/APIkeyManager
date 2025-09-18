@@ -1,41 +1,32 @@
 /* AddApiKeyDialog Component Styles */
 
 /* Dialog container styles */
-.add-api-key-dialog {
+.add-api-key-dialog-container {
+  position: absolute;
+  top: 15px; /* 在工具条下方 */
+  left: 20px; /* 与工具条左边距对齐 */
+  z-index: 1003;
+  pointer-events: none;
+}
+
+.add-api-key-dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1003;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
 }
 
-.add-api-key-dialog__content {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* 深色主题 */
-@media (prefers-color-scheme: dark) {
-  .add-api-key-dialog__content {
-    background: #1f2937;
-    color: white;
-  }
+.add-api-key-dialog-panel,
+.add-api-key-preview-window {
+  pointer-events: auto;
 }
 
 /* Dialog panel styles */
 .add-api-key-dialog-panel {
-  position: absolute;
+  position: relative;
   width: 360px !important;
   min-width: 360px !important;
   max-width: 360px !important;
@@ -91,7 +82,7 @@
 
 /* Preview window styles */
 .add-api-key-preview-window {
-  position: absolute;
+  position: relative;
   width: 800px;
   max-width: 90vw;
   height: 600px;
@@ -610,37 +601,5 @@
   top: 0;
 }
 
-/* Positioning utility classes */
-.add-api-key-dialog-panel.centered:not(.custom-position) {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
 
-.add-api-key-preview-window.centered:not(.custom-position) {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* Custom positioning classes */
-.add-api-key-dialog-panel.custom-position {
-  position: absolute;
-  left: var(--dialog-left, 50%);
-  top: var(--dialog-top, 50%);
-}
-
-.add-api-key-preview-window.custom-position {
-  position: absolute;
-  left: var(--preview-left, 50%);
-  top: var(--preview-top, 50%);
-}
-
-.add-api-key-dialog-panel.custom-position {
-  position: absolute;
-  left: var(--dialog-left, 50%);
-  top: var(--dialog-top, 50%);
-}
 
