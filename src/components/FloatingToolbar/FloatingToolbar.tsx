@@ -362,7 +362,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         if (originalWindowState) {
           await restoreOriginalWindowState();
         } else {
-          await adjustWindowSizeWithAnchor(400, 80, 'top-left'); // 与配置文件保持一致
+          await adjustWindowSizeWithAnchor(460, 120, 'top-left'); // 与配置文件保持一致
         }
       }
     };
