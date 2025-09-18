@@ -3,23 +3,31 @@
 /* Toolbar wrapper - positioned absolutely within the full-screen window */
 .floating-toolbar-wrapper {
   position: absolute;
-  top: 35px;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 50%; /* 默认50%高度定位 */
+  left: 5px; /* 固定距离左边的距离 */
+  transform: translateY(-50%); /* 垂直居中 */
   z-index: 50;
   /* Ensure it can be positioned anywhere in the window */
   pointer-events: auto;
+  transition: top 0.2s ease, transform 0.2s ease; /* 平滑过渡 */
+}
+
+/* 下拉面板时工具条固定在顶部 */
+.floating-toolbar-wrapper.top-positioned {
+  top: 10px;
+  transform: translateY(0);
 }
 
 /* Toolbar container - 增强的毛玻璃效果 */
 .floating-toolbar-container {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   height: 56px;
   width: 360px; /* 恢复原始宽度，不包括圆头 */
   border-radius: var(--radius-full);
+  cursor: grab;
 
   /* 创建层叠上下文以支持backdrop-filter */
   isolation: isolate;
@@ -87,22 +95,11 @@
   cursor: grabbing;
 }
 
-.floating-toolbar-container:not(.dragging) {
-  cursor: grab;
-}
-
-/* 拖拽区域 */
-.floating-toolbar-drag-area {
-  width: 10px;
-  height: 100%;
-  cursor: grab;
-  position: relative;
-  z-index: 0;
-}
-
-.floating-toolbar-drag-area:active,
-.floating-toolbar-container.dragging .floating-toolbar-drag-area {
-  cursor: grabbing;
+/* 交互元素不可拖拽 */
+.floating-toolbar-search-container,
+.floating-toolbar-buttons {
+  pointer-events: auto;
+  cursor: default;
 }
 
 /* Search input container */
@@ -215,6 +212,7 @@
   z-index: 50;
   width: 320px;
   height: 280px;
+  pointer-events: auto; /* 确保径向菜单可以接收点击事件 */
 }
 
 /* Media queries for larger screens */

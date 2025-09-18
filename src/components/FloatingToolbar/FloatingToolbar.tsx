@@ -39,6 +39,12 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
 
+  // 记住径向菜单打开前的窗口状态，用于恢复位置
+  const [originalWindowState, setOriginalWindowState] = useState<{
+    position: { x: number; y: number };
+    size: { width: number; height: number };
+  } | null>(null);
+
 
 
   useEffect(() => {
@@ -87,9 +93,16 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
 
 
-  // 拖拽：简化实现
+  // 拖拽：整个工具条可拖拽
   const handleDragStart = async (e: React.MouseEvent) => {
     if (e.button !== 0) return; // 只响应左键
+
+    // 检查是否点击在交互元素上
+    const target = e.target as HTMLElement;
+    if (target.closest('.floating-toolbar-search-container') ||
+        target.closest('.floating-toolbar-buttons')) {
+      return; // 不处理交互元素的拖拽
+    }
 
     console.log("Drag start triggered, isTauri:", isTauri);
 
@@ -220,6 +233,135 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     loadCounts();
   }, [showRadialMenu]);
 
+  // 以工具条为锚点调整窗口大小
+  const adjustWindowSizeWithAnchor = async (newWidth: number, newHeight: number, anchorType: 'center' | 'top-left', saveOriginalState: boolean = false) => {
+    try {
+      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
+      const window = getCurrentWebviewWindow();
+
+      // 获取当前窗口的逻辑位置和尺寸（避免DPI缩放问题）
+      const currentPosition = await window.outerPosition();
+      const currentSize = await window.outerSize();
+      const scaleFactor = await window.scaleFactor();
+
+      // 转换为逻辑坐标
+      const currentLogicalX = currentPosition.x / scaleFactor;
+      const currentLogicalY = currentPosition.y / scaleFactor;
+      const currentLogicalWidth = currentSize.width / scaleFactor;
+      const currentLogicalHeight = currentSize.height / scaleFactor;
+
+      console.log("Current window (logical):", {
+        position: { x: currentLogicalX, y: currentLogicalY },
+        size: { width: currentLogicalWidth, height: currentLogicalHeight },
+        scaleFactor,
+        newSize: { width: newWidth, height: newHeight }
+      });
+
+      // 如果需要保存原始状态（打开径向菜单时）
+      if (saveOriginalState) {
+        setOriginalWindowState({
+          position: { x: currentLogicalX, y: currentLogicalY },
+          size: { width: currentLogicalWidth, height: currentLogicalHeight }
+        });
+        console.log("Saved original window state for restoration");
+      }
+
+      if (anchorType === 'center') {
+        // 径向菜单：保持工具条在窗口中心位置不变，上下扩展
+        const heightDiff = newHeight - currentLogicalHeight;
+        const newLogicalY = currentLogicalY - heightDiff / 2; // 向上移动一半高度差
+
+        console.log("Before resize - center anchor:", {
+          currentLogicalY,
+          currentLogicalHeight,
+          heightDiff,
+          newLogicalY,
+          newWidth,
+          newHeight
+        });
+
+        // 先调整位置，再调整尺寸（避免跳跃）
+        await window.setPosition(new LogicalPosition(currentLogicalX, newLogicalY));
+        console.log("Position set, now setting size...");
+
+        await window.setSize(new LogicalSize(newWidth, newHeight));
+        console.log("Size set successfully");
+
+        // 验证最终位置
+        const finalPosition = await window.outerPosition();
+        const finalSize = await window.outerSize();
+        console.log("Final window state:", {
+          position: {
+            physical: finalPosition,
+            logical: { x: finalPosition.x / scaleFactor, y: finalPosition.y / scaleFactor }
+          },
+          size: {
+            physical: finalSize,
+            logical: { width: finalSize.width / scaleFactor, height: finalSize.height / scaleFactor }
+          }
+        });
+      } else {
+        // 下拉面板：工具条通过CSS固定在顶部，只需调整窗口尺寸
+        console.log("Before resize - top-positioned panels:", {
+          currentLogicalX,
+          currentLogicalY,
+          currentLogicalWidth,
+          currentLogicalHeight,
+          newWidth,
+          newHeight
+        });
+
+        // 对于下拉面板，工具条会通过CSS移动到顶部，所以只需要调整尺寸
+        await window.setSize(new LogicalSize(newWidth, newHeight));
+        console.log("Size set for top-positioned panels");
+
+        // 验证最终状态
+        const finalPosition = await window.outerPosition();
+        const finalSize = await window.outerSize();
+        console.log("Final window state:", {
+          position: {
+            physical: finalPosition,
+            logical: { x: finalPosition.x / scaleFactor, y: finalPosition.y / scaleFactor }
+          },
+          size: {
+            physical: finalSize,
+            logical: { width: finalSize.width / scaleFactor, height: finalSize.height / scaleFactor }
+          }
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to adjust window size with anchor:", error);
+    }
+  };
+
+  // 恢复到原始窗口状态
+  const restoreOriginalWindowState = async () => {
+    if (!originalWindowState) {
+      console.warn("No original window state to restore");
+      return;
+    }
+
+    try {
+      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
+      const window = getCurrentWebviewWindow();
+
+      console.log("Restoring original window state:", originalWindowState);
+
+      // 先恢复位置，再恢复尺寸
+      await window.setPosition(new LogicalPosition(originalWindowState.position.x, originalWindowState.position.y));
+      await window.setSize(new LogicalSize(originalWindowState.size.width, originalWindowState.size.height));
+
+      console.log("Original window state restored successfully");
+
+      // 清除保存的状态
+      setOriginalWindowState(null);
+    } catch (error) {
+      console.warn("Failed to restore original window state:", error);
+    }
+  };
+
   // 动态调整窗口大小以适应弹出内容
   useEffect(() => {
     const adjustWindowSize = async () => {
@@ -237,32 +379,29 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         return;
       }
 
-      try {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-        const { LogicalSize } = await import("@tauri-apps/api/dpi");
-        const window = getCurrentWebviewWindow();
-
-        if (activePanel === 'radial') {
-          // 显示径向菜单时扩展窗口 - 360px工具条 + 320px菜单 + 边距
-          console.log("Setting window size for radial menu: 720x300");
-          await window.setSize(new LogicalSize(640, 300));
-        } else if (activePanel === 'search') {
-          // 搜索结果面板 - 与工具条同宽
-          console.log("Setting window size for search: 400x500");
-          await window.setSize(new LogicalSize(420, 500));
-        } else if (activePanel === 'add' || activePanel === 'settings') {
-          // 添加/设置面板 - 需要更大的空间
-          console.log("Setting window size for dialog panels: 600x600");
-          await window.setSize(new LogicalSize(420, 600));
+      if (activePanel === 'radial') {
+        // 显示径向菜单时扩展窗口 - 使用中心锚点，并保存原始状态
+        console.log("Setting window size for radial menu: 640x300");
+        await adjustWindowSizeWithAnchor(640, 300, 'center', true);
+      } else if (activePanel === 'search') {
+        // 搜索结果面板 - 使用左上角锚点
+        console.log("Setting window size for search: 420x500");
+        await adjustWindowSizeWithAnchor(420, 500, 'top-left');
+      } else if (activePanel === 'add' || activePanel === 'settings') {
+        // 添加/设置面板 - 使用左上角锚点
+        console.log("Setting window size for dialog panels: 420x600");
+        await adjustWindowSizeWithAnchor(420, 600, 'top-left');
+      } else {
+        // 默认小窗口 - 恢复原始状态或使用默认尺寸
+        if (originalWindowState) {
+          console.log("Restoring original window state");
+          await restoreOriginalWindowState();
         } else {
-          // 默认小窗口 - 360px工具条 + 边距
-          console.log("Setting window size for default: 420x80");
-          await window.setSize(new LogicalSize(420, 72));
+          console.log("Setting window size for default: 420x72");
+          await adjustWindowSizeWithAnchor(420, 72, 'top-left');
         }
-        console.log("Window size adjustment completed successfully");
-      } catch (error) {
-        console.warn("Failed to adjust window size:", error);
       }
+      console.log("Window size adjustment completed successfully");
     };
 
     adjustWindowSize();
@@ -272,21 +411,20 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
   return (
     <>
-      <div ref={wrapperRef} className="floating-toolbar-wrapper">
+      <div ref={wrapperRef} className={`floating-toolbar-wrapper ${
+        activePanel === 'search' || activePanel === 'add' || activePanel === 'settings'
+          ? 'top-positioned'
+          : ''
+      }`}>
         {/* 工具条本体（无全屏遮罩） */}
         <div
           ref={toolbarRef}
           className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onMouseDown={handleDragStart}
+          data-tauri-drag-region
         >
-          {/* 拖拽区域 - 左侧空白区域 */}
-          <div
-            className="floating-toolbar-drag-area"
-            data-tauri-drag-region
-            onMouseDown={handleDragStart}
-          />
-
           {/* 搜索输入（内置前缀图标，圆角矩形） */}
           <div className="floating-toolbar-search-container">
             {/* 放大镜：固定在输入框左侧 16px 位置 */}

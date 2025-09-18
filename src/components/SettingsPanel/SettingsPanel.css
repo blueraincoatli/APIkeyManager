@@ -3,8 +3,9 @@
 /* Settings panel container */
 .settings-panel-container {
   position: absolute;
+  transform: translate(0%, 0%);
   top: 15px; /* 在工具条下方 */
-  left: 20px; /* 与工具条左边距对齐 */
+  left: 30px; /* 与工具条左边距对齐 */
   z-index: var(--z-dialog);
   pointer-events: none;
 }
