@@ -8,6 +8,7 @@ import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
 import { SettingsPanel } from "../SettingsPanel/SettingsPanel";
 import { apiKeyService } from "../../services/apiKeyService";
+import { useTheme } from "../../contexts/ThemeContext";
 import "./FloatingToolbar.css";
 
 // 检查是否在Tauri环境中
@@ -18,13 +19,19 @@ interface FloatingToolbarProps {
 }
 
 export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
+  const { resolvedTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
   const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
   const [showRadialMenu, setShowRadialMenu] = useState(false);
-  const [position, setPosition] = useState({ 
-    x: window.innerWidth / 2 - 208, 
-    y: window.innerHeight / 4 - 28 // 将位置从正中央移到上半部分（1/4处）
+  const [position, setPosition] = useState(() => {
+    // 使用屏幕尺寸而不是窗口尺寸来计算初始位置
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+    return {
+      x: screenWidth / 2 - 180, // 工具条宽度360px的一半
+      y: screenHeight / 4 - 28   // 工具条高度56px的一半，放在屏幕上1/4处
+    };
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -40,28 +47,73 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
 
+  // 点击穿透状态管理 - 初始状态为false，确保工具条可以正常交互
+  const [isClickThrough, setIsClickThrough] = useState(false);
+
+  // 设置点击穿透模式 - 重新设计逻辑
+  const setClickThrough = async (enabled: boolean) => {
+    // 暂时禁用全局点击穿透，改为使用CSS pointer-events控制
+    // 这样可以精确控制哪些区域可以点击
+    setIsClickThrough(enabled);
+  };
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // 辅助：限制位置在屏幕范围内（允许部分超出，提供更好的拖拽体验）
+  // 处理鼠标进入工具条区域 - 重新获得窗口焦点
+  const handleMouseEnter = async () => {
+    // 重新获得窗口焦点
+    if (isTauri) {
+      try {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const window = getCurrentWebviewWindow();
+        await window.setFocus();
+      } catch (error) {
+        console.warn("Failed to set window focus:", error);
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // 使用CSS pointer-events控制，不需要额外逻辑
+  };
+
+  // 辅助：获取屏幕尺寸并限制位置（允许在整个屏幕范围内拖拽）
   const clamp = (x: number, y: number) => {
     const width = toolbarRef.current?.offsetWidth || 360;
     const height = toolbarRef.current?.offsetHeight || 56;
-    // 允许工具条部分超出屏幕边缘，但保留一定可见区域
-    const maxX = window.innerWidth - 50; // 保留50px可见区域
-    const maxY = window.innerHeight - 50;
-    return { 
-      x: Math.min(Math.max(-width + 50, x), maxX), 
-      y: Math.min(Math.max(-height + 50, y), maxY) 
+
+    // 获取屏幕尺寸（而不是窗口尺寸）
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+
+    // 允许工具条在整个屏幕范围内移动，但保留一定可见区域
+    const maxX = screenWidth - 50; // 保留50px可见区域
+    const maxY = screenHeight - 50;
+    return {
+      x: Math.min(Math.max(-width + 50, x), maxX),
+      y: Math.min(Math.max(-height + 50, y), maxY)
     };
   };
 
   // 拖拽：仅当点击不在 input 或 button 上时启动
-  const handleDragStart = (e: React.MouseEvent) => {
+  const handleDragStart = async (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.tagName === 'INPUT' || target.closest('input')) return;
+
+    // 点击工具条时重新获得焦点
+    if (isTauri) {
+      try {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const window = getCurrentWebviewWindow();
+        await window.setFocus();
+      } catch (error) {
+        console.warn("Failed to set window focus on drag start:", error);
+      }
+    }
+
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     e.preventDefault();
@@ -201,6 +253,8 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           ref={toolbarRef}
           className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
           onMouseDown={handleDragStart}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           {/* 搜索输入（内置前缀图标，圆角矩形） */}
           <div className="floating-toolbar-search-container">
@@ -272,25 +326,29 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               <GearIcon />
             </button>
 
-            {/* 最小化 */}
+            {/* 退出应用程序 */}
             <button
               type="button"
               className="floating-toolbar-button"
               onClick={async () => {
+                console.log("Exit button clicked");
                 // 仅在Tauri环境中调用
                 if (isTauri) {
                   try {
-                    // 动态导入模块并获取当前webview窗口实例
-                    const webviewWindow = await import("@tauri-apps/api/webviewWindow");
-                    const currentWindow = webviewWindow.getCurrentWebviewWindow();
-                    // 隐藏窗口而不是关闭应用
-                    await currentWindow.hide();
+                    console.log("Calling exit_application command");
+                    // 调用Tauri命令退出应用程序
+                    const { invoke } = await import("@tauri-apps/api/core");
+                    await invoke("exit_application");
+                    console.log("Exit command completed");
                   } catch (error) {
-                    console.warn("Failed to hide window:", error);
+                    console.error("Failed to exit application:", error);
                   }
+                } else {
+                  console.log("Not in Tauri environment");
                 }
               }}
-              aria-label="Minimize"
+              aria-label="Exit Application"
+              title="退出应用程序"
             >
               <CloseIcon />
             </button>

@@ -79,9 +79,36 @@
     border-color: hsl(var(--border));
   }
   body {
-    background-color: hsl(var(--background));
+    background: transparent !important;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* 确保所有容器都是透明的 */
+  html, body, #root {
+    background: transparent !important;
+  }
+
+  /* 点击穿透控制 - 让透明区域可以穿透点击 */
+  #root {
+    pointer-events: none;
+  }
+
+  /* 工具条组件区域恢复点击事件 */
+  .floating-toolbar-container,
+  .floating-toolbar-container *,
+  .radial-menu,
+  .radial-menu *,
+  .search-results,
+  .search-results *,
+  .add-api-key-dialog,
+  .add-api-key-dialog *,
+  .settings-panel,
+  .settings-panel * {
+    pointer-events: auto;
   }
 }
 
@@ -154,45 +181,35 @@
   background: transparent;
 }
 
-/* App gradient via id to ensure it wins over utility classes */
-#app-bg {
+/* App container - completely transparent for floating toolbar */
+.app-container {
   position: relative;
-  /* Outer spacing for the whole interface */
-  padding: 5px;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
+  background: transparent !important;
+  /* 移除所有可能的背景效果 */
+  background-image: none !important;
+  background-color: transparent !important;
 }
-#app-bg > * {
+
+.app-container > * {
   position: relative;
   z-index: 1;
 }
-#app-bg::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background-attachment: fixed !important;
-  background-size: cover !important;
+
+/* Floating toolbar window - 完全透明 */
+.floating-toolbar-window {
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
 }
-:root[data-theme="light"] #app-bg::before {
-  /* Full window checkerboard pattern for better glass effect visualization */
-  background-image: 
-    linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%),
-    linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%),
-    linear-gradient(135deg, #64b5f6 0%, #bbdefb 50%, #e3f2fd 100%) !important;
-  background-size: 60px 60px, 60px 60px, 100% 100% !important;
-  background-position: 0 0, 30px 30px, 0 0 !important;
-  background-repeat: repeat !important;
-  background-color: #f5f5f5 !important;
-}
-:root[data-theme="dark"] #app-bg::before {
-  /* Full window checkerboard pattern for dark theme */
-  background-image: 
-    linear-gradient(45deg, #2d2d2d 25%, transparent 25%, transparent 75%, #2d2d2d 75%),
-    linear-gradient(45deg, #2d2d2d 25%, transparent 25%, transparent 75%, #2d2d2d 75%),
-    linear-gradient(135deg, #1565c0 0%, #0d47a1 50%, #082754 100%) !important;
-  background-size: 60px 60px, 60px 60px, 100% 100% !important;
-  background-position: 0 0, 30px 30px, 0 0 !important;
-  background-repeat: repeat !important;
-  background-color: #121212 !important;
+
+.floating-toolbar-window::before,
+.floating-toolbar-window::after {
+  display: none !important;
 }
 

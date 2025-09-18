@@ -12,19 +12,41 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "API Key Manager",
-        "width": 360,
-        "height": 56,
+        "width": 800,
+        "height": 600,
+        "visible": false,
+        "decorations": true
+      },
+      {
+        "label": "floating-toolbar",
+        "title": "Floating Toolbar",
+        "width": 1920,
+        "height": 1080,
         "decorations": false,
-        "skipTaskbar": false,
+        "skipTaskbar": true,
         "transparent": true,
         "hiddenTitle": true,
-        "focus": true,
+        "focus": false,
         "visible": true,
         "alwaysOnTop": true,
-        "center": true,
+        "center": false,
         "shadow": false,
-        "theme": "Light"
+        "theme": "Light",
+        "acceptFirstMouse": false,
+        "dragDropEnabled": false,
+        "resizable": false,
+        "minimizable": false,
+        "maximizable": false,
+        "closable": false,
+        "url": "/",
+        "fullscreen": false,
+        "x": 0,
+        "y": 0,
+        "titleBarStyle": "Overlay",
+        "visibleOnAllWorkspaces": true,
+        "contentProtected": false
       }
     ],
     "security": {

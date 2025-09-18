@@ -31,10 +31,20 @@ pub fn run() {
             // 初始化数据库
             let handle = app.handle().clone();
             
-            // 在生产环境中隐藏主窗口
-            #[cfg(not(debug_assertions))]
+            // 隐藏主窗口，只显示浮动工具条窗口
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.hide();
+            }
+            
+            // 确保浮动工具条窗口可见
+            if let Some(window) = app.get_webview_window("floating-toolbar") {
+                let _ = window.show();
+                // 不要自动获取焦点，让用户可以继续使用其他应用
+                // let _ = window.set_focus();
+
+                // 初始状态不启用点击穿透，确保工具条可以正常交互
+                // 点击穿透将由前端根据鼠标位置动态控制
+                let _ = window.set_ignore_cursor_events(false);
             }
             
             tauri::async_runtime::spawn(async move {
@@ -51,6 +61,17 @@ pub fn run() {
             
             Ok(())
         })
+        .on_window_event(|window, event| {
+            match event {
+                tauri::WindowEvent::Focused(false) => {
+                    // 当窗口失去焦点时，启用点击穿透
+                    if window.label() == "floating-toolbar" {
+                        let _ = window.set_ignore_cursor_events(true);
+                    }
+                }
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             commands::api_key_commands::add_api_key,
@@ -66,6 +87,12 @@ pub fn run() {
             commands::security_commands::encrypt_key,
             commands::security_commands::decrypt_key,
             commands::shortcut_commands::register_shortcut,
+            commands::window_commands::show_floating_toolbar,
+            commands::window_commands::hide_floating_toolbar,
+            commands::window_commands::exit_application,
+            commands::window_commands::set_window_position,
+            commands::window_commands::set_window_size,
+            commands::window_commands::set_click_through,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

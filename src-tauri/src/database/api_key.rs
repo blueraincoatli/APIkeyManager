@@ -4,16 +4,22 @@ use sqlx::SqlitePool;
 use crate::database::error::DatabaseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct ApiKey {
     pub id: String,
     pub name: String,
+    #[serde(rename = "keyValue")]
     pub key_value: String,
     pub platform: Option<String>,
     pub description: Option<String>,
+    #[serde(rename = "groupId")]
     pub group_id: Option<String>,
     pub tags: Option<String>,
+    #[serde(rename = "createdAt")]
     pub created_at: i64,
+    #[serde(rename = "updatedAt")]
     pub updated_at: i64,
+    #[serde(rename = "lastUsedAt")]
     pub last_used_at: Option<i64>,
 }
 
