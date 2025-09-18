@@ -4,7 +4,7 @@
 .floating-toolbar-wrapper {
   position: absolute;
   top: 50%; /* 默认50%高度定位 */
-  left: 5px; /* 固定距离左边的距离 */
+  left: 1.5em; /* 固定距离左边的距离 */
   transform: translateY(-50%); /* 垂直居中 */
   z-index: 50;
   /* Ensure it can be positioned anywhere in the window */
@@ -25,7 +25,7 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   height: 56px;
-  width: 360px;
+  width: 360px; /* 增加宽度以适应阴影 */
   border-radius: var(--radius-full);
   cursor: grab;
   isolation: isolate;
@@ -41,9 +41,9 @@
 
   /* Enhanced shadow for light theme */
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    0 3px 15px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    0 3px 10px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6); /* 减小阴影距离 */
 
   /* Performance */
   transform: translate3d(0, 0, 0);
@@ -58,9 +58,9 @@
 
   /* Enhanced shadow for dark theme */
   box-shadow:
-    0 12px 45px rgba(0, 0, 0, 0.3),
-    0 3px 20px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 25px rgba(0, 0, 0, 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1); /* 减小阴影距离 */
 }
 
 .floating-toolbar-container.dragging {

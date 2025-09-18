@@ -5,7 +5,7 @@
   position: absolute;
   transform: translate(0%, 0%);
   top: 15px; /* 在工具条下方 */
-  left: 30px; /* 与工具条左边距对齐 */
+  left: 50px; /* 与工具条左边距对齐 */
   z-index: var(--z-dialog);
   pointer-events: none;
 }
@@ -35,14 +35,14 @@
   /* Light theme gradient */
   background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
   border: 1px solid rgb(220, 220, 220);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2), 0 5px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.15); /* 减小阴影距离 */
 }
 
 .dark .settings-panel {
   /* Dark theme gradient */
   background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
   border: 1px solid rgb(75, 85, 105);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.3); /* 减小阴影距离 */
 }
 
 /* Settings panel header */

@@ -314,12 +314,12 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       if (activePanel === 'radial') {
         await adjustWindowSizeWithAnchor(640, 300, 'center', true);
       } else if (activePanel === 'search' || activePanel === 'add' || activePanel === 'settings') {
-        await adjustWindowSizeWithAnchor(420, 600, 'top-left');
+        await adjustWindowSizeWithAnchor(460, 600, 'top-left');
       } else {
         if (originalWindowState) {
           await restoreOriginalWindowState();
         } else {
-          await adjustWindowSizeWithAnchor(420, 72, 'top-left');
+          await adjustWindowSizeWithAnchor(460, 120, 'top-left');
         }
       }
     };
@@ -450,7 +450,18 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
         {/* 结果面板（统一组件） */}
         {activePanel === 'search' && searchResults.length > 0 && (
-          <SearchResults results={searchResults} onCopy={copyToClipboard} providerLabel={providerLabel} />
+          <SearchResults 
+            results={searchResults} 
+            onCopy={copyToClipboard} 
+            providerLabel={providerLabel}
+            onRefresh={async () => {
+              // 重新搜索以刷新结果
+              if (searchTerm) {
+                const res = await searchService.searchKeys(searchTerm);
+                setSearchResults(res.data);
+              }
+            }}
+          />
         )}
       </div>
 

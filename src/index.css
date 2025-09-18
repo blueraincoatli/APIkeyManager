@@ -121,11 +121,13 @@
   --glass-bg-rgb: 255, 255, 255;
   --glass-bg-alpha: 0.18; /* light theme base alpha */
   --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* 减小了阴影 */
 }
 .dark {
   --glass-bg-rgb: 17, 25, 40;
   --glass-bg-alpha: 0.45; /* darker, more opaque */
   --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* 统一使用减小后的阴影 */
 }
 
 /* 完全禁用深色主题背景 - 浮动工具条必须保持透明 */
@@ -151,7 +153,7 @@
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--glass-shadow);
   /* Ensure the element is positioned to show glass effect */
   position: relative;
   /* Add transform to create a new stacking context */

@@ -96,6 +96,13 @@ export const ShuffleIcon: React.FC<IconProps> = ({ size = 18, className, ...rest
   </svg>
 );
 
+export const EditIcon: React.FC<IconProps> = ({ size = 18, className, ...rest }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...rest}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+
 export default {
   SearchIcon,
   PlusIcon,
@@ -108,5 +115,6 @@ export default {
   MoonIcon,
   ComputerIcon,
   ShuffleIcon,
+  EditIcon,
 };
 

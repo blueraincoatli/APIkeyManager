@@ -5,7 +5,7 @@
   position: absolute;
   transform: translate(0%, 0%);
   top: 15px; /* 在工具条下方 */
-  left: 30px; /* 与工具条左边距对齐 */
+  left: 50px; /* 与工具条左边距对齐 */
   z-index: 1003;
   pointer-events: none;
 }
@@ -40,7 +40,7 @@
   border: 1px solid rgb(220, 220, 220);
   
   /* Enhanced shadow for light theme */
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.18), 0 5px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 5px 15px rgba(0, 0, 0, 0.12); /* 减小阴影距离 */
 
   /* Force hardware acceleration */
   transform: translateZ(0);
@@ -52,7 +52,7 @@
   border: 1px solid rgb(75, 85, 105);
 
   /* Enhanced shadow for dark theme */
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3), 0 5px 25px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.25); /* 减小阴影距离 */
 }
 
 /* Preview window styles */
