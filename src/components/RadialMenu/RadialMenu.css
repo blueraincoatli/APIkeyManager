@@ -28,86 +28,44 @@
   justify-content: center;
   padding: var(--space-3xs) var(--space-m);
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xl);
-  background-color: var(--glass-bg-light);
-  /* Safari fallback */
-  background-color: rgba(255, 255, 255, 0.85);
-  border: var(--border-width-s) solid var(--glass-border-light);
-  transition: all var(--transition-fast);
   min-width: 120px;
   max-width: 180px;
   cursor: pointer;
-  pointer-events: auto; /* 确保按钮可以接收点击事件 */
-  z-index: 100; /* 确保按钮在最上层 */
-  /* Force hardware acceleration */
-  -webkit-transform: translateZ(0);
+  pointer-events: auto;
+  z-index: 100;
+  transition: all var(--transition-fast);
+
+  /* Light theme gradient */
+  background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border: 1px solid rgb(220, 220, 220);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  /* Performance */
   transform: translateZ(0);
-}
-
-/* 为Tauri WebView优化的backdrop-filter */
-.radial-menu-option-button {
-  /* 基础设置 - 确保在所有环境中都有效果 */
-  background-color: rgba(255, 255, 255, 0.7);
-
-  /* 尝试多种方式触发模糊效果 */
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-
-  /* 为WebView添加额外的渲染提示 */
-  transform: translateZ(0);
-  will-change: backdrop-filter;
+  will-change: transform, box-shadow;
   isolation: isolate;
-}
-
-/* 支持backdrop-filter的现代浏览器 */
-@supports (backdrop-filter: blur(10px)) {
-  .radial-menu-option-button {
-    background-color: rgba(255, 255, 255, 0.4);
-  }
-}
-
-/* WebKit特殊处理（包括Tauri的WebView2） */
-@supports (-webkit-backdrop-filter: blur(10px)) {
-  .radial-menu-option-button {
-    background-color: rgba(255, 255, 255, 0.4);
-  }
 }
 
 .radial-menu-option-button:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow: var(--shadow-2xl), 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(255, 255, 255, 0.2);
-  border-color: rgba(100, 116, 139, 0.6);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2), 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-color: rgb(200, 200, 200);
   z-index: 20;
-  filter: brightness(1.05);
+  filter: brightness(1.02);
 }
 
 /* Dark theme for option button */
 .dark .radial-menu-option-button {
-  background-color: var(--glass-bg-dark);
-  border: var(--border-width-s) solid var(--glass-border-dark);
-}
-
-/* 支持backdrop-filter的浏览器 */
-@supports (backdrop-filter: blur(20px)) {
-  .dark .radial-menu-option-button {
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    background-color: var(--glass-bg-dark);
-  }
-}
-
-/* Safari特殊处理 */
-@supports (-webkit-backdrop-filter: blur(20px)) {
-  .dark .radial-menu-option-button {
-    -webkit-backdrop-filter: var(--glass-blur);
-    background-color: var(--glass-bg-dark);
-  }
+  /* Dark theme gradient */
+  background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  border: 1px solid rgb(75, 85, 105);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 2px 15px rgba(0, 0, 0, 0.25);
 }
 
 .dark .radial-menu-option-button:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow: var(--shadow-2xl), 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 15px rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgb(100, 110, 130);
   z-index: 20;
   filter: brightness(1.1);
 }

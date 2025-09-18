@@ -18,103 +18,49 @@
   transform: translateY(0);
 }
 
-/* Toolbar container - 增强的毛玻璃效果 */
+/* Toolbar container - Simulated frost effect */
 .floating-toolbar-container {
   position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   height: 56px;
-  width: 360px; /* 恢复原始宽度，不包括圆头 */
+  width: 360px;
   border-radius: var(--radius-full);
   cursor: grab;
-
-  /* 创建层叠上下文以支持backdrop-filter */
   isolation: isolate;
   z-index: 1;
 
-  /* Fallback背景 - 不支持backdrop-filter时使用 */
-  background-color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* Light theme gradient */
+  background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border: 1px solid rgb(225, 225, 225);
 
   padding: 0 var(--space-l);
   gap: var(--space-m);
-  color: rgba(17, 24, 39, 0.9);
+  color: rgb(31, 41, 55);
 
-  /* Force hardware acceleration for better performance */
-  -webkit-transform: translate3d(0, 0, 0);
+  /* Enhanced shadow for light theme */
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 3px 15px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* Performance */
   transform: translate3d(0, 0, 0);
-  will-change: transform, backdrop-filter;
-
-  /* 为Tauri WebView优化的毛玻璃效果 */
-  -webkit-backdrop-filter: blur(18px) saturate(160%) brightness(1.05);
-  backdrop-filter: blur(18px) saturate(160%) brightness(1.05);
-
-  /* 如果backdrop-filter不工作，使用伪元素创建模糊背景 */
-  position: relative;
-
-  /* 添加阴影增强玻璃质感 */
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 16px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* 支持backdrop-filter的浏览器 */
-@supports (backdrop-filter: blur(10px)) {
-  .floating-toolbar-container {
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-}
-
-/* WebKit特殊处理（包括Tauri的WebView2） */
-@supports (-webkit-backdrop-filter: blur(10px)) {
-  .floating-toolbar-container {
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-}
-
-/* 为不支持backdrop-filter的环境提供fallback */
-@supports not (backdrop-filter: blur(10px)) {
-  .floating-toolbar-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: inherit;
-    z-index: -1;
-    filter: blur(2px);
-  }
-}
-
-/* 暗色主题的毛玻璃效果 */
+/* Dark theme simulated frost */
 .dark .floating-toolbar-container {
-  /* Fallback背景 - 不支持backdrop-filter时使用 */
-  background-color: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(100, 116, 139, 0.4);
-  color: rgba(255, 255, 255, 0.9);
+  /* Dark theme gradient */
+  background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  border: 1px solid rgb(70, 80, 100);
+  color: rgb(225, 235, 255);
 
-  /* 暗色主题毛玻璃效果 - 强制应用 */
-  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(0.8) !important;
-  backdrop-filter: blur(20px) saturate(180%) brightness(0.8) !important;
-
-  /* 暗色主题的阴影 */
+  /* Enhanced shadow for dark theme */
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.24),
-    0 2px 16px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* 暗色主题支持backdrop-filter的浏览器使用更透明的背景 */
-@supports (backdrop-filter: blur(20px)) {
-  .dark .floating-toolbar-container {
-    background-color: rgba(30, 41, 59, 0.75);
-  }
+    0 12px 45px rgba(0, 0, 0, 0.3),
+    0 3px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .floating-toolbar-container.dragging {
