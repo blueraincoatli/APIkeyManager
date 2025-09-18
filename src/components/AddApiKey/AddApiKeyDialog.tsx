@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { apiKeyService, batchImportService } from "../../services/apiKeyService";
 import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
