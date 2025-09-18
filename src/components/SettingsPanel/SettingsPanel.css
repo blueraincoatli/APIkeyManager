@@ -16,7 +16,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: transparent; /* 移除半透明黑色遮罩，保持透明 */
   pointer-events: auto;
 }
 
