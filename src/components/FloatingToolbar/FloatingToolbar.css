@@ -1,9 +1,16 @@
 /* FloatingToolbar Component Styles */
 
-/* Toolbar wrapper */
+/* Toolbar wrapper - positioned absolutely within the full-screen window */
 .floating-toolbar-wrapper {
-  position: fixed;
+  position: absolute;
   z-index: 50;
+  /* Ensure it can be positioned anywhere in the window */
+  pointer-events: none;
+}
+
+/* Enable pointer events only for the toolbar itself */
+.floating-toolbar-wrapper > * {
+  pointer-events: auto;
 }
 
 /* Dynamic positioning using CSS variables */
@@ -12,7 +19,7 @@
   top: var(--wrapper-top);
 }
 
-/* Toolbar container */
+/* Toolbar container - 增强的毛玻璃效果 */
 .floating-toolbar-container {
   position: relative;
   display: grid;
@@ -21,54 +28,66 @@
   height: 56px;
   width: 360px;
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xl);
-  background-color: rgba(255, 255, 255, 0.7); /* 更明显的半透明背景 */
-  border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
+
+  /* 创建层叠上下文以支持backdrop-filter */
+  isolation: isolate;
+  z-index: 1;
+
+  /* Fallback背景 - 不支持backdrop-filter时使用 */
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
   padding: 0 var(--space-l);
   gap: var(--space-m);
-  color: rgba(17, 24, 39, 1);
-  /* Force hardware acceleration */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  color: rgba(17, 24, 39, 0.9);
+
+  /* Force hardware acceleration for better performance */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, backdrop-filter;
+
+  /* 毛玻璃效果 - 强制应用 */
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
+
+  /* 添加阴影增强玻璃质感 */
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* 支持backdrop-filter的浏览器 */
+/* 支持backdrop-filter的浏览器使用更透明的背景 */
 @supports (backdrop-filter: blur(20px)) {
   .floating-toolbar-container {
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+    background-color: rgba(255, 255, 255, 0.75);
   }
 }
 
-/* Safari特殊处理 */
-@supports (-webkit-backdrop-filter: blur(20px)) {
-  .floating-toolbar-container {
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
-  }
-}
-
+/* 暗色主题的毛玻璃效果 */
 .dark .floating-toolbar-container {
-  background-color: rgba(30, 41, 59, 0.7); /* 更明显的半透明背景 */
-  border: 2px solid rgba(100, 116, 139, 0.5); /* 更明显的边框 */
-  color: rgba(255, 255, 255, 1);
+  /* Fallback背景 - 不支持backdrop-filter时使用 */
+  background-color: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+
+  /* 暗色主题毛玻璃效果 - 强制应用 */
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(0.8) !important;
+  backdrop-filter: blur(20px) saturate(180%) brightness(0.8) !important;
+
+  /* 暗色主题的阴影 */
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.24),
+    0 2px 16px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* 支持backdrop-filter的浏览器 */
+/* 暗色主题支持backdrop-filter的浏览器使用更透明的背景 */
 @supports (backdrop-filter: blur(20px)) {
   .dark .floating-toolbar-container {
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
-  }
-}
-
-/* Safari特殊处理 */
-@supports (-webkit-backdrop-filter: blur(20px)) {
-  .dark .floating-toolbar-container {
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    background-color: rgba(30, 41, 59, 0.5); /* 更透明的背景 */
+    background-color: rgba(30, 41, 59, 0.75);
   }
 }
 
@@ -166,6 +185,10 @@
   box-shadow: none;
   outline: none;
   transition: all var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .floating-toolbar-button:hover {

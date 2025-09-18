@@ -14,6 +14,12 @@ edition = "2021"
 name = "api_key_manager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bin]]
+name = "api-key-manager"
+path = "src/main.rs"
+
+# Console window is prevented by windows_subsystem = "windows" in main.rs
+
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
@@ -37,3 +43,9 @@ reqwest = { version = "0.11", features = ["json"] }
 regex = "1.0"
 tauri-plugin-global-shortcut = "2.3.0"
 
+# Windows API dependencies removed - using Tauri built-in methods
+
+# SQLite configuration to use system libraries
+[dependencies.libsqlite3-sys]
+version = "0.27"
+features = ["bundled"]
