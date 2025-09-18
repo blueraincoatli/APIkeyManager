@@ -88,6 +88,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
           await window.setPosition(new LogicalPosition(centerX, upperThirdY));
           console.log(`Window positioned at: x=${centerX}, y=${upperThirdY} (screen: ${screenWidth}x${screenHeight})`);
+          
+          // 位置设置完成后显示窗口
+          await window.show();
+          console.log("Window shown after positioning");
         }
       } catch (error) {
         console.warn("Failed to position window:", error);
