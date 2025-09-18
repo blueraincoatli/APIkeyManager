@@ -61,7 +61,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   // 初始化窗口位置 - 设置到屏幕上1/3处并水平居中
   useEffect(() => {
     const initializeWindowPosition = async () => {
-      if (!isTauri) return;
+      if (!isTauri) {
+        // 在非Tauri环境中，确保窗口可见（开发模式）
+        return;
+      }
 
       try {
         const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
@@ -85,6 +88,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
           await window.setPosition(new LogicalPosition(x, y));
           console.log(`Window positioned at: x=${x}, y=${y}`);
+
+          // 位置设置完成后显示窗口
+          await window.show();
+          console.log("Window shown after positioning");
         }
       } catch (error) {
         console.warn("Failed to initialize window position:", error);
