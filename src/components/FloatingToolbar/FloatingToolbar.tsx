@@ -58,13 +58,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     console.log("- isTauri result:", isTauri);
   }, []);
 
-  // 初始化窗口位置 - 设置到屏幕上1/3处并水平居中
+  // 初始化窗口位置：水平居中，垂直在屏幕上1/3处
   useEffect(() => {
-    const initializeWindowPosition = async () => {
-      if (!isTauri) {
-        // 在非Tauri环境中，确保窗口可见（开发模式）
-        return;
-      }
+    const positionWindow = async () => {
+      if (!isTauri) return;
 
       try {
         const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
@@ -75,30 +72,31 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         // 获取屏幕尺寸
         const monitor = await currentMonitor();
         if (monitor) {
-          const screenWidth = monitor.size.width;
-          const screenHeight = monitor.size.height;
           const scaleFactor = await window.scaleFactor();
 
-          // 计算窗口位置：水平居中，垂直在屏幕上1/3处
-          const windowWidth = 400; // 从配置文件中的宽度
-          const windowHeight = 80;  // 从配置文件中的高度
+          // 获取屏幕尺寸
+          const screenWidth = monitor.size.width;
+          const screenHeight = monitor.size.height;
 
-          const x = (screenWidth / scaleFactor - windowWidth) / 2;
-          const y = (screenHeight / scaleFactor) / 3 - windowHeight / 2;
+          // 窗口尺寸（从配置文件）
+          const windowWidth = 400;
+          const windowHeight = 80;
 
-          await window.setPosition(new LogicalPosition(x, y));
-          console.log(`Window positioned at: x=${x}, y=${y}`);
+          // 计算位置：水平居中，垂直在屏幕上1/3处
+          const centerX = (screenWidth / scaleFactor - windowWidth) / 2;
+          const upperThirdY = (screenHeight / scaleFactor) / 3 - windowHeight / 2;
 
-          // 位置设置完成后显示窗口
-          await window.show();
-          console.log("Window shown after positioning");
+          await window.setPosition(new LogicalPosition(centerX, upperThirdY));
+          console.log(`Window positioned at: x=${centerX}, y=${upperThirdY} (screen: ${screenWidth}x${screenHeight})`);
         }
       } catch (error) {
-        console.warn("Failed to initialize window position:", error);
+        console.warn("Failed to position window:", error);
       }
     };
 
-    initializeWindowPosition();
+    // 延迟一点执行，确保窗口已经完全初始化
+    const timer = setTimeout(positionWindow, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   // 处理鼠标进入工具条区域 - 重新获得窗口焦点

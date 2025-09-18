@@ -30,7 +30,7 @@
         "hiddenTitle": true,
         "visible": false,
         "alwaysOnTop": true,
-        "center": false,
+        "center": true,
         "shadow": false,
         "theme": "Light",
         "acceptFirstMouse": false,
