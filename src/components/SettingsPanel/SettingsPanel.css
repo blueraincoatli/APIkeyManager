@@ -35,17 +35,14 @@
   overflow: hidden;
   /* 磨砂玻璃效果背景 */
   background-color: var(--glass-bg-light);
-
-  /* 强制应用backdrop-filter - 增强磨砂玻璃效果 */
-  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
-  backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
-  filter: blur(0px); /* 触发硬件加速 */
 }
 
-/* 支持backdrop-filter的浏览器 */
+/* 支持backdrop-filter的浏览器 - 谨慎应用以保持窗口透明 */
 @supports (backdrop-filter: blur(20px)) {
   .settings-panel {
-    background-color: rgba(255, 255, 255, 0.3); /* 更透明的背景以突出blur效果 */
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    background-color: rgba(255, 255, 255, 0.4);
   }
 }
 

@@ -45,33 +45,9 @@ pub fn run() {
                 // 点击穿透将由前端根据鼠标位置动态控制
                 let _ = window.set_ignore_cursor_events(false);
 
-                // 延迟应用磨砂玻璃效果，确保窗口完全初始化
-                let window_clone = window.clone();
-                std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_millis(200));
-
-                    // 设置磨砂玻璃效果 - 使用透明背景但保留blur
-                    #[cfg(target_os = "windows")]
-                    {
-                        use window_vibrancy::apply_blur;
-                        // 使用完全透明的背景色，只保留blur效果
-                        if let Err(e) = apply_blur(&window_clone, Some((0, 0, 0, 0))) {
-                            eprintln!("Failed to apply blur effect: {}", e);
-                        } else {
-                            println!("Blur effect applied successfully with transparent background");
-                        }
-                    }
-
-                    #[cfg(target_os = "macos")]
-                    {
-                        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-                        if let Err(e) = apply_vibrancy(&window_clone, NSVisualEffectMaterial::Sidebar, None, None) {
-                            eprintln!("Failed to apply vibrancy effect: {}", e);
-                        } else {
-                            println!("Vibrancy effect applied successfully");
-                        }
-                    }
-                });
+                // 保持窗口完全透明，不应用任何系统级blur效果
+                // 磨砂玻璃效果将完全通过CSS实现，避免影响窗口透明度
+                println!("Floating toolbar window initialized with full transparency");
             }
             
             tauri::async_runtime::spawn(async move {
