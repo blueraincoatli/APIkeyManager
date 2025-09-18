@@ -235,102 +235,44 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     loadCounts();
   }, [showRadialMenu]);
 
-  // 以工具条为锚点调整窗口大小
   const adjustWindowSizeWithAnchor = async (newWidth: number, newHeight: number, anchorType: 'center' | 'top-left', saveOriginalState: boolean = false) => {
+    if (!isTauri) return;
     try {
       const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
       const window = getCurrentWebviewWindow();
 
-      // 获取当前窗口的逻辑位置和尺寸（避免DPI缩放问题）
       const currentPosition = await window.outerPosition();
       const currentSize = await window.outerSize();
       const scaleFactor = await window.scaleFactor();
 
-      // 转换为逻辑坐标
       const currentLogicalX = currentPosition.x / scaleFactor;
       const currentLogicalY = currentPosition.y / scaleFactor;
       const currentLogicalWidth = currentSize.width / scaleFactor;
       const currentLogicalHeight = currentSize.height / scaleFactor;
 
-      console.log("Current window (logical):", {
-        position: { x: currentLogicalX, y: currentLogicalY },
-        size: { width: currentLogicalWidth, height: currentLogicalHeight },
-        scaleFactor,
-        newSize: { width: newWidth, height: newHeight }
-      });
-
-      // 如果需要保存原始状态（打开径向菜单时）
-      if (saveOriginalState) {
-        setOriginalWindowState({
-          position: { x: currentLogicalX, y: currentLogicalY },
-          size: { width: currentLogicalWidth, height: currentLogicalHeight }
-        });
-        console.log("Saved original window state for restoration");
-      }
-
       if (anchorType === 'center') {
-        // 径向菜单：保持工具条在窗口中心位置不变，上下扩展
-        const heightDiff = newHeight - currentLogicalHeight;
-        const newLogicalY = currentLogicalY - heightDiff / 2; // 向上移动一半高度差
+        // Per user feedback, the window should always move up by the same amount
+        // when opening the radial menu, regardless of the previous state.
+        // This amount is calculated based on the transition from the BASE state (72px height).
+        const baseHeight = 72;
+        const heightDiff = newHeight - baseHeight; // Always calculate diff from base height
+        const newLogicalY = currentLogicalY - heightDiff / 2;
 
-        console.log("Before resize - center anchor:", {
-          currentLogicalY,
-          currentLogicalHeight,
-          heightDiff,
-          newLogicalY,
-          newWidth,
-          newHeight
-        });
+        // Only save state if coming from the small, non-top-positioned state.
+        const isTopPositioned = wrapperRef.current?.classList.contains('top-positioned');
+        if (saveOriginalState && !isTopPositioned) {
+          setOriginalWindowState({
+            position: { x: currentLogicalX, y: currentLogicalY },
+            size: { width: currentLogicalWidth, height: currentLogicalHeight }
+          });
+        }
 
-        // 先调整位置，再调整尺寸（避免跳跃）
         await window.setPosition(new LogicalPosition(currentLogicalX, newLogicalY));
-        console.log("Position set, now setting size...");
-
         await window.setSize(new LogicalSize(newWidth, newHeight));
-        console.log("Size set successfully");
 
-        // 验证最终位置
-        const finalPosition = await window.outerPosition();
-        const finalSize = await window.outerSize();
-        console.log("Final window state:", {
-          position: {
-            physical: finalPosition,
-            logical: { x: finalPosition.x / scaleFactor, y: finalPosition.y / scaleFactor }
-          },
-          size: {
-            physical: finalSize,
-            logical: { width: finalSize.width / scaleFactor, height: finalSize.height / scaleFactor }
-          }
-        });
-      } else {
-        // 下拉面板：工具条通过CSS固定在顶部，只需调整窗口尺寸
-        console.log("Before resize - top-positioned panels:", {
-          currentLogicalX,
-          currentLogicalY,
-          currentLogicalWidth,
-          currentLogicalHeight,
-          newWidth,
-          newHeight
-        });
-
-        // 对于下拉面板，工具条会通过CSS移动到顶部，所以只需要调整尺寸
+      } else { // 'top-left'
         await window.setSize(new LogicalSize(newWidth, newHeight));
-        console.log("Size set for top-positioned panels");
-
-        // 验证最终状态
-        const finalPosition = await window.outerPosition();
-        const finalSize = await window.outerSize();
-        console.log("Final window state:", {
-          position: {
-            physical: finalPosition,
-            logical: { x: finalPosition.x / scaleFactor, y: finalPosition.y / scaleFactor }
-          },
-          size: {
-            physical: finalSize,
-            logical: { width: finalSize.width / scaleFactor, height: finalSize.height / scaleFactor }
-          }
-        });
       }
     } catch (error) {
       console.warn("Failed to adjust window size with anchor:", error);
@@ -367,45 +309,20 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   // 动态调整窗口大小以适应弹出内容
   useEffect(() => {
     const adjustWindowSize = async () => {
-      // 重新检查Tauri环境
-      const isInTauri = typeof window !== 'undefined' && (
-        '__TAURI__' in window ||
-        '__TAURI_INTERNALS__' in window ||
-        window.location.protocol === 'tauri:'
-      );
-
-      console.log("Window resize check - isInTauri:", isInTauri, "activePanel:", activePanel);
-
-      if (!isInTauri) {
-        console.log("Not in Tauri environment, skipping window resize");
-        return;
-      }
+      if (!isTauri) return;
 
       if (activePanel === 'radial') {
-        // 显示径向菜单时扩展窗口 - 使用中心锚点，并保存原始状态
-        console.log("Setting window size for radial menu: 640x300");
         await adjustWindowSizeWithAnchor(640, 300, 'center', true);
-      } else if (activePanel === 'search') {
-        // 搜索结果面板 - 使用左上角锚点
-        console.log("Setting window size for search: 420x500");
-        await adjustWindowSizeWithAnchor(420, 500, 'top-left');
-      } else if (activePanel === 'add' || activePanel === 'settings') {
-        // 添加/设置面板 - 使用左上角锚点
-        console.log("Setting window size for dialog panels: 420x600");
+      } else if (activePanel === 'search' || activePanel === 'add' || activePanel === 'settings') {
         await adjustWindowSizeWithAnchor(420, 600, 'top-left');
       } else {
-        // 默认小窗口 - 恢复原始状态或使用默认尺寸
         if (originalWindowState) {
-          console.log("Restoring original window state");
           await restoreOriginalWindowState();
         } else {
-          console.log("Setting window size for default: 420x72");
           await adjustWindowSizeWithAnchor(420, 72, 'top-left');
         }
       }
-      console.log("Window size adjustment completed successfully");
     };
-
     adjustWindowSize();
   }, [activePanel]);
 
