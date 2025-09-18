@@ -297,8 +297,8 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       if (anchorType === 'center') {
         // Per user feedback, the window should always move up by the same amount
         // when opening the radial menu, regardless of the previous state.
-        // This amount is calculated based on the transition from the BASE state (72px height).
-        const baseHeight = 72;
+        // This amount is calculated based on the transition from the BASE state (80px height).
+        const baseHeight = 80; // 与配置文件中的初始高度保持一致
         const heightDiff = newHeight - baseHeight; // Always calculate diff from base height
         const newLogicalY = currentLogicalY - heightDiff / 2;
 
@@ -362,7 +362,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         if (originalWindowState) {
           await restoreOriginalWindowState();
         } else {
-          await adjustWindowSizeWithAnchor(460, 120, 'top-left');
+          await adjustWindowSizeWithAnchor(400, 80, 'top-left'); // 与配置文件保持一致
         }
       }
     };
