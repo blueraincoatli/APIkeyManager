@@ -3,7 +3,6 @@ import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon, EditIcon, CloseIcon } from "../Icon/Icon";
 import "./SearchResults.css";
 import { apiKeyService } from "../../services/apiKeyService";
-import { useApiToast } from "../../hooks/useToast";
 
 interface SearchResultsProps {
   results: ApiKey[];
@@ -18,9 +17,9 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
   const [editName, setEditName] = useState("");
   const [editKeyValue, setEditKeyValue] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string; onConfirm?: () => void } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
-  const toast = useApiToast();
 
   useEffect(() => {
     return () => {
@@ -72,17 +71,35 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
     try {
       const result = await apiKeyService.editApiKey(updatedKey);
       if (result.success) {
-        toast.showEditSuccess();
-        setEditingId(null);
-        // 通知父组件刷新数据
-        if (onRefresh) {
-          onRefresh();
-        }
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '编辑成功',
+          message: `${key.name} 已更新`,
+          onConfirm: () => {
+            setModal(null);
+            setEditingId(null);
+            // 通知父组件刷新数据
+            if (onRefresh) {
+              onRefresh();
+            }
+          }
+        });
       } else {
-        toast.showEditError(result.error?.message);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '编辑失败',
+          message: result.error?.message || '无法更新API Key'
+        });
       }
     } catch (error) {
-      toast.showEditError();
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '编辑失败',
+        message: '发生未知错误'
+      });
       console.error("编辑API Key失败:", error);
     }
   };
@@ -101,19 +118,36 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
     try {
       const result = await apiKeyService.deleteApiKey(deletingId);
       if (result.success) {
-        toast.showDeleteSuccess();
-        // 通知父组件刷新数据
-        if (onRefresh) {
-          onRefresh();
-        }
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '删除成功',
+          message: 'API Key已从系统中移除',
+          onConfirm: () => {
+            setModal(null);
+            setDeletingId(null);
+            // 通知父组件刷新数据
+            if (onRefresh) {
+              onRefresh();
+            }
+          }
+        });
       } else {
-        toast.showDeleteError(result.error?.message);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '删除失败',
+          message: result.error?.message || '无法删除API Key'
+        });
       }
     } catch (error) {
-      toast.showDeleteError();
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '删除失败',
+        message: '发生未知错误'
+      });
       console.error("删除API Key失败:", error);
-    } finally {
-      setDeletingId(null);
     }
   };
 
@@ -255,6 +289,38 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
           </>
         )}
       </div>
+
+      {/* 模态对话框 */}
+      {modal && modal.isOpen && (
+        <div className="search-results-modal-overlay">
+          <div className="search-results-modal-container">
+            <div className="search-results-modal-header">
+              <div className={`search-results-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
+                {modal.title}
+              </div>
+            </div>
+            <div className="search-results-modal-body">
+              <div className="search-results-modal-message">
+                {modal.message}
+              </div>
+            </div>
+            <div className="search-results-modal-footer">
+              <button
+                onClick={() => {
+                  if (modal.type === 'success' && modal.onConfirm) {
+                    modal.onConfirm();
+                  } else {
+                    setModal(null);
+                  }
+                }}
+                className={`search-results-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
+              >
+                {modal.type === 'success' ? '确定' : '关闭'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

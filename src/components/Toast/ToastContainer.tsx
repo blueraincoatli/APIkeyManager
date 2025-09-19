@@ -31,28 +31,32 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
   const getToastStyles = () => {
     const baseStyles = 'transform transition-all ease-in-out translate-x-0 opacity-100';
     const exitStyles = 'transform translate-x-full opacity-0';
+    
+    // 使用项目的渐变色效果，与面板保持一致
     const typeStyles = {
-      success: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700',
-      error: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700',
-      warning: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700',
-      info: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700',
+      success: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/30 border-green-200 dark:border-green-700/50',
+      error: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/30 border-red-200 dark:border-red-700/50',
+      warning: 'bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-800/30 border-yellow-200 dark:border-yellow-700/50',
+      info: 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 border-blue-200 dark:border-blue-700/50',
     };
 
     return cn(
       baseStyles,
       isExiting && exitStyles,
       typeStyles[toast.type],
-      'p-4 rounded-lg border shadow-lg pointer-events-auto cursor-pointer hover:shadow-xl'
+      'p-4 rounded-xl border shadow-lg pointer-events-auto cursor-pointer hover:shadow-xl',
+      'border-solid border-[1px]',
+      'min-w-[300px] max-w-md'
     );
   };
 
   const getIcon = () => {
     const iconStyles = 'flex-shrink-0 w-5 h-5';
     const iconColors: Record<'success'|'error'|'warning'|'info', string> = {
-      success: 'text-green-500',
-      error: 'text-red-500',
-      warning: 'text-yellow-500',
-      info: 'text-blue-500',
+      success: 'text-green-600 dark:text-green-400',
+      error: 'text-red-600 dark:text-red-400',
+      warning: 'text-yellow-600 dark:text-yellow-400',
+      info: 'text-blue-600 dark:text-blue-400',
     };
 
     const icons: Record<'success'|'error'|'warning'|'info', React.ReactElement> = {
@@ -91,13 +95,13 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
       aria-live={ariaLiveValue}
     >
       <div className="flex items-start space-x-3">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 pt-0.5">
           {getIcon()}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <h4 className={cn(
-              'text-sm font-medium',
+              'text-sm font-semibold',
               {
                 'text-green-800 dark:text-green-200': toast.type === 'success',
                 'text-red-800 dark:text-red-200': toast.type === 'error',
@@ -115,7 +119,8 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
               }}
               className={cn(
                 'flex-shrink-0 ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
-                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded'
+                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full',
+                'hover:bg-gray-200/50 dark:hover:bg-gray-700/50 p-1'
               )}
               aria-label="Close notification"
             >
@@ -155,13 +160,13 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
   const { toasts, removeToast } = useToast();
 
   const getPositionStyles = () => {
-    const baseStyles = 'fixed z-50 p-4 space-y-4';
+    const baseStyles = 'fixed z-50 p-4 space-y-3';
 
     const positions = {
-      'top-right': 'top-0 right-0',
-      'top-left': 'top-0 left-0',
-      'bottom-right': 'bottom-0 right-0',
-      'bottom-left': 'bottom-0 left-0',
+      'top-right': 'top-4 right-4',
+      'top-left': 'top-4 left-4',
+      'bottom-right': 'bottom-4 right-4',
+      'bottom-left': 'bottom-4 left-4',
     };
 
     return cn(baseStyles, positions[position]);

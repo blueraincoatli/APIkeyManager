@@ -3,6 +3,7 @@ import { apiKeyService, batchImportService } from "../../services/apiKeyService"
 import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
 import "./AddApiKeyDialog.css";
+import "../SearchResults/SearchResults.css"; // 导入SearchResults的CSS以使用模态对话框样式
 
 // 检测是否在Tauri环境中
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
@@ -44,6 +45,15 @@ interface AddApiKeyDialogProps {
   onAdded?: () => void; // 可选：回调刷新列表/结果
 }
 
+// 模态对话框类型定义
+interface ModalState {
+  isOpen: boolean;
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+}
+
 export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps) {
   const toast = useApiToast();
   const [name, setName] = useState("");
@@ -56,6 +66,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalState | null>(null);
 
 
   
@@ -161,15 +172,33 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       const result = await batchImportService.importApiKeysBatch(batchKeys);
       
       if (result.success && result.data) {
-        toast.success('导入成功', 'API Keys已成功导入');
-        setShowPreview(false);
-        onAdded?.();
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '导入成功',
+          message: `成功导入 ${result.data.importedCount} 个API Key`,
+          onConfirm: () => {
+            setModal(null);
+            setShowPreview(false);
+            onAdded?.();
+          }
+        });
       } else {
-        toast.error('导入失败', result.error?.message);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '导入失败',
+          message: result.error?.message || '无法导入API Keys'
+        });
       }
     } catch (error: any) {
       console.error('导入失败:', error);
-      toast.error('导入失败', error.message || '导入过程中发生错误');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '导入失败',
+        message: error.message || '导入过程中发生错误'
+      });
     }
   };
 
@@ -262,12 +291,25 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
     const res = await apiKeyService.addApiKey({ name, keyValue, platform, description });
     setSubmitting(false);
     if (res.success) {
-      toast.success('新增成功', name);
-      onAdded?.();
-      onClose();
-      setName(""); setKeyValue(""); setPlatform(""); setDescription("");
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: '新增成功',
+        message: `${name} 已添加到系统中`,
+        onConfirm: () => {
+          setModal(null);
+          onAdded?.();
+          onClose();
+          setName(""); setKeyValue(""); setPlatform(""); setDescription("");
+        }
+      });
     } else {
-      toast.error('新增失败', res.error?.message);
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '新增失败',
+        message: res.error?.message || '无法添加API Key'
+      });
     }
   };
 
@@ -552,6 +594,38 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
             </>
           )}
           </form>
+          
+          {/* 模态对话框 */}
+          {modal && modal.isOpen && (
+            <div className="add-api-key-modal-overlay">
+              <div className="add-api-key-modal-container">
+                <div className="add-api-key-modal-header">
+                  <div className={`add-api-key-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
+                    {modal.title}
+                  </div>
+                </div>
+                <div className="add-api-key-modal-body">
+                  <div className="add-api-key-modal-message">
+                    {modal.message}
+                  </div>
+                </div>
+                <div className="add-api-key-modal-footer">
+                  <button
+                    onClick={() => {
+                      if (modal.type === 'success' && modal.onConfirm) {
+                        modal.onConfirm();
+                      } else {
+                        setModal(null);
+                      }
+                    }}
+                    className={`add-api-key-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
+                  >
+                    {modal.type === 'success' ? '确定' : '关闭'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
