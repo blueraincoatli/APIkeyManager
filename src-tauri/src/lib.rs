@@ -4,6 +4,15 @@ mod commands;
 mod database;
 mod security;
 
+use commands::{
+    api_key_commands::*,
+    batch_import_commands::*,
+    clipboard_commands::*,
+    group_commands::*,
+    security_commands::*,
+    shortcut_commands::*,
+    window_commands::*,
+};
 use database::init_database;
 use sqlx::SqlitePool;
 use tauri::Manager;
@@ -65,26 +74,27 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             greet,
-            commands::api_key_commands::add_api_key,
-            commands::api_key_commands::edit_api_key,
-            commands::api_key_commands::delete_api_key,
-            commands::api_key_commands::list_api_keys,
-            commands::api_key_commands::search_api_keys,
-            commands::api_key_commands::get_all_platforms,
-            commands::batch_import_commands::import_api_keys_batch,
-            commands::clipboard_commands::get_clipboard_content,
-            commands::clipboard_commands::copy_to_clipboard,
-            commands::security_commands::set_master_password,
-            commands::security_commands::verify_master_password,
-            commands::security_commands::encrypt_key,
-            commands::security_commands::decrypt_key,
-            commands::shortcut_commands::register_shortcut,
-            commands::window_commands::show_floating_toolbar,
-            commands::window_commands::hide_floating_toolbar,
-            commands::window_commands::exit_application,
-            commands::window_commands::set_window_position,
-            commands::window_commands::set_window_size,
-            commands::window_commands::set_click_through,
+            add_api_key,
+            edit_api_key,
+            delete_api_key,
+            list_api_keys,
+            search_api_keys,
+            get_all_platforms,
+            import_api_keys_batch,
+            copy_to_clipboard,
+            set_master_password,
+            verify_master_password,
+            encrypt_key,
+            decrypt_key,
+            register_shortcut,
+            show_floating_toolbar,
+            hide_floating_toolbar,
+            exit_application,
+            set_window_position,
+            set_window_size,
+            set_click_through,
+            add_group,
+            list_groups,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

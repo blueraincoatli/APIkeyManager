@@ -1,13 +1,6 @@
 use crate::clipboard;
 
-// 获取剪贴板内容
-#[tauri::command]
-pub fn get_clipboard_content() -> Result<String, String> {
-    match clipboard::get_clipboard_content() {
-        Ok(content) => Ok(content),
-        Err(e) => Err(e.to_string()),
-    }
-}
+
 
 // 复制内容到剪贴板
 #[tauri::command]

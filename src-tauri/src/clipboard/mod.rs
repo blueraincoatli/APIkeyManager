@@ -1,11 +1,6 @@
 use arboard::Clipboard;
 
-// 获取剪贴板内容
-pub fn get_clipboard_content() -> Result<String, Box<dyn std::error::Error>> {
-    let mut clipboard = Clipboard::new()?;
-    let content = clipboard.get_text()?;
-    Ok(content)
-}
+
 
 // 设置剪贴板内容
 pub fn set_clipboard_content(content: &str) -> Result<(), Box<dyn std::error::Error>> {

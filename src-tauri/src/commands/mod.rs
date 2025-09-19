@@ -4,3 +4,4 @@ pub mod clipboard_commands;
 pub mod security_commands;
 pub mod shortcut_commands;
 pub mod window_commands;
+pub mod group_commands;
