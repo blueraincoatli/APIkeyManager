@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { searchService } from "../../services/searchService";
 import { RadialMenu } from "../RadialMenu/RadialMenu";
@@ -34,6 +34,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
+  // 新增：用于管理从数据库获取的platform数据
+  const [platforms, setPlatforms] = useState<string[]>([]);
+  const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(false);
 
   // 新增：用于管理当前显示的面板类型
   type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
@@ -265,20 +268,74 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setActivePanel('search');
   };
 
-  // 打开环形菜单时，统计各提供商的 key 数量并展示在按钮上
+  // 处理platform选择
+  const handlePlatformSelect = async (platform: string) => {
+    setProviderLabel(platform);
+    // 按platform搜索API keys
+    const res = await searchService.searchKeys(platform);
+    setSearchResults(res.data || []);
+    // 隐藏环形菜单，显示搜索结果
+    setShowRadialMenu(false);
+    setActivePanel('search');
+  };
+
+  // 创建径向菜单选项
+  const radialMenuOptions = useMemo(() => {
+    // 使用从数据库获取的platforms数据，但限制显示数量
+    const displayPlatforms = platforms.slice(0, 10); // 显示前10个platforms
+    
+    // 将platforms转换为径向菜单选项格式，并添加计数
+    const platformOptions = displayPlatforms.map(platform => {
+      // 计算该platform的API key数量
+      const count = providerCounts[platform] || 0;
+      return {
+        id: platform,
+        label: platform,
+        count: count
+      };
+    });
+    
+    return platformOptions;
+  }, [platforms, providerCounts]);
+
+  // 打开环形菜单时，从数据库获取所有platform数据
   useEffect(() => {
-    const loadCounts = async () => {
+    const loadPlatforms = async () => {
       if (!showRadialMenu) return;
-      const res = await apiKeyService.listApiKeys();
-      const keys = res.success ? res.data || [] : [];
-      const counts: Record<string, number> = {};
-      for (const p of PROVIDERS) {
-        counts[p.id] = keys.filter(k => matchProvider(k.name, k.platform, k.tags, p.id)).length;
+      setIsLoadingPlatforms(true);
+      try {
+        // 获取所有platform
+        const res = await apiKeyService.getAllPlatforms();
+        if (res.success) {
+          setPlatforms(res.data || []);
+        }
+        
+        // 统计各提供商的 key 数量并展示在按钮上
+        const keysRes = await apiKeyService.listApiKeys();
+        const keys = keysRes.success ? keysRes.data || [] : [];
+        const counts: Record<string, number> = {};
+        
+        // 统计静态PROVIDERS的数量
+        for (const p of PROVIDERS) {
+          counts[p.id] = keys.filter(k => matchProvider(k.name, k.platform, k.tags, p.id)).length;
+        }
+        
+        // 统计数据库中platform的数量
+        if (res.success && res.data) {
+          for (const platform of res.data) {
+            counts[platform] = keys.filter(k => k.platform === platform).length;
+          }
+        }
+        
+        setProviderCounts(counts);
+      } catch (error) {
+        console.error("Failed to load platforms:", error);
+      } finally {
+        setIsLoadingPlatforms(false);
       }
-      setProviderCounts(counts);
     };
-    loadCounts();
-  }, [showRadialMenu]);
+    loadPlatforms();
+  }, [showRadialMenu]); // 添加依赖数组
 
   const adjustWindowSizeWithAnchor = async (newWidth: number, newHeight: number, anchorType: 'center' | 'top-left', saveOriginalState: boolean = false) => {
     if (!isTauri) return;
@@ -476,19 +533,25 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           {/* 环形菜单 */}
           {activePanel === 'radial' && (
             <div className="floating-toolbar-radial-menu">
-              <RadialMenu
-                options={PROVIDERS.slice(0,6).map(p => ({
-                  id: p.id,
-                  label: p.label,
-                  count: providerCounts[p.id] ?? 0,
-                }))}
-                onSelect={handleRadialSelect}
-                onClose={() => {
-                  setShowRadialMenu(false);
-                  setActivePanel('none');
-                }}
-                
-              />
+              {isLoadingPlatforms ? (
+                <div className="loading-indicator">Loading platforms...</div>
+              ) : (
+                <RadialMenu
+                  options={radialMenuOptions}
+                  onSelect={(id) => {
+                    // 检查id是否是platform
+                    if (platforms.includes(id)) {
+                      handlePlatformSelect(id);
+                    } else {
+                      handleRadialSelect(id);
+                    }
+                  }}
+                  onClose={() => {
+                    setShowRadialMenu(false);
+                    setActivePanel('none');
+                  }}
+                />
+              )}
             </div>
           )}
         </div>

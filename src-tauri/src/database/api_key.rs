@@ -150,3 +150,13 @@ pub async fn search_api_keys(pool: &SqlitePool, keyword: &str) -> Result<Vec<Api
     
     Ok(keys)
 }
+
+// 获取所有唯一的platform值
+pub async fn get_all_platforms(pool: &SqlitePool) -> Result<Vec<String>, DatabaseError> {
+    let platforms = sqlx::query_scalar::<_, String>("SELECT DISTINCT platform FROM api_keys WHERE platform IS NOT NULL")
+        .fetch_all(pool)
+        .await
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
+    
+    Ok(platforms)
+}

@@ -1,6 +1,6 @@
 use tauri::State;
 use crate::{database::api_key::ApiKey, AppState};
-use crate::database::api_key::{insert_api_key, update_api_key, delete_api_key as delete_api_key_db, get_all_api_keys, search_api_keys as search_api_keys_db};
+use crate::database::api_key::{insert_api_key, update_api_key, delete_api_key as delete_api_key_db, get_all_api_keys, search_api_keys as search_api_keys_db, get_all_platforms as get_all_platforms_db};
 
 // 添加新的API Key
 #[tauri::command]
@@ -52,4 +52,13 @@ pub async fn search_api_keys(
 ) -> Result<Vec<ApiKey>, String> {
     let pool = &state.db;
     search_api_keys_db(pool, &keyword).await.map_err(|e| e.to_string())
+}
+
+// 获取所有platform
+#[tauri::command]
+pub async fn get_all_platforms(
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, String> {
+    let pool = &state.db;
+    get_all_platforms_db(pool).await.map_err(|e| e.to_string())
 }

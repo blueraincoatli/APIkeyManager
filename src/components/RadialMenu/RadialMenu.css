@@ -8,8 +8,6 @@
   pointer-events: none; /* 让overlay本身不阻止点击事件 */
 }
 
-
-
 /* Radial menu container */
 .radial-menu-container {
   position: relative;
@@ -18,7 +16,38 @@
   pointer-events: auto; /* 确保菜单容器可以接收点击事件 */
 }
 
+/* Radial menu scroll indicators */
+.radial-menu-scroll-indicator {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  border-radius: 10px;
+  font-size: 12px;
+  z-index: 101;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
 
+.radial-menu-scroll-indicator:hover {
+  opacity: 1;
+}
+
+.radial-menu-scroll-indicator.top {
+  top: 10px;
+}
+
+.radial-menu-scroll-indicator.bottom {
+  bottom: 10px;
+}
 
 /* Radial menu option button */
 .radial-menu-option-button {

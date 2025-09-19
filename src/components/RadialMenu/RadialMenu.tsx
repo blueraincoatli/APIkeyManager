@@ -19,6 +19,11 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
   const [animationStage, setAnimationStage] = useState<'initial' | 'animating' | 'complete'>('initial');
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 计算可见选项
+  const visibleOptions = options.slice(scrollOffset, scrollOffset + 6);
   
   // 计算中心点位置
   const getCenterPoint = () => {
@@ -44,13 +49,13 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
   useEffect(() => {
     const { centerX, centerY } = getCenterPoint();
 
-    options.forEach((_, index) => {
+    visibleOptions.forEach((_, index) => {
       const button = buttonRefs.current[index];
       if (button) {
         // 修改为扇形布局：从右上开始，形成90度的扇形
         const startAngle = -45; // 起始角度，从右上开始（-45度）
         const angleRange = 90; // 角度范围，形成90度的扇形
-        const step = options.length > 1 ? angleRange / (options.length - 1) : 0;
+        const step = visibleOptions.length > 1 ? angleRange / (visibleOptions.length - 1) : 0;
         const angle = startAngle + index * step;
         const radius = 120; // 增大半径以展平弧度
         const x = radius * Math.cos((angle * Math.PI) / 180);
@@ -60,7 +65,7 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
         button.style.setProperty('--item-top', `${centerY + y - 16}px`);
       }
     });
-  }, [options]);
+  }, [visibleOptions]);
 
   const handleClick = (id: string) => {
     onSelect(id);
@@ -88,14 +93,59 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
     return '';
   };
 
+  // 滚动处理
+  const handleScroll = (direction: 'up' | 'down') => {
+    // 确保有足够多的选项来滚动
+    if (options.length <= 6) {
+      return;
+    }
+    
+    if (direction === 'up' && scrollOffset > 0) {
+      setScrollOffset(prev => Math.max(0, prev - 1));
+    } else if (direction === 'down' && scrollOffset < options.length - 6) {
+      setScrollOffset(prev => Math.min(options.length - 6, prev + 1));
+    }
+  };
+
+  // 处理鼠标滚轮事件
+  const handleWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      // 向上滚动
+      handleScroll('up');
+    } else {
+      // 向下滚动
+      handleScroll('down');
+    }
+  };
+
+  // 添加鼠标滚轮事件监听器
+  useEffect(() => {
+    const menuContainer = menuRef.current;
+    if (menuContainer && options.length > 6) {
+      menuContainer.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        menuContainer.removeEventListener('wheel', handleWheel);
+      };
+    }
+  }, [options.length, scrollOffset]);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="radial-menu-overlay">
       <div
         ref={menuRef}
         className="radial-menu-container"
       >
-
-        {options.map((option, index) => {
+        {visibleOptions.map((option, index) => {
           // 计算动画类名和延迟
           const animationClass = getItemAnimationClass();
           const animationDelay = getItemAnimationDelay(index);

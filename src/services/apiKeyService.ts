@@ -246,6 +246,19 @@ export const apiKeyService = {
     );
   },
 
+  // 获取所有platform
+  /**
+   * Retrieves all unique platform names from the system
+   * @returns Promise<ServiceResult<string[]>> - Result containing array of all platform names or error information
+   */
+  async getAllPlatforms(): Promise<ServiceResult<string[]>> {
+    return executeOperation(
+      () => invoke("get_all_platforms") as Promise<string[]>,
+      OperationContext.API_KEY_SEARCH,
+      { operation: 'get_platforms' }
+    );
+  },
+
   // 复制API Key到剪贴板
   /**
    * Copies an API key to system clipboard with security validation

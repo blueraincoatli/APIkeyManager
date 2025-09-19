@@ -70,6 +70,7 @@ pub fn run() {
             commands::api_key_commands::delete_api_key,
             commands::api_key_commands::list_api_keys,
             commands::api_key_commands::search_api_keys,
+            commands::api_key_commands::get_all_platforms,
             commands::batch_import_commands::import_api_keys_batch,
             commands::clipboard_commands::get_clipboard_content,
             commands::clipboard_commands::copy_to_clipboard,
