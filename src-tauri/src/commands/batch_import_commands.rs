@@ -4,8 +4,10 @@ use crate::database::api_key::{insert_api_key, ApiKey};
 use crate::AppState;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BatchApiKey {
     pub name: String,
+    #[serde(rename = "keyValue")]
     pub key_value: String,
     pub platform: Option<String>,
     pub description: Option<String>,

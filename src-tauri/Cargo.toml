@@ -14,6 +14,12 @@ edition = "2021"
 name = "api_key_manager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bin]]
+name = "api-key-manager"
+path = "src/main.rs"
+
+# Console window is prevented by windows_subsystem = "windows" in main.rs
+
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
@@ -22,6 +28,8 @@ tauri = { version = "2.0", features = [] }
 tauri-plugin-opener = "2.0"
 tauri-plugin-dialog = "2.4.0"
 tauri-plugin-fs = "2.4.2"
+tauri-plugin-global-shortcut = "2.0"
+window-vibrancy = "0.6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
@@ -35,5 +43,15 @@ base64 = "0.21"
 arboard = "3.0"
 reqwest = { version = "0.11", features = ["json"] }
 regex = "1.0"
-tauri-plugin-global-shortcut = "2.3.0"
 
+# Windows API dependencies removed - using Tauri built-in methods
+
+# SQLite configuration to use system libraries
+[dependencies.libsqlite3-sys]
+version = "0.27"
+features = ["bundled"]
+
+[profile.release]
+# Disabling LTO (Link-Time Optimization) as it might be causing rendering issues
+# with transparency in the production build.
+lto = false

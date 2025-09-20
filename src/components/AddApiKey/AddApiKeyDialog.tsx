@@ -2,14 +2,24 @@ import { useMemo, useState } from "react";
 import { apiKeyService, batchImportService } from "../../services/apiKeyService";
 import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat } from "../../services/inputValidation";
+import "./AddApiKeyDialog.css";
+import "../SearchResults/SearchResults.css"; // 导入SearchResults的CSS以使用模态对话框样式
 
 // 检测是否在Tauri环境中
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
 
 // 条件导入Tauri插件，在非Tauri环境中提供降级方案
-let tauriDialog: any = null;
-let tauriFs: any = null;
-let tauriPath: any = null;
+let tauriDialog: {
+  open: (options: { filters: Array<{ name: string; extensions: string[] }>; multiple?: boolean }) => Promise<string | string[] | null>;
+  save: (options: { filters: Array<{ name: string; extensions: string[] }>; defaultPath?: string }) => Promise<string | null>;
+} | null = null;
+let tauriFs: {
+  readBinaryFile: (path: string) => Promise<Uint8Array>;
+  writeBinaryFile: (path: string, data: Uint8Array) => Promise<void>;
+} | null = null;
+let tauriPath: {
+  downloadDir: () => Promise<string>;
+} | null = null;
 
 if (isTauri) {
   // 在Tauri环境中直接使用全局API
@@ -35,6 +45,15 @@ interface AddApiKeyDialogProps {
   onAdded?: () => void; // 可选：回调刷新列表/结果
 }
 
+// 模态对话框类型定义
+interface ModalState {
+  isOpen: boolean;
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+}
+
 export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps) {
   const toast = useApiToast();
   const [name, setName] = useState("");
@@ -46,7 +65,20 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const [showBatchImport, setShowBatchImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
+  const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalState | null>(null);
+
+
   
+  // 表单验证
+  const errors = useMemo(() => {
+    const errs: { name?: string; key?: string } = {};
+    if (!name.trim()) errs.name = "名称不能为空";
+    if (!keyValue.trim()) errs.key = "API Key 不能为空";
+    else if (!validateApiKeyFormat(keyValue.trim())) errs.key = "API Key 格式不合法";
+    return errs;
+  }, [name, keyValue]);
+
   const handleFileSelect = async () => {
     try {
       console.log('File select clicked, isTauri:', isTauri, 'tauriDialog:', !!tauriDialog);
@@ -140,30 +172,60 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       const result = await batchImportService.importApiKeysBatch(batchKeys);
       
       if (result.success && result.data) {
-        toast.success('导入成功', 'API Keys已成功导入');
-        setShowPreview(false);
-        onAdded?.();
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '导入成功',
+          message: `成功导入 ${result.data.importedCount} 个API Key`,
+          onConfirm: () => {
+            setModal(null);
+            setShowPreview(false);
+            onAdded?.();
+          }
+        });
       } else {
-        toast.error('导入失败', result.error?.message);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '导入失败',
+          message: result.error?.message || '无法导入API Keys'
+        });
       }
     } catch (error: any) {
       console.error('导入失败:', error);
-      toast.error('导入失败', error.message || '导入过程中发生错误');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '导入失败',
+        message: error.message || '导入过程中发生错误'
+      });
     }
   };
 
+  // 共享的容器组件
+  /*
+  const DialogContainer = ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
+    <div className="add-api-key-dialog-container">
+      <div className="add-api-key-dialog-overlay" onClick={onClose} />
+      {children}
+    </div>
+  );
+
+  */
+
   // 预览窗口组件
   const PreviewWindow = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 预览内容 */}
-      <div className="absolute inset-0 bg-black/30" onClick={() => setShowPreview(false)} />
-      <div className="relative z-10 w-[800px] max-w-[90vw] h-[600px] max-h-[90vh] bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">数据预览</h2>
+    <div className="add-api-key-dialog-container">
+      <div className="add-api-key-dialog-overlay" onClick={() => setShowPreview(false)} />
+      <div
+        className="add-api-key-preview-window"
+      >
+        <div className="add-api-key-preview-header">
+          <h2 className="add-api-key-preview-title">数据预览</h2>
           <button
             type="button"
             onClick={() => setShowPreview(false)}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="add-api-key-preview-close-button"
             aria-label="关闭预览"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,24 +234,24 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           </button>
         </div>
         
-        <div className="flex-1 overflow-auto p-6">
-          <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+        <div className="add-api-key-preview-content">
+          <div className="add-api-key-preview-table-container">
+            <table className="add-api-key-preview-table">
+              <thead className="add-api-key-preview-table-header">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">名称</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">API Key</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">提供商</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">描述</th>
+                  <th className="add-api-key-preview-table-header-cell">名称</th>
+                  <th className="add-api-key-preview-table-header-cell">API Key</th>
+                  <th className="add-api-key-preview-table-header-cell">提供商</th>
+                  <th className="add-api-key-preview-table-header-cell">描述</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="add-api-key-preview-table-body">
                 {previewData.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">{item.keyValue}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.platform}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.description}</td>
+                  <tr key={index} className="add-api-key-preview-table-row">
+                    <td className="add-api-key-preview-table-cell">{item.name}</td>
+                    <td className="add-api-key-preview-table-cell api-key">{item.keyValue}</td>
+                    <td className="add-api-key-preview-table-cell">{item.platform}</td>
+                    <td className="add-api-key-preview-table-cell">{item.description}</td>
                   </tr>
                 ))}
               </tbody>
@@ -197,19 +259,19 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           </div>
         </div>
         
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex justify-end space-x-3">
+        <div className="add-api-key-preview-footer">
+          <div className="add-api-key-preview-button-group">
             <button
               type="button"
               onClick={() => setShowPreview(false)}
-              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm"
+              className="add-api-key-button"
             >
-              取消
+              关闭
             </button>
             <button
               type="button"
               onClick={handleConfirmImport}
-              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium text-sm"
+              className="add-api-key-button primary"
             >
               确认导入
             </button>
@@ -218,16 +280,6 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       </div>
     </div>
   );
-
-  const errors = useMemo(() => {
-    const errs: { name?: string; key?: string } = {};
-    if (!name.trim()) errs.name = "名称不能为空";
-    if (!keyValue.trim()) errs.key = "API Key 不能为空";
-    else if (!validateApiKeyFormat(keyValue.trim())) errs.key = "API Key 格式不合法";
-    return errs;
-  }, [name, keyValue]);
-
-  if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,28 +291,48 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
     const res = await apiKeyService.addApiKey({ name, keyValue, platform, description });
     setSubmitting(false);
     if (res.success) {
-      toast.success('新增成功', name);
-      onAdded?.();
-      onClose();
-      setName(""); setKeyValue(""); setPlatform(""); setDescription("");
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: '新增成功',
+        message: `${name} 已添加到系统中`,
+        onConfirm: () => {
+          setModal(null);
+          onAdded?.();
+          onClose();
+          setName(""); setKeyValue(""); setPlatform(""); setDescription("");
+        }
+      });
     } else {
-      toast.error('新增失败', res.error?.message);
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '新增失败',
+        message: res.error?.message || '无法添加API Key'
+      });
     }
   };
 
   const handleBatchImport = () => {
     // 切换到批量导入面板
     setShowBatchImport(true);
+    // 重置下载文件路径
+    setDownloadedFilePath(null);
   };
 
   const handleBackToSingle = () => {
     // 返回单个添加面板
     setShowBatchImport(false);
+    // 清除下载文件路径
+    setDownloadedFilePath(null);
   };
 
   const handleDownloadTemplate = async () => {
     try {
       console.log('Download template clicked, isTauri:', isTauri, 'tauriDialog:', !!tauriDialog);
+      
+      let filePath: string | null = null;
+      let fileName = 'api_key_template.xlsx';
       
       if (!isTauri || !tauriDialog || !tauriFs || !tauriPath) {
         // 非Tauri环境下的降级方案
@@ -273,13 +345,14 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = 'api_key_template.xlsx';
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         
-        toast.success('模板下载成功', '文件已开始下载');
+        // 在非Tauri环境下，显示下载到浏览器的通知
+        toast.success('模板下载成功', '文件已下载到浏览器默认下载位置');
         return;
       }
 
@@ -287,12 +360,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       const downloadPath = await tauriPath.downloadDir();
       
       // 弹出保存对话框，让用户选择保存位置
-      const filePath = await tauriDialog.save({
+      filePath = await tauriDialog.save({
         filters: [{
           name: 'Excel Files',
           extensions: ['xlsx']
         }],
-        defaultPath: `${downloadPath}/api_key_template.xlsx`
+        defaultPath: `${downloadPath}/${fileName}`
       });
       
       if (filePath) {
@@ -302,11 +375,19 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         // 写入到用户选择的位置
         await tauriFs.writeBinaryFile(filePath, templateContent);
         
-        // 通知用户文件已保存
-        toast.success('模板下载成功', `文件已保存到: ${filePath}`);
+        // 保存文件路径用于后续打开
+        setDownloadedFilePath(filePath);
+        
+        // 获取文件名用于显示
+        const pathParts = filePath.split(/[/\\]/);
+        const savedFileName = pathParts[pathParts.length - 1];
+        
+        // 显示更友好的通知，包含文件打开功能
+        toast.success('📁 模板下载成功', `Excel模板文件 "${savedFileName}" 已保存到您的下载文件夹`);
       }
     } catch (error: any) {
       console.error('下载模板失败:', error);
+      setDownloadedFilePath(null);
       // 更准确的错误信息
       if (error.message?.includes('invoke') || error.message?.includes('plugin')) {
         toast.error('Tauri插件未初始化', '请确保在Tauri桌面环境中运行');
@@ -316,175 +397,242 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
     }
   };
 
+  // 打开下载的文件
+  const handleOpenFile = async (filePath: string) => {
+    try {
+      // 简单地通知用户文件已保存，不实际打开文件
+      toast.info('提示', `文件已保存到: ${filePath}`);
+    } catch (error) {
+      console.error('打开文件失败:', error);
+      toast.error('打开文件失败', '无法打开下载的文件');
+    }
+  };
+
+  if (!open) {
+    // 清理下载文件路径状态
+    if (downloadedFilePath) {
+      setDownloadedFilePath(null);
+    }
+    return null;
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="w-[360px] translate-x-[36px]">
-        <form
-          onSubmit={handleSubmit}
-          className="relative z-10 w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 px-8 py-6"
+    <>
+      <div className="add-api-key-dialog-container">
+        <div className="add-api-key-dialog-overlay" onClick={onClose} />
+        <div
+          className="add-api-key-dialog-panel"
         >
-        {showBatchImport ? (
-          // 批量导入说明面板
-          <>
-            <h5 className="text-[18px] mb-6 text-center text-gray-300 dark:text-white font-normal">批量导入API Key</h5>
-            <div className="space-y-6">
-              <div className="flex flex-col items-center text-center">
-                <p className="text-gray-600 dark:text-gray-300 text-[12px] mb-4">
-                  请下载模板文件，按照格式填写API Key信息后上传
-                </p>
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={handleDownloadTemplate}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 transition-all font-medium text-sm mb-[16px]"
-                >
-                  下载模板
-                </button>
+          <form
+            onSubmit={handleSubmit}
+            className="add-api-key-dialog-form"
+          >
+            {showBatchImport ? (
+            // 批量导入说明面板
+            <>
+              <h5 className="add-api-key-dialog-title">批量导入API Key</h5>
+              <div className="add-api-key-batch-section">
+                <div className="add-api-key-batch-info">
+                  <p className="add-api-key-batch-info-text">
+                    请下载模板文件，按照格式填写API Key信息后上传
+                  </p>
+                </div>
                 
-                <button
-                  type="button"
-                  onClick={handleFileSelect}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm mb-[16px]"
-                >
-                  选择Excel文件
-                </button>
+                <div className="add-api-key-batch-buttons">
+                  <button
+                    type="button"
+                    onClick={handleDownloadTemplate}
+                    className="add-api-key-file-button primary"
+                  >
+                    下载模板
+                  </button>
+                  
+                  {/* 下载文件路径显示 */}
+                  {downloadedFilePath && (
+                    <div className="add-api-key-file-info">
+                      <div className="add-api-key-file-info-header">
+                        <div className="flex items-center">
+                          <span className="text-green-600 dark:text-green-400 mr-2">📁</span>
+                          <p className="add-api-key-file-name truncate">
+                            {downloadedFilePath.split(/[/\\]/).pop()}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenFile(downloadedFilePath)}
+                          className="add-api-key-open-file-button"
+                        >
+                          📋 打开文件
+                        </button>
+                      </div>
+                      <p className="add-api-key-file-status">
+                        已保存到下载文件夹
+                      </p>
+                    </div>
+                  )}
+                  
+                  <button
+                    type="button"
+                    onClick={handleFileSelect}
+                    className="add-api-key-file-button"
+                  >
+                    选择Excel文件
+                  </button>
+                </div>
+                
+                <div className="add-api-key-batch-info">
+                  <p className="add-api-key-file-support-info">
+                    支持的格式：Excel文件 (.xlsx)<br/>
+                    需包含列：名称 | API Key | 提供商 | 描述
+                  </p>
+                </div>
               </div>
               
-              <div className="flex flex-col items-center text-center">
-                <p className="text-gray-500 dark:text-gray-400 text-[12px]">
-                  支持的格式：Excel文件 (.xlsx)<br/>
-                  需包含列：名称 | API Key | 提供商 | 描述
-                </p>
+              <div className="add-api-key-button-group">
+                <div className="add-api-key-button-container two-buttons">
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleBackToSingle}
+                      className="add-api-key-button"
+                    >
+                      返回
+                    </button>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="add-api-key-button"
+                    >
+                      取消
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            // 单个添加API Key表单
+            <>
+              <h5 className="add-api-key-dialog-title">新增API Key</h5>
+              <div className="add-api-key-form-section">
+                <div className="add-api-key-form-group">
+                  <label className="add-api-key-form-label">名称</label>
+                  <input
+                    type="text"
+                    placeholder="请输入API Key名称"
+                    value={name}
+                    onChange={(e)=>setName(e.target.value)}
+                    onBlur={()=>setTouched(prev=>({ ...prev, name: true }))}
+                    className={`add-api-key-form-input ${touched.name && errors.name ? 'error' : ''}`}
+                    required
+                  />
+                  {touched.name && errors.name && (<p className="add-api-key-form-error">{errors.name}</p>)}
+                </div>
+                <div className="add-api-key-form-group">
+                  <label className="add-api-key-form-label">API Key</label>
+                  <input
+                    value={keyValue}
+                    onChange={(e)=>setKeyValue(e.target.value)}
+                    onBlur={()=>setTouched(prev=>({ ...prev, key: true }))}
+                    className={`add-api-key-form-input api-key ${touched.key && errors.key ? 'error' : ''}`}
+                    placeholder="请输入API Key"
+                    required
+                  />
+                  {touched.key && errors.key && (<p className="add-api-key-form-error">{errors.key}</p>)}
+                </div>
+                <div className="add-api-key-form-group">
+                  <label className="add-api-key-form-label">提供商</label>
+                  <input
+                    value={platform}
+                    onChange={(e)=>setPlatform(e.target.value)}
+                    className="add-api-key-form-input"
+                    placeholder="如：OpenAI、Claude、Gemini..."
+                  />
+                </div>
+                <div className="add-api-key-form-group">
+                  <label className="add-api-key-form-label">描述</label>
+                  <input
+                    value={description}
+                    onChange={(e)=>setDescription(e.target.value)}
+                    className="add-api-key-form-input"
+                    placeholder="可选描述信息..."
+                  />
+                </div>
+              </div>
+              <div className="add-api-key-button-group">
+                <div className="add-api-key-button-container three-buttons">
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="add-api-key-button"
+                    >
+                      取消
+                    </button>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleBatchImport}
+                      className="add-api-key-button"
+                    >
+                      批量导入
+                    </button>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      disabled={submitting || !!errors.name || !!errors.key}
+                      className="add-api-key-button primary"
+                    >
+                      {submitting? '提交中…':'保存'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          </form>
+          
+          {/* 模态对话框 */}
+          {modal && modal.isOpen && (
+            <div className="add-api-key-modal-overlay">
+              <div className="add-api-key-modal-container">
+                <div className="add-api-key-modal-header">
+                  <div className={`add-api-key-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
+                    {modal.title}
+                  </div>
+                </div>
+                <div className="add-api-key-modal-body">
+                  <div className="add-api-key-modal-message">
+                    {modal.message}
+                  </div>
+                </div>
+                <div className="add-api-key-modal-footer">
+                  <button
+                    onClick={() => {
+                      if (modal.type === 'success' && modal.onConfirm) {
+                        modal.onConfirm();
+                      } else {
+                        setModal(null);
+                      }
+                    }}
+                    className={`add-api-key-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
+                  >
+                    {modal.type === 'success' ? '确定' : '关闭'}
+                  </button>
+                </div>
               </div>
             </div>
-            
-            <div className="mt-[30px] mb-[30px] flex justify-center">
-              <div className="w-[300px] grid grid-cols-2 gap-3">
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleBackToSingle}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-[12px] w-full"
-                  >
-                    返回
-                  </button>
-                </div>
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-[12px] w-full"
-                  >
-                    取消
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          // 单个添加API Key表单
-          <>
-            <h5 className="text-[18px] mb-8 text-center text-gray-300 dark:text-white font-normal">新增API Key</h5>
-            <div>
-              <div className="flex flex-col items-center mb-[16px]">
-                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">名称</label>
-                <input
-                  type="text"
-                  placeholder="请输入API Key名称"
-                  value={name}
-                  onChange={(e)=>setName(e.target.value)}
-                  onBlur={()=>setTouched(prev=>({ ...prev, name: true }))}
-                  className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip focus:outline-none focus:ring-2 transition-all text-sm ${
-                    touched.name && errors.name
-                      ? 'border-red-400 focus:ring-red-400/50'
-                      : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
-                  }`}
-                  required
-                />
-                {touched.name && errors.name && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.name}</p>)}
-              </div>
-              <div className="flex flex-col items-center mb-[16px]">
-                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">API Key</label>
-                <input
-                  value={keyValue}
-                  onChange={(e)=>setKeyValue(e.target.value)}
-                  onBlur={()=>setTouched(prev=>({ ...prev, key: true }))}
-                  className={`w-[300px] px-4 py-2.5 rounded-full border glass-chip font-mono focus:outline-none focus:ring-2 transition-all text-sm ${
-                    touched.key && errors.key
-                      ? 'border-red-400 focus:ring-red-400/50'
-                      : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
-                  }`}
-                  placeholder="请输入API Key"
-                  required
-                />
-                {touched.key && errors.key && (<p className="mt-2 text-[14px] text-red-500 w-[300px] text-center">{errors.key}</p>)}
-              </div>
-              <div className="flex flex-col items-center mb-[16px]">
-                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">提供商</label>
-                <input
-                  value={platform}
-                  onChange={(e)=>setPlatform(e.target.value)}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
-                  placeholder="如：OpenAI、Claude、Gemini..."
-                />
-              </div>
-              <div className="flex flex-col items-center mb-[16px]">
-                <label className="block text-[14px] font-medium mb-3 text-gray-700 dark:text-gray-300 w-[300px]">描述</label>
-                <input
-                  value={description}
-                  onChange={(e)=>setDescription(e.target.value)}
-                  className="w-[300px] px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 glass-chip focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
-                  placeholder="可选描述信息..."
-                />
-              </div>
-            </div>
-            <div className="mt-[30px] mb-[30px] flex justify-center">
-              <div className="w-[300px] grid grid-cols-3 gap-3">
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-                  >
-                    取消
-                  </button>
-                </div>
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleBatchImport}
-                    className="px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-white/10 dark:hover:bg-gray-600/50 transition-all text-gray-700 dark:text-gray-300 font-medium text-sm w-full"
-                  >
-                    批量导入
-                  </button>
-                </div>
-                <div className="flex justify-center">
-                  <button
-                    type="submit"
-                    disabled={submitting || !!errors.name || !!errors.key}
-                    className="px-4 py-2.5 rounded-full border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 disabled:opacity-60 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 disabled:hover:bg-transparent transition-all font-medium text-sm w-full"
-                  >
-                    {submitting? '提交中…':'保存'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-        </form>
+          )}
+        </div>
       </div>
       
       {/* 预览窗口 */}
       {showPreview && <PreviewWindow />}
-    </div>
+    </>
   );
 }
 
 export default AddApiKeyDialog;
-
-
-
-

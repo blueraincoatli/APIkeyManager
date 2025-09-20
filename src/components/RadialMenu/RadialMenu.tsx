@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useAdaptiveTheme } from "../../hooks/useAdaptiveTheme";
+import "./RadialMenu.css";
 
 interface RadialMenuOption {
   id: string;
@@ -12,20 +12,23 @@ interface RadialMenuProps {
   options: RadialMenuOption[];
   onSelect: (id: string) => void;
   onClose: () => void;
-  anchor?: () => { x: number; y: number } | undefined; // 连线起点，通常为"更多"按钮中心
 }
 
-// 通用径向菜单：胶囊按钮沿弧线排列，仅对悬停项绘制单条连线
-export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuProps) {
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+// 通用径向菜单：胶囊按钮沿弧线排列
+export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
   const [animationStage, setAnimationStage] = useState<'initial' | 'animating' | 'complete'>('initial');
   const menuRef = useRef<HTMLDivElement>(null);
-  const { backgroundColor, borderColor } = useAdaptiveTheme();
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 计算可见选项
+  const visibleOptions = options.slice(scrollOffset, scrollOffset + 6);
   
   // 计算中心点位置
   const getCenterPoint = () => {
     if (!menuRef.current) return { centerX: 0, centerY: 0 };
-    const centerX = menuRef.current.offsetWidth * 0.05 - 52;
+    const centerX = menuRef.current.offsetWidth / 2;
     const centerY = menuRef.current.offsetHeight / 2;
     return { centerX, centerY };
   };
@@ -42,145 +45,129 @@ export function RadialMenu({ options, onSelect, onClose, anchor }: RadialMenuPro
     }
   }, [animationStage]);
 
-  const getLineForItem = (index: number) => {
-    if (!menuRef.current) return null;
+  // 设置按钮位置的CSS变量
+  useEffect(() => {
     const { centerX, centerY } = getCenterPoint();
-    // 修改为扇形布局的角度计算
-    const startAngle = -45; // 起始角度，从右上开始
-    const angleRange = 90; // 角度范围，形成90度的扇形
-    const step = options.length > 1 ? angleRange / (options.length - 1) : 0;
-    const angle = startAngle + index * step;
-    const radius = 120;
-    const x = radius * Math.cos((angle * Math.PI) / 180);
-    const y = radius * Math.sin((angle * Math.PI) / 180);
-    const anchorPoint = anchor?.();
-    const anchorLocal = anchorPoint || { x: centerX, y: centerY };
 
-    const buttonWidth = 120;
-    const buttonHeight = 40;
-    const optionBounds = {
-      left: centerX + x - buttonWidth / 2,
-      top: centerY + y - buttonHeight / 2,
-      right: centerX + x + buttonWidth / 2,
-      bottom: centerY + y + buttonHeight / 2,
-    };
-    const iconRadius = 14; // 起点离anchor稍远，避免贴边
-    const vx = (optionBounds.left + optionBounds.right) / 2 - anchorLocal.x;
-    const vy = optionBounds.top - anchorLocal.y;
-    const vlen = Math.max(1, Math.hypot(vx, vy));
-    const startPoint = { x: anchorLocal.x + (vx / vlen) * iconRadius, y: anchorLocal.y + (vy / vlen) * iconRadius };
-    const endPoint = { x: (optionBounds.left + optionBounds.right) / 2, y: optionBounds.top };
+    visibleOptions.forEach((_, index) => {
+      const button = buttonRefs.current[index];
+      if (button) {
+        // 修改为扇形布局：从右上开始，形成90度的扇形
+        const startAngle = -45; // 起始角度，从右上开始（-45度）
+        const angleRange = 90; // 角度范围，形成90度的扇形
+        const step = visibleOptions.length > 1 ? angleRange / (visibleOptions.length - 1) : 0;
+        const angle = startAngle + index * step;
+        const radius = 120; // 增大半径以展平弧度
+        const x = radius * Math.cos((angle * Math.PI) / 180);
+        const y = radius * Math.sin((angle * Math.PI) / 180);
 
-    return { startPoint, endPoint };
-  };
+        button.style.setProperty('--item-left', `${centerX + x - 50}px`);
+        button.style.setProperty('--item-top', `${centerY + y - 16}px`);
+      }
+    });
+  }, [visibleOptions]);
 
   const handleClick = (id: string) => {
     onSelect(id);
     onClose();
   };
 
-  // 计算菜单项的动画样式
-  const getItemAnimationStyle = (index: number) => {
+  // 计算菜单项的动画类名
+  const getItemAnimationClass = () => {
     if (animationStage === 'initial') {
-      return {
-        transform: 'scale(0)',
-        opacity: 0,
-      };
+      return 'initial';
     }
-    
+
     if (animationStage === 'animating') {
-      const delay = index * 30; // 每个项延迟30ms
-      return {
-        transform: 'scale(1)',
-        opacity: 1,
-        transition: `all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delay}ms`,
-      };
+      return 'animating';
     }
-    
-    return {};
+
+    return '';
   };
 
-  return (
-    <div className="fixed inset-0 z-50" style={{ background: 'transparent' }}>
-      <div className="fixed inset-0 bg-black/10" onClick={onClose} />
+  // 计算菜单项的动画延迟类名
+  const getItemAnimationDelay = (index: number) => {
+    if (animationStage === 'animating') {
+      return `delay-${index}`;
+    }
+    return '';
+  };
 
+  // 滚动处理
+  const handleScroll = (direction: 'up' | 'down') => {
+    // 确保有足够多的选项来滚动
+    if (options.length <= 6) {
+      return;
+    }
+    
+    if (direction === 'up' && scrollOffset > 0) {
+      setScrollOffset(prev => Math.max(0, prev - 1));
+    } else if (direction === 'down' && scrollOffset < options.length - 6) {
+      setScrollOffset(prev => Math.min(options.length - 6, prev + 1));
+    }
+  };
+
+  // 处理鼠标滚轮事件
+  const handleWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      // 向上滚动
+      handleScroll('up');
+    } else {
+      // 向下滚动
+      handleScroll('down');
+    }
+  };
+
+  // 添加鼠标滚轮事件监听器
+  useEffect(() => {
+    const menuContainer = menuRef.current;
+    if (menuContainer && options.length > 6) {
+      menuContainer.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        menuContainer.removeEventListener('wheel', handleWheel);
+      };
+    }
+  }, [options.length, scrollOffset]);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div className="radial-menu-overlay">
       <div
         ref={menuRef}
-        className="absolute w-80 h-64"
-        style={{ 
-          left: 0, 
-          top: 0,
-          opacity: animationStage === 'initial' ? 0 : 1,
-          transform: animationStage === 'initial' ? 'scale(0.8)' : 'scale(1)',
-          transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        }}
+        className="radial-menu-container"
       >
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
-          {hoverIndex !== null && (() => {
-            const p = getLineForItem(hoverIndex);
-            if (!p) return null;
-            return (
-              <line
-                x1={p.startPoint.x}
-                y1={p.startPoint.y}
-                x2={p.endPoint.x}
-                y2={p.endPoint.y}
-                stroke="rgba(255,255,255,0.35)"
-                strokeWidth="2"
-                style={{
-                  transition: 'all 0.2s ease-out',
-                }}
-              />
-            );
-          })()}
-        </svg>
+        {visibleOptions.map((option, index) => {
+          // 计算动画类名和延迟
+          const animationClass = getItemAnimationClass();
+          const animationDelay = getItemAnimationDelay(index);
 
-        {options.map((option, index) => {
-          const { centerX, centerY } = getCenterPoint();
-          // 修改为扇形布局：从右上开始，形成90度的扇形
-          const startAngle = -45; // 起始角度，从右上开始（-45度）
-          const angleRange = 90; // 角度范围，形成90度的扇形
-          const step = options.length > 1 ? angleRange / (options.length - 1) : 0;
-          const angle = startAngle + index * step;
-          const radius = 120; // 增大半径以展平弧度
-          const x = radius * Math.cos((angle * Math.PI) / 180);
-          const y = radius * Math.sin((angle * Math.PI) / 180);
-          
-          // 计算动画样式
-          const animationStyle = getItemAnimationStyle(index);
-          
           return (
             <button
               key={option.id}
-              onMouseEnter={() => setHoverIndex(index)}
-              onMouseLeave={() => setHoverIndex(null)}
+              ref={(el) => { buttonRefs.current[index] = el; }}
+              type="button"
               onClick={() => handleClick(option.id)}
-              className="absolute flex items-center justify-center px-4 py-2 rounded-full shadow-xl glass-chip transition-transform duration-200 hover:scale-105 hover:shadow-2xl min-w-[100px] max-w-[140px]"
-              style={{
-                left: `${centerX + x - 50}px`,
-                top: `${centerY + y - 16}px`,
-                zIndex: 10,
-                ...animationStyle,
-              }}
+              className={`radial-menu-option-button positioned ${animationClass} ${animationDelay}`}
             >
-              <span className="text-sm font-medium flex items-center gap-3 whitespace-nowrap max-w-[140px] text-gray-700 dark:text-gray-100">
-                {option.icon && <span className="text-base flex-shrink-0"> {option.icon}</span>}
-                <span className="truncate flex-grow text-center">{option.label}</span>
-                <span className="ml-2 text-xs px-2 py-0.5 rounded-full border flex-shrink-0 text-gray-700 dark:text-gray-100" style={{ borderColor, backgroundColor: 'rgba(255,255,255,0.12)' }}>
+              <span className="radial-menu-option-content">
+                {option.icon && <span className="radial-menu-option-icon"> {option.icon}</span>}
+                <span className="radial-menu-option-label">{option.label}</span>
+                <span className="radial-menu-option-count">
                   {option.count ?? 0}
                 </span>
               </span>
             </button>
           );
         })}
-
-        <div
-          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/30"
-          style={{ 
-            backgroundColor, 
-            left: menuRef.current ? `${getCenterPoint().centerX}px` : '0px'
-          }}
-        />
       </div>
     </div>
   );

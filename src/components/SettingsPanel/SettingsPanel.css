@@ -1,0 +1,436 @@
+/* SettingsPanel Component Styles */
+
+/* Settings panel container */
+.settings-panel-container {
+  position: absolute;
+  transform: translate(0%, 0%);
+  top: 15px; /* 在工具条下方 */
+  left: 50px; /* 与工具条左边距对齐 */
+  z-index: var(--z-dialog);
+  pointer-events: none;
+}
+
+.settings-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent; /* 移除半透明黑色遮罩，保持透明 */
+  pointer-events: auto;
+}
+
+/* Settings panel */
+.settings-panel {
+  position: relative;
+  width: 360px;
+  max-width: 90vw;
+  max-height: 80vh; /* 减小最大高度 */
+  border-radius: var(--radius-2xs);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  overflow: hidden;
+
+  /* Light theme gradient */
+  background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border: 1px solid rgb(220, 220, 220);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.15); /* 减小阴影距离 */
+}
+
+.dark .settings-panel {
+  /* Dark theme gradient */
+  background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  border: 1px solid rgb(75, 85, 105);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.3); /* 减小阴影距离 */
+}
+
+/* Settings panel header */
+.settings-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-m) var(--space-l);
+  border-bottom: var(--border-width-s) solid rgba(229, 231, 235, 1);
+}
+
+.dark .settings-panel-header {
+  border-bottom: var(--border-width-s) solid rgba(55, 65, 81, 1);
+}
+
+.settings-panel-title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(31, 41, 55, 1);
+  margin: 0;
+}
+
+.dark .settings-panel-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-close-button {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  border: var(--border-width-s) solid var(--glass-border-light);
+  color: rgba(107, 114, 128, 1);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  padding: 0;
+}
+
+.settings-panel-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-close-button {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+  color: rgba(156, 163, 175, 1);
+}
+
+.dark .settings-panel-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(209, 213, 219, 1);
+}
+
+/* Settings panel content */
+.settings-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-m); /* 减小内边距 */
+}
+
+/* Settings panel section */
+.settings-panel-section {
+  margin-bottom: var(--space-m); /* 减小底部间距 */
+}
+
+.settings-panel-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-panel-section-title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-medium);
+  color: rgba(55, 65, 81, 1);
+  margin: 0 0 var(--space-s); /* 减小底部间距 */
+}
+
+.dark .settings-panel-section-title {
+  color: rgba(209, 213, 219, 1);
+}
+
+/* Theme options */
+.settings-panel-theme-options {
+  display: flex;
+  gap: var(--space-s);
+  justify-content: center;
+}
+
+.settings-panel-theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs); /* 减小内边距 */
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-align: center;
+  width: 70px; /* 减小宽度 */
+  height: 70px; /* 减小高度 */
+}
+
+.settings-panel-theme-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.settings-panel-theme-option.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.dark .settings-panel-theme-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.dark .settings-panel-theme-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .settings-panel-theme-option.selected {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* Theme option icon */
+.settings-panel-theme-option-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-2xs);
+  background-color: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  margin-bottom: var(--space-xs);
+}
+
+.dark .settings-panel-theme-option-icon {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.settings-panel-theme-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-theme-icon {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Theme option label */
+.settings-panel-theme-option-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: rgba(31, 41, 55, 1);
+}
+
+.dark .settings-panel-theme-option-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Theme option selected indicator */
+.settings-panel-theme-option-selected {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel-theme-option {
+  position: relative;
+}
+
+.settings-panel-selected-icon {
+  width: 12px;
+  height: 12px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-selected-icon {
+  color: rgba(96, 165, 250, 1);
+}
+
+.settings-panel-selected-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-selected-icon {
+  color: rgba(96, 165, 250, 1);
+}
+
+/* Background options */
+.settings-panel-background-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.settings-panel-background-option {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-m);
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-panel-background-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .settings-panel-background-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.dark .settings-panel-background-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Background option header */
+.settings-panel-background-option-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+/* Background option icon */
+.settings-panel-background-option-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-2xs);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+  flex-shrink: 0;
+}
+
+.dark .settings-panel-background-option-icon {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(196, 181, 253, 0.2));
+}
+
+.settings-panel-background-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .settings-panel-background-icon {
+  color: rgba(96, 165, 250, 1);
+}
+
+/* Background option info */
+.settings-panel-background-option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-panel-background-option-label {
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  color: rgba(31, 41, 55, 1);
+  margin-bottom: var(--space-2xs);
+}
+
+.dark .settings-panel-background-option-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-background-option-description {
+  font-size: var(--font-size-xs);
+  color: rgba(107, 114, 128, 1);
+  line-height: 1.4;
+}
+
+.dark .settings-panel-background-option-description {
+  color: rgba(156, 163, 175, 1);
+}
+
+/* Shortcut options */
+.settings-panel-shortcut-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.settings-panel-shortcut-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2xs) var(--space-s); /* 减小内边距 */
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  background-color: transparent;
+}
+
+.dark .settings-panel-shortcut-option {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.settings-panel-shortcut-label {
+  font-size: var(--font-size-s);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-shortcut-label {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-shortcut-key {
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  border-radius: var(--radius-xs);
+  padding: var(--space-3xs) var(--space-xs);
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .settings-panel-shortcut-key {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: var(--border-width-s) solid var(--glass-border-dark);
+  color: rgba(255, 255, 255, 1);
+}
+
+/* About section */
+.settings-panel-about {
+  text-align: center;
+  padding: var(--space-m) var(--space-s); /* 减小内边距 */
+  border-top: var(--border-width-s) solid var(--glass-border-light);
+  margin-top: var(--space-m); /* 减小顶部间距 */
+}
+
+.dark .settings-panel-about {
+  border-top: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.settings-panel-about-logo {
+  width: 32px; /* 减小图标大小 */
+  height: 32px;
+  margin: 0 auto var(--space-xs); /* 减小间距 */
+}
+
+.settings-panel-about-title {
+  font-size: var(--font-size-m); /* 减小字体大小 */
+  font-weight: var(--font-weight-semibold);
+  color: rgba(31, 41, 55, 1);
+  margin: 0 0 var(--space-xs); /* 减小间距 */
+}
+
+.dark .settings-panel-about-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.settings-panel-about-version {
+  font-size: var(--font-size-xs);
+  color: rgba(107, 114, 128, 1);
+  margin: 0 0 var(--space-xs); /* 减小间距 */
+}
+
+.dark .settings-panel-about-version {
+  color: rgba(156, 163, 175, 1);
+}
+
+.settings-panel-about-description {
+  font-size: var(--font-size-xs); /* 减小字体大小 */
+  color: rgba(107, 114, 128, 1);
+  line-height: 1.4; /* 减小行高 */
+  margin: 0;
+}
+

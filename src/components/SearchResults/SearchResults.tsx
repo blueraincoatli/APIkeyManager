@@ -1,17 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import { ApiKey } from "../../types/apiKey";
-import { CopyIcon, CheckIcon } from "../Icon/Icon";
+import { CopyIcon, CheckIcon, EditIcon, CloseIcon } from "../Icon/Icon";
+import "./SearchResults.css";
+import { apiKeyService } from "../../services/apiKeyService";
+import { invoke } from "@tauri-apps/api/core";
 
 interface SearchResultsProps {
   results: ApiKey[];
   onCopy: (key: ApiKey) => void;
-  position: { x: number; y: number };
-  toolbarWidth: number;
   providerLabel?: string;
+  onRefresh?: () => void; // 添加刷新回调
 }
 
-export function SearchResults({ results, onCopy, position, toolbarWidth, providerLabel }: SearchResultsProps) {
+export function SearchResults({ results, onCopy, providerLabel, onRefresh }: SearchResultsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editKeyValue, setEditKeyValue] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string; onConfirm?: () => void } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
 
@@ -24,77 +31,336 @@ export function SearchResults({ results, onCopy, position, toolbarWidth, provide
   }, []);
 
   const handleCopy = async (key: ApiKey) => {
-    setCopiedId(key.id);
-    onCopy(key);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => {
-      setCopiedId(null);
-      timeoutRef.current = null;
-    }, 2000);
+    try {
+      // 调用后端的复制命令，传递 API Key 的实际内容
+      const result = await invoke('copy_to_clipboard', { content: key.keyValue });
+
+      if (result) {
+        // 复制成功，设置视觉反馈
+        setCopiedId(key.id);
+
+        // 调用父组件的回调函数（如果需要）
+        onCopy(key);
+
+        // 显示成功反馈，2秒后恢复
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = window.setTimeout(() => {
+          setCopiedId(null);
+          timeoutRef.current = null;
+        }, 2000);
+
+        // 显示成功模态框
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '复制成功',
+          message: `${key.name} 的 API Key 已复制到剪贴板`,
+          onConfirm: () => setModal(null)
+        });
+      } else {
+        // 复制失败
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '复制失败',
+          message: '无法将 API Key 复制到剪贴板'
+        });
+      }
+    } catch (error) {
+      console.error('复制 API Key 失败:', error);
+
+      // 显示错误模态框
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '复制失败',
+        message: '发生未知错误，无法复制到剪贴板'
+      });
+    }
   };
 
   const formatApiKey = (keyValue: string) => {
-    if (keyValue.length <= 10) return keyValue;
-    const prefix = keyValue.substring(0, 3);
-    const suffix = keyValue.substring(keyValue.length - 3);
+    if (keyValue.length <= 15) return keyValue;
+    const prefix = keyValue.substring(0, 6);
+    const suffix = keyValue.substring(keyValue.length - 6);
     return `${prefix}...${suffix}`;
+  };
+
+  const startEditing = (key: ApiKey) => {
+    setEditingId(key.id);
+    setEditName(key.name);
+    setEditKeyValue(key.keyValue);
+  };
+
+  const saveEdit = async (key: ApiKey) => {
+    if (!editingId) return;
+    
+    const updatedKey: ApiKey = {
+      ...key,
+      name: editName,
+      keyValue: editKeyValue,
+      // 保持其他字段不变
+      platform: key.platform,
+      description: key.description,
+      groupId: key.groupId,
+      tags: key.tags,
+      createdAt: key.createdAt,
+      updatedAt: Date.now(),
+    };
+
+    try {
+      const result = await apiKeyService.editApiKey(updatedKey);
+      if (result.success) {
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '编辑成功',
+          message: `${key.name} 已更新`,
+          onConfirm: () => {
+            setModal(null);
+            setEditingId(null);
+            // 通知父组件刷新数据
+            if (onRefresh) {
+              onRefresh();
+            }
+          }
+        });
+      } else {
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '编辑失败',
+          message: result.error?.message || '无法更新API Key'
+        });
+      }
+    } catch (error) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '编辑失败',
+        message: '发生未知错误'
+      });
+      console.error("编辑API Key失败:", error);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const confirmDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deletingId) return;
+    
+    try {
+      const result = await apiKeyService.deleteApiKey(deletingId);
+      if (result.success) {
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '删除成功',
+          message: 'API Key已从系统中移除',
+          onConfirm: () => {
+            setModal(null);
+            setDeletingId(null);
+            // 通知父组件刷新数据
+            if (onRefresh) {
+              onRefresh();
+            }
+          }
+        });
+      } else {
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '删除失败',
+          message: result.error?.message || '无法删除API Key'
+        });
+      }
+    } catch (error) {
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '删除失败',
+        message: '发生未知错误'
+      });
+      console.error("删除API Key失败:", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeletingId(null);
   };
 
   return (
     <div
       ref={resultsRef}
-      className="fixed z-30 w-[360px] glass rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 dark:border-white/20 border-gray-400"
-      style={{
-        left: position.x + (toolbarWidth - 360) / 2, // 使360px的面板相对于工具栏居中
-        top: position.y + 57, // 在56px高的工具栏下方留出1px间距
-      }}
+      className="search-results-container"
     >
       {providerLabel && (
-        <div className="flex justify-center pt-4">
-          <div className="w-[300px] flex justify-end items-center" style={{ height: "32px" }}>
-            <span className="inline-flex items-center px-4 py-0 text-[10px] rounded-full bg-primary/10 border border-primary/20 text-primary" style={{ height: "18px" }}>
-                  {providerLabel}    
+        <div className="search-results-provider-label-container">
+          <div className="search-results-provider-label-wrapper">
+            <span className="search-results-provider-label">
+              {providerLabel}
             </span>
           </div>
         </div>
       )}
-      <div className="max-h-96 overflow-y-auto px-4 py-3">
+      <div className="search-results-list">
         {results.length === 0 ? (
-          <div className="flex justify-center p-8">
-            <div className="text-center opacity-70 text-gray-700 dark:text-gray-100 text-[14px]">暂无结果</div>
+          <div className="search-results-empty">
+            <div className="search-results-empty-text">暂无结果</div>
           </div>
         ) : (
           <>
             {results.map((key) => (
               <div
                 key={key.id}
-                className="flex justify-center px-4 py-6 hover:bg-white/10 transition-colors duration-150 cursor-pointer border-b-2 border-white/40 last:border-b-0"
-                style={{ height: "60px", marginTop: "8px", marginBottom: "8px" }}
-                onClick={() => handleCopy(key)}
+                className="search-results-item"
               >
-                <div className="w-[300px]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate text-[12px] text-gray-700 dark:text-gray-100">{key.name}</div>
-                      <div className="text-[14px] opacity-80 font-mono mt-1 text-gray-700 dark:text-gray-100">{formatApiKey(key.keyValue)}</div>
+                <div className="search-results-item-content">
+                  {editingId === key.id ? (
+                    // 编辑模式
+                    <div className="search-results-edit-form">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="search-results-edit-input"
+                        placeholder="名称"
+                      />
+                      <input
+                        type="text"
+                        value={editKeyValue}
+                        onChange={(e) => setEditKeyValue(e.target.value)}
+                        className="search-results-edit-input"
+                        placeholder="API Key"
+                      />
+                      <div className="search-results-edit-buttons">
+                        <button 
+                          onClick={() => saveEdit(key)}
+                          className="search-results-edit-save-button"
+                        >
+                          保存
+                        </button>
+                        <button 
+                          onClick={cancelEdit}
+                          className="search-results-edit-cancel-button"
+                        >
+                          取消
+                        </button>
+                      </div>
                     </div>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopy(key);
-                      }}
-                      aria-label="复制"
-                      className="w-8 h-8 flex items-center justify-center bg-transparent"
-                    >
-                      {copiedId === key.id ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                  ) : deletingId === key.id ? (
+                    // 删除确认模式
+                    <div className="search-results-delete-confirm">
+                      <div className="search-results-delete-text">确定要删除吗？</div>
+                      <div className="search-results-delete-buttons">
+                        <button 
+                          onClick={executeDelete}
+                          className="search-results-delete-confirm-button"
+                        >
+                          确定
+                        </button>
+                        <button 
+                          onClick={cancelDelete}
+                          className="search-results-delete-cancel-button"
+                        >
+                          取消
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // 正常显示模式
+                    <>
+                      <div className="search-results-item-header">
+                        <div className="search-results-item-info">
+                          <div className="search-results-item-name">
+                            {key.name}
+                            {key.description && (
+                              <span className="search-results-item-description">
+                                {key.description}
+                              </span>
+                            )}
+                          </div>
+                          <div className="search-results-item-key">{formatApiKey(key.keyValue)}</div>
+                        </div>
+                        <div className="search-results-item-actions">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditing(key);
+                            }}
+                            aria-label="编辑"
+                            className="search-results-action-button"
+                          >
+                            <EditIcon className="search-results-action-icon" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              confirmDelete(key.id);
+                            }}
+                            aria-label="删除"
+                            className="search-results-action-button"
+                          >
+                            <CloseIcon className="search-results-action-icon" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopy(key);
+                            }}
+                            aria-label="复制"
+                            className="search-results-action-button"
+                          >
+                            {copiedId === key.id ? <CheckIcon className="search-results-action-icon" /> : <CopyIcon className="search-results-action-icon" />}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
           </>
         )}
       </div>
+
+      {/* 模态对话框 */}
+      {modal && modal.isOpen && (
+        <div className="search-results-modal-overlay">
+          <div className="search-results-modal-container">
+            <div className="search-results-modal-header">
+              <div className={`search-results-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
+                {modal.title}
+              </div>
+            </div>
+            <div className="search-results-modal-body">
+              <div className="search-results-modal-message">
+                {modal.message}
+              </div>
+            </div>
+            <div className="search-results-modal-footer">
+              <button
+                onClick={() => {
+                  if (modal.type === 'success' && modal.onConfirm) {
+                    modal.onConfirm();
+                  } else {
+                    setModal(null);
+                  }
+                }}
+                className={`search-results-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
+              >
+                {modal.type === 'success' ? '确定' : '关闭'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,6 @@
 /* stylelint-disable at-rule-no-unknown */
+@import "./styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -77,12 +79,26 @@
     border-color: hsl(var(--border));
   }
   body {
-    background-color: hsl(var(--background));
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Light theme gradient to showcase glass */
-    background-image: linear-gradient(135deg, #f8fafc 0%, #eef2f7 50%, #e5e7eb 100%);
-    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* 确保所有容器都是透明的 */
+  html, body, #root {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  /* 强制所有元素透明背景 */
+  * {
+    background-attachment: initial !important;
   }
 }
 
@@ -105,18 +121,31 @@
   --glass-bg-rgb: 255, 255, 255;
   --glass-bg-alpha: 0.18; /* light theme base alpha */
   --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* 减小了阴影 */
 }
 .dark {
   --glass-bg-rgb: 17, 25, 40;
   --glass-bg-alpha: 0.45; /* darker, more opaque */
   --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* 统一使用减小后的阴影 */
 }
 
-/* Dark theme gradient background */
+/* 完全禁用深色主题背景 - 浮动工具条必须保持透明 */
 .dark body {
-  background-color: hsl(var(--background));
-  background-image: linear-gradient(135deg, #0b1220 0%, #111827 50%, #0a0f1e 100%);
-  background-attachment: fixed;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  background-attachment: initial !important;
+}
+
+/* 确保浮动工具条窗口在深色主题下也保持透明 */
+.dark .floating-toolbar-window,
+.dark .floating-toolbar-window body,
+.dark html,
+.dark #root {
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
 }
 
 .glass {
@@ -124,7 +153,11 @@
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--glass-shadow);
+  /* Ensure the element is positioned to show glass effect */
+  position: relative;
+  /* Add transform to create a new stacking context */
+  transform: translateZ(0);
 }
 
 .glass-chip {
@@ -132,6 +165,10 @@
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid var(--glass-border);
+  /* Ensure the element is positioned to show glass effect */
+  position: relative;
+  /* Add transform to create a new stacking context */
+  transform: translateZ(0);
 }
 
 /* 纤细滚动条（与设计图接近） */
@@ -147,31 +184,35 @@
   background: transparent;
 }
 
-/* App gradient via id to ensure it wins over utility classes */
-#app-bg {
+/* App container - completely transparent for floating toolbar */
+.app-container {
   position: relative;
-  /* Outer spacing for the whole interface */
-  padding: 5px;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
+  background: transparent !important;
+  /* 移除所有可能的背景效果 */
+  background-image: none !important;
+  background-color: transparent !important;
 }
-#app-bg > * {
+
+.app-container > * {
   position: relative;
   z-index: 1;
 }
-#app-bg::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background-attachment: fixed !important;
-  background-size: cover !important;
+
+/* Floating toolbar window - 完全透明 */
+.floating-toolbar-window {
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
 }
-:root[data-theme="light"] #app-bg::before {
-  /* Stronger contrast for easy visual check */
-  background-image: linear-gradient(135deg, #ffffff 0%, #e5eefc 50%, #d1d5db 100%) !important;
-}
-:root[data-theme="dark"] #app-bg::before {
-  /* Stronger tri-color gradient for dark theme */
-  background-image: linear-gradient(135deg, #020617 0%, #1e293b 50%, #0b1220 100%) !important;
+
+.floating-toolbar-window::before,
+.floating-toolbar-window::after {
+  display: none !important;
 }
 

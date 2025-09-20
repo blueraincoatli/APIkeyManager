@@ -29,6 +29,7 @@ export function FloatingToolbarDemo() {
               </p>
 
               <button
+                type="button"
                 onClick={() => setShowToolbar(true)}
                 className="px-8 py-4 bg-white/30 hover:bg-white/40 text-white font-semibold rounded-full backdrop-blur-sm border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
               >

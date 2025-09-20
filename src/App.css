@@ -12,13 +12,13 @@
   font-weight: 400;
 
   color: #0f0f0f;
-  background-color: #f6f6f6;
+  /* background-color: #f6f6f6; 浮动工具条需要透明背景 */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+
 }
 
 .container {
@@ -102,7 +102,7 @@ h1 {
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
-    background-color: #2f2f2f;
+    /* background-color: #2f2f2f; 浮动工具条需要透明背景 */
   }
 
   a:hover {

@@ -1,0 +1,722 @@
+/* AddApiKeyDialog Component Styles */
+
+/* Dialog container styles */
+.add-api-key-dialog-container {
+  position: absolute;
+  transform: translate(0%, 0%);
+  top: 15px; /* 在工具条下方 */
+  left: 50px; /* 与工具条左边距对齐 */
+  z-index: 1003;
+  pointer-events: none;
+  /* 为模态对话框创建定位上下文 */
+  overflow: hidden;
+  /* 创建定位上下文 */
+  position: relative;
+  /* 确保容器有明确的尺寸 */
+  width: 360px;
+  height: auto;
+}
+
+.add-api-key-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent; /* 移除半透明黑色遮罩，保持透明 */
+  pointer-events: auto;
+}
+
+.add-api-key-dialog-panel,
+.add-api-key-preview-window {
+  pointer-events: auto;
+}
+
+/* Dialog panel styles - Simulated frost effect */
+.add-api-key-dialog-panel {
+  position: relative;
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  height: auto;
+  border-radius: var(--radius-2xs);
+  padding: var(--space-m) var(--space-l);
+  box-sizing: border-box !important;
+
+  /* Light theme gradient */
+  background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border: 1px solid rgb(220, 220, 220);
+  
+  /* Enhanced shadow for light theme */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 5px 15px rgba(0, 0, 0, 0.12); /* 减小阴影距离 */
+
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  /* 创建定位上下文 */
+  position: relative;
+  /* 确保面板有明确的尺寸 */
+  display: block;
+  /* 为模态对话框创建定位上下文 */
+  overflow: hidden;
+}
+
+.dark .add-api-key-dialog-panel {
+  /* Dark theme gradient */
+  background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  border: 1px solid rgb(75, 85, 105);
+
+  /* Enhanced shadow for dark theme */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.25); /* 减小阴影距离 */
+}
+
+/* Preview window styles */
+.add-api-key-preview-window {
+  position: relative;
+  width: 800px;
+  max-width: 90vw;
+  height: 600px;
+  max-height: 90vh;
+  background-color: var(--glass-bg-light);
+  /* Safari fallback */
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-2xs);
+  box-shadow: var(--shadow-xl);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(20px)) {
+  .add-api-key-preview-window {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .add-api-key-preview-window {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-color: var(--glass-bg-light);
+  }
+}
+
+.dark .add-api-key-preview-window {
+  background-color: var(--glass-bg-dark);
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.add-api-key-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-m) var(--space-l);
+  border-bottom: 1px solid rgba(229, 231, 235, 1);
+}
+
+.dark .add-api-key-preview-header {
+  border-bottom: 1px solid rgba(55, 65, 81, 1);
+}
+
+.add-api-key-preview-title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(31, 41, 55, 1);
+}
+
+.dark .add-api-key-preview-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.add-api-key-preview-close-button {
+  color: rgba(107, 114, 128, 1);
+}
+
+.add-api-key-preview-close-button:hover {
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .add-api-key-preview-close-button {
+  color: rgba(156, 163, 175, 1);
+}
+
+.dark .add-api-key-preview-close-button:hover {
+  color: rgba(209, 213, 219, 1);
+}
+
+.add-api-key-preview-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-l);
+}
+
+.add-api-key-preview-table-container {
+  overflow: hidden;
+  border-radius: var(--radius-2xs);
+  border: var(--border-width-s) solid var(--glass-border-light);
+}
+
+.dark .add-api-key-preview-table-container {
+  border: var(--border-width-s) solid var(--glass-border-dark);
+}
+
+.add-api-key-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.add-api-key-preview-table-header {
+  background-color: rgba(249, 250, 251, 1);
+}
+
+.dark .add-api-key-preview-table-header {
+  background-color: rgba(55, 65, 81, 1);
+}
+
+.add-api-key-preview-table-header-cell {
+  padding: var(--space-s) var(--space-m);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: rgba(107, 114, 128, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .add-api-key-preview-table-header-cell {
+  color: rgba(209, 213, 219, 1);
+}
+
+.add-api-key-preview-table-row {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.add-api-key-preview-table-row:nth-child(even) {
+  background-color: rgba(249, 250, 251, 1);
+}
+
+.dark .add-api-key-preview-table-row {
+  background-color: rgba(30, 41, 59, 1);
+}
+
+.dark .add-api-key-preview-table-row:nth-child(even) {
+  background-color: rgba(15, 23, 42, 1);
+}
+
+.add-api-key-preview-table-cell {
+  padding: var(--space-m) var(--space-m);
+  font-size: var(--font-size-s);
+  color: rgba(17, 24, 39, 1);
+  white-space: nowrap;
+}
+
+.add-api-key-preview-table-cell.api-key {
+  font-family: monospace;
+}
+
+.dark .add-api-key-preview-table-cell {
+  color: rgba(255, 255, 255, 1);
+}
+
+.add-api-key-preview-footer {
+  padding: var(--space-l);
+  border-top: 1px solid rgba(229, 231, 235, 1);
+}
+
+.dark .add-api-key-preview-footer {
+  border-top: 1px solid rgba(55, 65, 81, 1);
+}
+
+.add-api-key-preview-button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+}
+
+/* Modal Styles */
+.add-api-key-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  border-radius: var(--radius-2xs);
+  /* 相对于父容器定位 */
+  width: 100%;
+  height: 100%;
+}
+
+.add-api-key-modal-container {
+  background: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border-radius: var(--radius-m);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  width: 280px;
+  max-width: 90%;
+  transform: translateZ(0);
+  /* 相对于父容器居中 */
+  position: relative;
+  margin: 0 auto;
+  /* 确保容器不会超出父容器 */
+  max-height: 90%;
+  overflow: hidden;
+}
+
+.dark .add-api-key-modal-container {
+  background: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.add-api-key-modal-header {
+  padding: var(--space-m) var(--space-m) var(--space-s);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .add-api-key-modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-api-key-modal-title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.add-api-key-modal-title.success {
+  color: rgba(6, 95, 70, 1);
+}
+
+.dark .add-api-key-modal-title.success {
+  color: rgba(74, 222, 128, 1);
+}
+
+.add-api-key-modal-title.error {
+  color: rgba(239, 68, 68, 1);
+}
+
+.dark .add-api-key-modal-title.error {
+  color: rgba(248, 113, 113, 1);
+}
+
+.add-api-key-modal-body {
+  padding: var(--space-s) var(--space-m);
+  /* 确保主体部分不会超出容器 */
+  max-height: calc(90% - 100px);
+  overflow-y: auto;
+}
+
+.add-api-key-modal-message {
+  font-size: var(--font-size-s);
+  color: rgba(55, 65, 81, 1);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.dark .add-api-key-modal-message {
+  color: rgba(255, 255, 255, 1);
+}
+
+.add-api-key-modal-footer {
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  display: flex;
+  justify-content: center;
+}
+
+.add-api-key-modal-button {
+  padding: var(--space-xs) var(--space-m);
+  border: none;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 60px;
+}
+
+.add-api-key-modal-button.success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 1), rgba(22, 163, 74, 1));
+  color: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+}
+
+.add-api-key-modal-button.success:hover {
+  background: linear-gradient(135deg, rgba(22, 163, 74, 1), rgba(21, 128, 61, 1));
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.4);
+  transform: translateY(-1px);
+}
+
+.add-api-key-modal-button.error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+  color: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.add-api-key-modal-button.error:hover {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 1), rgba(185, 28, 28, 1));
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Form styles */
+.add-api-key-dialog-title {
+  font-size: var(--font-size-l);
+  margin-bottom: var(--space-l);
+  text-align: center;
+  color: rgba(209, 213, 219, 1);
+  font-weight: var(--font-weight-normal);
+}
+
+.dark .add-api-key-dialog-title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.add-api-key-form-section {
+  margin-bottom: var(--space-l);
+}
+
+.add-api-key-form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--space-s);
+}
+
+.add-api-key-form-label {
+  display: block;
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  color: rgba(55, 65, 81, 1);
+  width: var(--size-input-width);
+}
+
+.dark .add-api-key-form-label {
+  color: rgba(209, 213, 219, 1);
+}
+
+.add-api-key-form-input {
+  width: var(--size-input-width);
+  padding: var(--space-3xs) var(--space-m);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(209, 213, 219, 1);
+  background-color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-s);
+  transition: all var(--transition-fast);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(12px)) {
+  .add-api-key-form-input {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(12px)) {
+  .add-api-key-form-input {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+.add-api-key-form-input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.add-api-key-form-input.api-key {
+  font-family: monospace;
+}
+
+.add-api-key-form-input.error {
+  border-color: rgba(239, 68, 68, 1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.add-api-key-form-input.error:focus {
+  border-color: rgba(239, 68, 68, 1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.dark .add-api-key-form-input {
+  border: 1px solid rgba(75, 85, 99, 1);
+  background-color: rgba(17, 25, 40, 0.7);
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark .add-api-key-form-input:focus {
+  border-color: rgba(59, 130, 246, 1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.dark .add-api-key-form-input.error {
+  border-color: rgba(239, 68, 68, 1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.add-api-key-form-error {
+
+  font-size: var(--font-size-s);
+  color: rgba(239, 68, 68, 1);
+  width: var(--size-input-width);
+  text-align: center;
+}
+
+.add-api-key-button-group {
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  display: flex;
+  justify-content: center;
+}
+
+.add-api-key-button-container {
+  width: var(--size-input-width);
+  display: grid;
+  gap: var(--space-s);
+}
+
+.add-api-key-button-container.three-buttons {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.add-api-key-button-container.two-buttons {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.add-api-key-button {
+  padding: var(--space-3xs) var(--space-m);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  width: 100%;
+  border: 1px solid rgba(209, 213, 219, 1);
+  background-color: transparent;
+  color: rgba(55, 65, 81, 1);
+}
+
+.add-api-key-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.add-api-key-button.primary {
+  border-color: rgba(37, 99, 235, 1);
+  color: rgba(37, 99, 235, 1);
+}
+
+.add-api-key-button.primary:hover {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.add-api-key-button.destructive {
+  border-color: rgba(239, 68, 68, 1);
+  color: rgba(239, 68, 68, 1);
+}
+
+.add-api-key-button.destructive:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.add-api-key-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.add-api-key-button:disabled:hover {
+  background-color: transparent;
+}
+
+.dark .add-api-key-button {
+  border: 1px solid rgba(75, 85, 99, 1);
+  color: rgba(209, 213, 219, 1);
+}
+
+.dark .add-api-key-button:hover {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark .add-api-key-button.primary {
+  border-color: rgba(96, 165, 250, 1);
+  color: rgba(96, 165, 250, 1);
+}
+
+.dark .add-api-key-button.primary:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+.dark .add-api-key-button.destructive {
+  border-color: rgba(248, 113, 113, 1);
+  color: rgba(248, 113, 113, 1);
+}
+
+.dark .add-api-key-button.destructive:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+}
+
+/* Batch import styles */
+.add-api-key-batch-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: var(--space-l);
+}
+
+.add-api-key-batch-info-text {
+  color: rgba(75, 85, 99, 1);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--space-m);
+}
+
+.dark .add-api-key-batch-info-text {
+  color: rgba(209, 213, 219, 1);
+}
+
+.add-api-key-file-button {
+  width: var(--size-input-width);
+  padding: var(--space-3xs) var(--space-m);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(209, 213, 219, 1);
+  background-color: transparent;
+  color: rgba(55, 65, 81, 1);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  margin-bottom: var(--space-s);
+}
+
+.add-api-key-file-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.add-api-key-file-button.primary {
+  border-color: rgba(37, 99, 235, 1);
+  color: rgba(37, 99, 235, 1);
+}
+
+.add-api-key-file-button.primary:hover {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.dark .add-api-key-file-button {
+  border: 1px solid rgba(75, 85, 99, 1);
+  color: rgba(209, 213, 219, 1);
+}
+
+.dark .add-api-key-file-button:hover {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark .add-api-key-file-button.primary {
+  border-color: rgba(96, 165, 250, 1);
+  color: rgba(96, 165, 250, 1);
+}
+
+.dark .add-api-key-file-button.primary:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+.add-api-key-file-info {
+  width: var(--size-input-width);
+  margin-bottom: var(--space-m);
+  padding: var(--space-m);
+  background: linear-gradient(to right, rgba(240, 253, 244, 1), rgba(236, 253, 245, 1));
+  border: var(--border-width-s) solid rgba(187, 247, 208, 1);
+  border-radius: var(--radius-2xs);
+  box-shadow: var(--shadow-s);
+}
+
+.dark .add-api-key-file-info {
+  background: linear-gradient(to right, rgba(2, 34, 22, 0.2), rgba(6, 42, 32, 0.2));
+  border: 1px solid rgba(21, 128, 61, 0.5);
+}
+
+.add-api-key-file-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.add-api-key-file-name {
+  font-size: var(--font-size-s);
+  color: rgba(6, 95, 70, 1);
+  font-weight: var(--font-weight-semibold);
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--space-s);
+}
+
+.dark .add-api-key-file-name {
+  color: rgba(74, 222, 128, 1);
+}
+
+.add-api-key-file-status {
+  font-size: var(--font-size-xs);
+  color: rgba(6, 95, 70, 1);
+}
+
+.dark .add-api-key-file-status {
+  color: rgba(74, 222, 128, 1);
+}
+
+.add-api-key-open-file-button {
+  padding: var(--space-xs) var(--space-m);
+  font-size: var(--font-size-s);
+  background: linear-gradient(to right, rgba(34, 197, 94, 1), rgba(22, 163, 74, 1));
+  color: rgba(255, 255, 255, 1);
+  border-radius: var(--radius-2xs);
+  transition: all var(--transition-fast);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-s);
+}
+
+.add-api-key-open-file-button:hover {
+  background: linear-gradient(to right, rgba(22, 163, 74, 1), rgba(21, 128, 61, 1));
+  box-shadow: var(--shadow-m);
+}
+
+.add-api-key-file-support-info {
+  color: rgba(107, 114, 128, 1);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.dark .add-api-key-file-support-info {
+  color: rgba(156, 163, 175, 1);
+}
+
+/* Positioning classes to replace inline styles */
+.add-api-key-dialog-panel.positioned {
+  position: absolute;
+}
+
+.add-api-key-preview-window.positioned {
+  position: absolute;
+}
+
+/* Dynamic positioning classes */
+.add-api-key-dialog-panel.positioned.left-0 {
+  left: 0;
+}
+
+.add-api-key-dialog-panel.positioned.top-0 {
+  top: 0;
+}
+
+.add-api-key-preview-window.positioned.left-0 {
+  left: 0;
+}
+
+.add-api-key-preview-window.positioned.top-0 {
+  top: 0;
+}
+
+
+

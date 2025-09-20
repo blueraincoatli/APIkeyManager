@@ -12,19 +12,34 @@
   "app": {
     "windows": [
       {
-        "title": "api-key-manager",
-        "width": 300,
-        "height": 100,
+        "label": "main",
+        "title": "API Key Manager - Floating Toolbar",
+        "width": 460,
+        "height": 120,
         "decorations": false,
-        "skipTaskbar": true,
+        "skipTaskbar": false,
         "transparent": true,
         "hiddenTitle": true,
-        "focus": false,
-        "visible": true
+        "visible": true,
+        "alwaysOnTop": true,
+        "center": true,
+        "shadow": false,
+        "theme": "Light",
+        "acceptFirstMouse": false,
+        "dragDropEnabled": false,
+        "resizable": false,
+        "minimizable": true,
+        "maximizable": false,
+        "closable": true,
+        "fullscreen": false,
+        "titleBarStyle": "Overlay",
+        "visibleOnAllWorkspaces": false,
+        "contentProtected": false
       }
     ],
+
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' http://localhost:11434; img-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
+      "csp": null
     }
   },
   "bundle": {
@@ -32,8 +47,11 @@
     "targets": "all",
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
+      "icons/256x256.png",
+      "icons/512x512.png",
       "icons/icon.icns",
       "icons/icon.ico"
     ]

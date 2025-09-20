@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { ApiKey } from "../../types/apiKey";
 import { apiKeyService } from "../../services/apiKeyService";
 import { useApiKeys } from "../../hooks/useApiKey";
-import { useClipboard } from "../../hooks/useClipboard";
 import { useApiToast } from "../../hooks/useToast";
 import { formatDateTime } from "../../utils/helpers";
 import { VirtualList } from "../VirtualScroll/VirtualList";
@@ -13,9 +12,37 @@ import { VirtualList } from "../VirtualScroll/VirtualList";
  */
 const KeyManagerComponent = () => {
   const { apiKeys, groups, loading, refetch } = useApiKeys();
-  const { isCopying, copyToClipboard } = useClipboard();
   const toast = useApiToast();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [isCopying, setIsCopying] = useState(false);
+  
+  // 模拟复制到剪贴板的函数
+  const copyToClipboard = async (text: string) => {
+    setIsCopying(true);
+    try {
+      // 在浏览器环境中使用navigator.clipboard
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } else {
+        // 降级方案：创建临时textarea元素
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return success;
+      }
+    } catch (error) {
+      console.error('复制失败:', error);
+      return false;
+    } finally {
+      setIsCopying(false);
+    }
+  };
 
   // 初始化时获取数据
   useEffect(() => {

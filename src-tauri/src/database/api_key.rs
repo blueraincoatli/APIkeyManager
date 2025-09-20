@@ -4,16 +4,22 @@ use sqlx::SqlitePool;
 use crate::database::error::DatabaseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct ApiKey {
     pub id: String,
     pub name: String,
+    #[serde(rename = "keyValue")]
     pub key_value: String,
     pub platform: Option<String>,
     pub description: Option<String>,
+    #[serde(rename = "groupId")]
     pub group_id: Option<String>,
     pub tags: Option<String>,
+    #[serde(rename = "createdAt")]
     pub created_at: i64,
+    #[serde(rename = "updatedAt")]
     pub updated_at: i64,
+    #[serde(rename = "lastUsedAt")]
     pub last_used_at: Option<i64>,
 }
 
@@ -143,4 +149,14 @@ pub async fn search_api_keys(pool: &SqlitePool, keyword: &str) -> Result<Vec<Api
     .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
     
     Ok(keys)
+}
+
+// 获取所有唯一的platform值
+pub async fn get_all_platforms(pool: &SqlitePool) -> Result<Vec<String>, DatabaseError> {
+    let platforms = sqlx::query_scalar::<_, String>("SELECT DISTINCT platform FROM api_keys WHERE platform IS NOT NULL")
+        .fetch_all(pool)
+        .await
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
+    
+    Ok(platforms)
 }

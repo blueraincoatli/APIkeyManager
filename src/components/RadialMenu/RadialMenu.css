@@ -1,0 +1,298 @@
+/* RadialMenu Component Styles */
+
+/* Radial menu overlay */
+.radial-menu-overlay {
+  position: relative;
+  z-index: 50;
+  background: transparent;
+  pointer-events: none; /* 让overlay本身不阻止点击事件 */
+}
+
+/* Radial menu container */
+.radial-menu-container {
+  position: relative;
+  width: 20rem; /* 320px */
+  height: 16rem; /* 256px */
+  pointer-events: auto; /* 确保菜单容器可以接收点击事件 */
+}
+
+/* Radial menu scroll indicators */
+.radial-menu-scroll-indicator {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  border-radius: 10px;
+  font-size: 12px;
+  z-index: 101;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.radial-menu-scroll-indicator:hover {
+  opacity: 1;
+}
+
+.radial-menu-scroll-indicator.top {
+  top: 10px;
+}
+
+.radial-menu-scroll-indicator.bottom {
+  bottom: 10px;
+}
+
+/* Radial menu option button */
+.radial-menu-option-button {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xs) var(--space-m);
+  border-radius: var(--radius-full);
+  min-width: 120px;
+  max-width: 180px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 100;
+  transition: all var(--transition-fast);
+
+  /* Light theme gradient */
+  background-image: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border: 1px solid rgb(220, 220, 220);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1); /* 减小阴影距离 */
+
+  /* Performance */
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
+  isolation: isolate;
+}
+
+.radial-menu-option-button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15); /* 减小阴影距离 */
+  border-color: rgb(200, 200, 200);
+  z-index: 20;
+  filter: brightness(1.02);
+}
+
+/* Dark theme for option button */
+.dark .radial-menu-option-button {
+  /* Dark theme gradient */
+  background-image: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  border: 1px solid rgb(75, 85, 105);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2); /* 减小阴影距离 */
+}
+
+.dark .radial-menu-option-button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgb(100, 110, 130);
+  z-index: 20;
+  filter: brightness(1.1);
+}
+
+/* Radial menu option content */
+.radial-menu-option-content {
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+  max-width: 140px;
+  color: rgba(55, 65, 81, 1);
+}
+
+.dark .radial-menu-option-content {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Radial menu option icon */
+.radial-menu-option-icon {
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+/* Radial menu option label */
+.radial-menu-option-label {
+  flex-grow: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Radial menu option count */
+.radial-menu-option-count {
+  margin-left: 0.5rem;
+  font-size: var(--font-size-xs);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  color: rgba(55, 65, 81, 1);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .radial-menu-option-count {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Radial menu center dot */
+.radial-menu-center-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.5rem; /* 24px */
+  height: 1.5rem; /* 24px */
+  border-radius: 9999px;
+  border: var(--border-width-s) solid rgba(100, 116, 139, 0.5); /* 使用更细的边框 */
+}
+
+/* Animation states for radial menu items */
+.radial-menu-option-button.initial {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.radial-menu-option-button.animating {
+  opacity: 1;
+  transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Dynamic positioning using CSS variables */
+.radial-menu-option-button.positioned {
+  left: var(--item-left);
+  top: var(--item-top);
+  z-index: 10;
+}
+
+/* Animation delay classes */
+.radial-menu-option-button.delay-0 {
+  transition-delay: 0ms;
+}
+
+.radial-menu-option-button.delay-1 {
+  transition-delay: 30ms;
+}
+
+.radial-menu-option-button.delay-2 {
+  transition-delay: 60ms;
+}
+
+.radial-menu-option-button.delay-3 {
+  transition-delay: 90ms;
+}
+
+.radial-menu-option-button.delay-4 {
+  transition-delay: 120ms;
+}
+
+.radial-menu-option-button.delay-5 {
+  transition-delay: 150ms;
+}
+
+.radial-menu-option-button.delay-6 {
+  transition-delay: 180ms;
+}
+
+.radial-menu-option-button.delay-7 {
+  transition-delay: 210ms;
+}
+
+.radial-menu-option-button.delay-8 {
+  transition-delay: 240ms;
+}
+
+.radial-menu-option-button.delay-9 {
+  transition-delay: 270ms;
+}
+
+.radial-menu {
+  position: fixed;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.radial-menu__container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  pointer-events: auto;
+}
+
+.radial-menu__item {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--glass-bg-light);
+  /* Safari fallback */
+  background: rgba(255, 255, 255, 0.85);
+  border: var(--border-width-s) solid var(--glass-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* 支持backdrop-filter的浏览器 */
+@supports (backdrop-filter: blur(10px)) {
+  .radial-menu__item {
+    backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-light);
+  }
+}
+
+/* Safari特殊处理 */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .radial-menu__item {
+    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-light);
+  }
+}
+
+.radial-menu__item:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  border-color: rgba(100, 116, 139, 0.6);
+}
+
+.radial-menu__icon {
+  width: 20px;
+  height: 20px;
+  color: #374151;
+}
+
+/* 暗色主题 */
+@media (prefers-color-scheme: dark) {
+  .radial-menu__item {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+  }
+  
+  @supports (backdrop-filter: blur(10px)) {
+    .radial-menu__item {
+      background: var(--glass-bg-dark);
+    }
+  }
+  
+  @supports (-webkit-backdrop-filter: blur(10px)) {
+    .radial-menu__item {
+      background: var(--glass-bg-dark);
+    }
+  }
+  
+  .radial-menu__icon {
+    color: #d1d5db;
+  }
+}
