@@ -15,7 +15,7 @@ use commands::{
 use database::init_database;
 use sqlx::SqlitePool;
 use tauri::{Manager, State};
-use tauri_plugin_global_shortcut::GlobalShortcutExt;
+
 
 
 // 应用状态
@@ -46,7 +46,38 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_global_shortcut::Builder::default().build())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_shortcuts(["Ctrl+Shift+K"])
+                .unwrap()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        if let Some(window) = app.get_webview_window("main") {
+                            match window.is_visible() {
+                                Ok(true) => {
+                                    // 窗口可见，隐藏它
+                                    if let Err(e) = window.hide() {
+                                        eprintln!("Failed to hide window: {}", e);
+                                    }
+                                }
+                                Ok(false) => {
+                                    // 窗口隐藏，显示并置于前台
+                                    if let Err(e) = window.show() {
+                                        eprintln!("Failed to show window: {}", e);
+                                    }
+                                    if let Err(e) = window.set_focus() {
+                                        eprintln!("Failed to focus window: {}", e);
+                                    }
+                                }
+                                Err(e) => {
+                                    eprintln!("Failed to check window visibility: {}", e);
+                                }
+                            }
+                        }
+                    }
+                })
+                .build()
+        )
         .setup(|app| {
             // 初始化数据库
             let handle = app.handle().clone();
@@ -78,15 +109,8 @@ pub fn run() {
                 }
             });
 
-            // 注册全局快捷键来切换窗口可见性
-            let handle = app.handle().clone();
-            let main_window = handle.get_webview_window("main").unwrap();
-
-            let shortcut_result = handle.global_shortcut().register("Ctrl+Shift+K");
-
-            if let Err(e) = shortcut_result {
-                eprintln!("Failed to register global shortcut: {}", e);
-            }
+            // 全局快捷键已在插件初始化时注册
+            println!("Global shortcut Ctrl+Shift+K registered in plugin initialization");
 
             Ok(())
         })

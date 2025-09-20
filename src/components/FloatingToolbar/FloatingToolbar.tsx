@@ -99,8 +99,8 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           const screenHeight = monitor.size.height;
 
           // 窗口尺寸（从配置文件）
-          const windowWidth = 400;
-          const windowHeight = 80;
+          const windowWidth = 460;
+          const windowHeight = 120;
 
           // 计算位置：水平居中，垂直在屏幕上1/3处
           const centerX = (screenWidth / scaleFactor - windowWidth) / 2;
@@ -369,7 +369,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         // Per user feedback, the window should always move up by the same amount
         // when opening the radial menu, regardless of the previous state.
         // This amount is calculated based on the transition from the BASE state (80px height).
-        const baseHeight = 80; // 与配置文件中的初始高度保持一致
+        const baseHeight = 120; // 与配置文件中的初始高度保持一致
         const heightDiff = newHeight - baseHeight; // Always calculate diff from base height
         const newLogicalY = currentLogicalY - heightDiff / 2;
 
