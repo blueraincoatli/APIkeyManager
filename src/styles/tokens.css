@@ -19,12 +19,12 @@
   --size-button-height: 40px;
   
   /* Border radius tokens */
-  --radius-2xs: 2px;
-  --radius-xs: 4px;
-  --radius-s: 8px;
-  --radius-m: 12px;
-  --radius-l: 16px;
-  --radius-xl: 24px;
+  --radius-2xs: 4px;
+  --radius-xs: 8px;
+  --radius-s: 16px;
+  --radius-m: 24px;
+  --radius-l: 32px;
+  --radius-xl: 48px;
   --radius-full: 9999px;
   
   /* Typography tokens */

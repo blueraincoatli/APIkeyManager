@@ -166,14 +166,16 @@
   opacity: 0.9;
   font-family: monospace;
   color: rgba(55, 65, 81, 1);
-  background-color: rgba(0, 0, 0, 0.05);
   padding: var(--space-3xs) var(--space-xs);
   border-radius: var(--radius-2xs);
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dark .search-results-item-key {
   color: rgba(255, 255, 255, 1);
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .search-results-item-actions {
