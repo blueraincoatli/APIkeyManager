@@ -8,8 +8,13 @@ pub async fn add_api_key(
     state: State<'_, AppState>,
     api_key: ApiKey,
 ) -> Result<bool, String> {
+    println!("Adding API key: {} (platform: {:?})", api_key.name, api_key.platform);
     let pool = &state.db;
-    insert_api_key(pool, &api_key).await.map_err(|e| e.to_string())?;
+    insert_api_key(pool, &api_key).await.map_err(|e| {
+        eprintln!("Failed to insert API key: {}", e);
+        e.to_string()
+    })?;
+    println!("API key added successfully");
     Ok(true)
 }
 
@@ -50,8 +55,14 @@ pub async fn search_api_keys(
     state: State<'_, AppState>,
     keyword: String,
 ) -> Result<Vec<ApiKey>, String> {
+    println!("Searching API keys with keyword: '{}'", keyword);
     let pool = &state.db;
-    search_api_keys_db(pool, &keyword).await.map_err(|e| e.to_string())
+    let results = search_api_keys_db(pool, &keyword).await.map_err(|e| {
+        eprintln!("Failed to search API keys: {}", e);
+        e.to_string()
+    })?;
+    println!("Found {} API keys", results.len());
+    Ok(results)
 }
 
 // 获取所有platform

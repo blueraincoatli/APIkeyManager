@@ -15,7 +15,7 @@ use commands::{
 };
 use database::init_database;
 use sqlx::SqlitePool;
-use tauri::Manager;
+use tauri::{Manager, State};
 
 
 // 应用状态
@@ -29,6 +29,17 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+// 测试数据库连接
+#[tauri::command]
+async fn test_database(state: State<'_, AppState>) -> Result<String, String> {
+    let pool = &state.db;
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM api_keys")
+        .fetch_one(pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(format!("Database connected! Found {} API keys", count))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -40,13 +51,8 @@ pub fn run() {
             // 初始化数据库
             let handle = app.handle().clone();
 
-            // 隐藏主窗口，只显示浮动工具条窗口
+            // 确保主窗口可见并设置为浮动工具条
             if let Some(window) = app.get_webview_window("main") {
-                let _ = window.hide();
-            }
-
-            // 确保浮动工具条窗口可见
-            if let Some(window) = app.get_webview_window("floating-toolbar") {
                 let _ = window.show();
                 let _ = window.set_focus();
 
@@ -64,6 +70,7 @@ pub fn run() {
                     Ok(pool) => {
                         // 存储数据库连接池到应用状态
                         handle.manage(AppState { db: pool });
+                        println!("Database initialized and managed successfully");
                     }
                     Err(e) => {
                         eprintln!("数据库初始化失败: {}", e);
@@ -74,6 +81,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             greet,
+            test_database,
             add_api_key,
             edit_api_key,
             delete_api_key,

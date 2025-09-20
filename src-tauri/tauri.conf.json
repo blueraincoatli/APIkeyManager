@@ -13,22 +13,14 @@
     "windows": [
       {
         "label": "main",
-        "title": "API Key Manager",
-        "width": 800,
-        "height": 600,
-        "visible": false,
-        "decorations": true
-      },
-      {
-        "label": "floating-toolbar",
-        "title": "Floating Toolbar",
+        "title": "API Key Manager - Floating Toolbar",
         "width": 400,
         "height": 80,
         "decorations": false,
         "skipTaskbar": false,
         "transparent": true,
         "hiddenTitle": true,
-        "visible": false,
+        "visible": true,
         "alwaysOnTop": true,
         "center": true,
         "shadow": false,
@@ -39,7 +31,6 @@
         "minimizable": true,
         "maximizable": false,
         "closable": true,
-        "url": "/",
         "fullscreen": false,
         "titleBarStyle": "Overlay",
         "visibleOnAllWorkspaces": false,
@@ -47,7 +38,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' http://localhost:11434; img-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
+      "csp": null
     }
   },
   "bundle": {

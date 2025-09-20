@@ -6,6 +6,10 @@ import { SearchResults } from "../SearchResults/SearchResults";
 import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon/Icon";
 import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
+import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize, LogicalPosition } from "@tauri-apps/api/dpi";
+import { currentMonitor } from "@tauri-apps/api/window";
 import { SettingsPanel } from "../SettingsPanel/SettingsPanel";
 import { apiKeyService } from "../../services/apiKeyService";
 import "./FloatingToolbar.css";
@@ -59,6 +63,22 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     console.log("- window.__TAURI_INTERNALS__:", typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window);
     console.log("- window.location.protocol:", typeof window !== 'undefined' ? window.location.protocol : 'undefined');
     console.log("- isTauri result:", isTauri);
+
+    // 测试数据库连接
+    const testDatabase = async () => {
+      try {
+        const result = await invoke("test_database");
+        console.log("Database test result:", result);
+      } catch (error) {
+        console.error("Database test failed:", error);
+      }
+    };
+
+    if (isTauri) {
+      testDatabase();
+    } else {
+      console.log("Not in Tauri environment, skipping database test");
+    }
   }, []);
 
   // 初始化窗口位置：水平居中，垂直在屏幕上1/3处
@@ -67,9 +87,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       if (!isTauri) return;
 
       try {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-        const { LogicalPosition } = await import("@tauri-apps/api/dpi");
-        const { currentMonitor } = await import("@tauri-apps/api/window");
         const window = getCurrentWebviewWindow();
 
         // 获取屏幕尺寸
@@ -111,7 +128,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     // 重新获得窗口焦点
     if (isTauri) {
       try {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const window = getCurrentWebviewWindow();
         await window.setFocus();
       } catch (error) {
@@ -127,7 +143,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     }
 
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
       await invoke("exit_application");
     } catch (error) {
       console.error("Failed to exit application via Tauri command:", error);
@@ -158,7 +173,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
     if (isTauri) {
       try {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const window = getCurrentWebviewWindow();
         console.log("Starting window drag...");
         await window.startDragging();
@@ -340,8 +354,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const adjustWindowSizeWithAnchor = async (newWidth: number, newHeight: number, anchorType: 'center' | 'top-left', saveOriginalState: boolean = false) => {
     if (!isTauri) return;
     try {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-      const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
       const window = getCurrentWebviewWindow();
 
       const currentPosition = await window.outerPosition();
@@ -389,8 +401,6 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     }
 
     try {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-      const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
       const window = getCurrentWebviewWindow();
 
       console.log("Restoring original window state:", originalWindowState);
