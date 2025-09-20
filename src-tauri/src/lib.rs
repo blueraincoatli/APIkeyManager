@@ -10,12 +10,12 @@ use commands::{
     clipboard_commands::*,
     group_commands::*,
     security_commands::*,
-    shortcut_commands::*,
     window_commands::*,
 };
 use database::init_database;
 use sqlx::SqlitePool;
 use tauri::{Manager, State};
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
 
 // 应用状态
@@ -65,11 +65,11 @@ pub fn run() {
                 println!("Floating toolbar window initialized with full transparency");
             }
             
+            let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                match init_database(&handle).await {
+                match init_database(&app_handle).await {
                     Ok(pool) => {
-                        // 存储数据库连接池到应用状态
-                        handle.manage(AppState { db: pool });
+                        app_handle.manage(AppState { db: pool });
                         println!("Database initialized and managed successfully");
                     }
                     Err(e) => {
@@ -77,6 +77,17 @@ pub fn run() {
                     }
                 }
             });
+
+            // 注册全局快捷键来切换窗口可见性
+            let handle = app.handle().clone();
+            let main_window = handle.get_webview_window("main").unwrap();
+
+            let shortcut_result = handle.global_shortcut().register("Ctrl+Shift+K");
+
+            if let Err(e) = shortcut_result {
+                eprintln!("Failed to register global shortcut: {}", e);
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -94,7 +105,6 @@ pub fn run() {
             verify_master_password,
             encrypt_key,
             decrypt_key,
-            register_shortcut,
             show_floating_toolbar,
             hide_floating_toolbar,
             exit_application,

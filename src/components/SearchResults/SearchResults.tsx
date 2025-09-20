@@ -3,6 +3,7 @@ import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon, EditIcon, CloseIcon } from "../Icon/Icon";
 import "./SearchResults.css";
 import { apiKeyService } from "../../services/apiKeyService";
+import { invoke } from "@tauri-apps/api/core";
 
 interface SearchResultsProps {
   results: ApiKey[];
@@ -30,19 +31,58 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
   }, []);
 
   const handleCopy = async (key: ApiKey) => {
-    setCopiedId(key.id);
-    onCopy(key);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => {
-      setCopiedId(null);
-      timeoutRef.current = null;
-    }, 2000);
+    try {
+      // 调用后端的复制命令，传递 API Key 的实际内容
+      const result = await invoke('copy_to_clipboard', { content: key.keyValue });
+
+      if (result) {
+        // 复制成功，设置视觉反馈
+        setCopiedId(key.id);
+
+        // 调用父组件的回调函数（如果需要）
+        onCopy(key);
+
+        // 显示成功反馈，2秒后恢复
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = window.setTimeout(() => {
+          setCopiedId(null);
+          timeoutRef.current = null;
+        }, 2000);
+
+        // 显示成功模态框
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '复制成功',
+          message: `${key.name} 的 API Key 已复制到剪贴板`,
+          onConfirm: () => setModal(null)
+        });
+      } else {
+        // 复制失败
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '复制失败',
+          message: '无法将 API Key 复制到剪贴板'
+        });
+      }
+    } catch (error) {
+      console.error('复制 API Key 失败:', error);
+
+      // 显示错误模态框
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '复制失败',
+        message: '发生未知错误，无法复制到剪贴板'
+      });
+    }
   };
 
   const formatApiKey = (keyValue: string) => {
-    if (keyValue.length <= 10) return keyValue;
-    const prefix = keyValue.substring(0, 3);
-    const suffix = keyValue.substring(keyValue.length - 3);
+    if (keyValue.length <= 15) return keyValue;
+    const prefix = keyValue.substring(0, 6);
+    const suffix = keyValue.substring(keyValue.length - 6);
     return `${prefix}...${suffix}`;
   };
 
