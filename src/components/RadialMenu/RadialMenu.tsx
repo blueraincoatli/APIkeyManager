@@ -23,8 +23,11 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // 计算可见选项
-  const visibleOptions = options.slice(scrollOffset, scrollOffset + 6);
-  
+  const PAGE_SIZE = 6;
+  const visibleOptions = options.slice(scrollOffset, scrollOffset + PAGE_SIZE);
+  const canScrollUp = options.length > PAGE_SIZE && scrollOffset > 0;
+  const canScrollDown = options.length > PAGE_SIZE && scrollOffset < options.length - PAGE_SIZE;
+
   // 计算中心点位置
   const getCenterPoint = () => {
     if (!menuRef.current) return { centerX: 0, centerY: 0 };
@@ -96,14 +99,29 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
   // 滚动处理
   const handleScroll = (direction: 'up' | 'down') => {
     // 确保有足够多的选项来滚动
-    if (options.length <= 6) {
+    if (options.length <= PAGE_SIZE) {
       return;
     }
-    
+
     if (direction === 'up' && scrollOffset > 0) {
       setScrollOffset(prev => Math.max(0, prev - 1));
-    } else if (direction === 'down' && scrollOffset < options.length - 6) {
-      setScrollOffset(prev => Math.min(options.length - 6, prev + 1));
+    } else if (direction === 'down' && scrollOffset < options.length - PAGE_SIZE) {
+      setScrollOffset(prev => Math.min(options.length - PAGE_SIZE, prev + 1));
+    }
+  };
+
+  const startAutoScroll = (direction: 'up' | 'down') => {
+    if (scrollTimerRef.current) clearInterval(scrollTimerRef.current as any);
+    // 连续滚动：每 220ms 滚动一项
+    scrollTimerRef.current = setInterval(() => {
+      handleScroll(direction);
+    }, 220) as any;
+  };
+
+  const stopAutoScroll = () => {
+    if (scrollTimerRef.current) {
+      clearInterval(scrollTimerRef.current as any);
+      scrollTimerRef.current = null;
     }
   };
 
@@ -145,10 +163,53 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
         ref={menuRef}
         className="radial-menu-container"
       >
+        {/* 顶部/底部第一二项采用透明度弱化，取消遮罩层 */}
+
+        {/* 顶部滚动箭头 */}
+        {options.length > PAGE_SIZE && (
+          <button
+            type="button"
+            className={`radial-menu-scroll-indicator top ${canScrollUp ? '' : 'disabled'}`}
+            onClick={() => handleScroll('up')}
+            onMouseEnter={() => canScrollUp && startAutoScroll('up')}
+            onMouseLeave={stopAutoScroll}
+            disabled={!canScrollUp}
+          >
+            ▲
+          </button>
+        )}
+
+        {/* 底部滚动箭头 */}
+        {options.length > PAGE_SIZE && (
+          <button
+            type="button"
+            className={`radial-menu-scroll-indicator bottom ${canScrollDown ? '' : 'disabled'}`}
+            onClick={() => handleScroll('down')}
+            onMouseEnter={() => canScrollDown && startAutoScroll('down')}
+            onMouseLeave={stopAutoScroll}
+            disabled={!canScrollDown}
+          >
+            ▼
+          </button>
+        )}
+
         {visibleOptions.map((option, index) => {
           // 计算动画类名和延迟
           const animationClass = getItemAnimationClass();
           const animationDelay = getItemAnimationDelay(index);
+          // 顶部/底部两项透明度渐隐
+          const len = visibleOptions.length;
+          let fadeClass = '';
+          // 顶部渐隐仅在可以继续向上滚动时出现
+          if (canScrollUp) {
+            if (index === 0) fadeClass = 'fade-strong';
+            else if (index === 1) fadeClass = 'fade-weak';
+          }
+          // 底部渐隐仅在可以继续向下滚动时出现
+          if (canScrollDown) {
+            if (index === len - 2) fadeClass = 'fade-weak';
+            else if (index === len - 1) fadeClass = 'fade-strong';
+          }
 
           return (
             <button
@@ -156,7 +217,7 @@ export function RadialMenu({ options, onSelect, onClose }: RadialMenuProps) {
               ref={(el) => { buttonRefs.current[index] = el; }}
               type="button"
               onClick={() => handleClick(option.id)}
-              className={`radial-menu-option-button positioned ${animationClass} ${animationDelay}`}
+              className={`radial-menu-option-button positioned ${fadeClass} ${animationClass} ${animationDelay}`}
             >
               <span className="radial-menu-option-content">
                 {option.icon && <span className="radial-menu-option-icon"> {option.icon}</span>}

@@ -19,22 +19,23 @@
 /* Radial menu scroll indicators */
 .radial-menu-scroll-indicator {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 20px;
+  right: 48px; /* 向右移动（加36px） */
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
-  border-radius: 10px;
+  background: transparent; /* 去掉立体按钮背景 */
+  color: rgba(255,255,255,0.75);
+  border: none;
+  border-radius: 0;
   font-size: 12px;
+  line-height: 1;
   z-index: 101;
   pointer-events: auto;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .radial-menu-scroll-indicator:hover {
@@ -42,12 +43,52 @@
 }
 
 .radial-menu-scroll-indicator.top {
-  top: 10px;
+  top: 8px;
+  left: auto;
 }
 
 .radial-menu-scroll-indicator.bottom {
-  bottom: 10px;
+  bottom: 8px;
+  left: auto;
 }
+
+/* Disabled state for scroll indicator */
+.radial-menu-scroll-indicator.disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Gradient fade overlays to hint scrollability */
+.radial-menu-fade {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0; /* default hidden */
+  transition: opacity 0.2s ease;
+}
+.radial-menu-fade.visible { opacity: 1; }
+.radial-menu-fade.hidden { opacity: 0.15; } /* 仍然有极弱提示 */
+.radial-menu-fade.top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0));
+}
+.radial-menu-fade.bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.18), rgba(0,0,0,0));
+}
+
+/* Dark theme tweak */
+.dark .radial-menu-fade.top {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.16), rgba(255,255,255,0));
+}
+.dark .radial-menu-fade.bottom {
+  background: linear-gradient(to top, rgba(255,255,255,0.16), rgba(255,255,255,0));
+}
+
 
 /* Radial menu option button */
 .radial-menu-option-button {
@@ -90,6 +131,10 @@
   border: 1px solid rgb(75, 85, 105);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2); /* 减小阴影距离 */
 }
+
+/* Edge fade for first/last two items */
+.radial-menu-option-button.fade-weak { opacity: 0.8; }
+.radial-menu-option-button.fade-strong { opacity: 0.6; }
 
 .dark .radial-menu-option-button:hover {
   transform: scale(1.08) translateY(-2px);
@@ -166,6 +211,13 @@
   opacity: 1;
   transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+
+/* Ensure fade classes override animation opacity */
+.radial-menu-option-button.fade-weak { opacity: 0.8; }
+.radial-menu-option-button.fade-strong { opacity: 0.6; }
+.radial-menu-option-button.animating.fade-weak { opacity: 0.8; }
+.radial-menu-option-button.animating.fade-strong { opacity: 0.6; }
 
 /* Dynamic positioning using CSS variables */
 .radial-menu-option-button.positioned {
@@ -279,19 +331,19 @@
     background: var(--glass-bg-dark);
     border-color: var(--glass-border-dark);
   }
-  
+
   @supports (backdrop-filter: blur(10px)) {
     .radial-menu__item {
       background: var(--glass-bg-dark);
     }
   }
-  
+
   @supports (-webkit-backdrop-filter: blur(10px)) {
     .radial-menu__item {
       background: var(--glass-bg-dark);
     }
   }
-  
+
   .radial-menu__icon {
     color: #d1d5db;
   }
