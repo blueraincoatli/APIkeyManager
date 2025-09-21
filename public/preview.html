@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据预览</title>
+    <script type="module">
+        // 确保Tauri API可用
+        if (typeof window.__TAURI__ === 'undefined') {
+            console.log('Tauri API not found, attempting to load...');
+            // 在Tauri环境中，API应该自动可用
+            // 如果不可用，可能需要等待加载
+        }
+    </script>
+    <style>
+        :root {
+            /* 使用与主程序一致的设计token */
+            --background: 0 0% 100%;
+            --foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --border: 214.3 31.8% 91.4%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 47.4% 11.2%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 100% 50%;
+            --destructive-foreground: 210 40% 98%;
+            --radius: 0.5rem;
+
+            /* 间距token */
+            --space-xs: 8px;
+            --space-s: 12px;
+            --space-m: 16px;
+            --space-l: 24px;
+            --space-xl: 32px;
+
+            /* 字体token */
+            --font-size-s: 14px;
+            --font-size-m: 16px;
+            --font-size-l: 18px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+
+            /* 阴影token */
+            --shadow-s: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-m: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-m) var(--space-l);
+            background: hsl(var(--card));
+            border-bottom: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-s);
+        }
+
+        .preview-title {
+            font-size: var(--font-size-l);
+            font-weight: var(--font-weight-semibold);
+            color: hsl(var(--card-foreground));
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow: auto;
+            padding: var(--space-l);
+        }
+
+        .preview-table-container {
+            background: hsl(var(--card));
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            overflow: hidden;
+            box-shadow: var(--shadow-s);
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .preview-table-header {
+            background: hsl(var(--muted));
+        }
+
+        .preview-table-header-cell {
+            padding: var(--space-s) var(--space-m);
+            text-align: left;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .preview-table-row {
+            background: hsl(var(--card));
+            transition: background-color 0.15s ease;
+        }
+
+        .preview-table-row:nth-child(even) {
+            background: hsl(var(--muted) / 0.3);
+        }
+
+        .preview-table-row:hover {
+            background: hsl(var(--muted) / 0.5);
+        }
+
+        .preview-table-cell {
+            padding: var(--space-s) var(--space-m);
+            font-size: var(--font-size-s);
+            color: hsl(var(--card-foreground));
+            border-bottom: 1px solid hsl(var(--border));
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .preview-table-cell.api-key {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            color: #059669;
+            background: #ecfdf5;
+            word-break: break-all;
+        }
+
+        /* 重复高亮 */
+        .preview-table-row.duplicate .api-key {
+            color: #b91c1c;
+            background: #fee2e2;
+        }
+        .preview-table-row.duplicate {
+            outline: 1px solid #fecaca;
+        }
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .delete-btn:hover {
+            color: #dc2626;
+            background: #fee2e2;
+            border-radius: 6px;
+        }
+
+
+        .preview-footer {
+            padding: var(--space-m) var(--space-l);
+            background: hsl(var(--card));
+            border-top: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-s);
+        }
+
+        .preview-button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-s);
+        }
+
+        .preview-button {
+            padding: var(--space-xs) var(--space-m);
+            border-radius: var(--radius);
+            font-size: var(--font-size-s);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .preview-button:hover {
+            background: hsl(var(--muted));
+            border-color: hsl(var(--border));
+        }
+
+        .preview-button.primary {
+            background: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .preview-button.primary:hover {
+            background: hsl(var(--primary) / 0.9);
+            border-color: hsl(var(--primary) / 0.9);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #64748b;
+        }
+
+        .empty-state.hidden {
+            display: none;
+        }
+
+        .preview-table-container.hidden {
+            display: none;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-header">
+        <h2 class="preview-title">数据预览</h2>
+    </div>
+
+    <div class="preview-content">
+        <div id="loading" class="loading">
+            正在加载数据...
+        </div>
+
+        <div id="empty-state" class="empty-state hidden">
+            <div class="empty-state-icon">📄</div>
+            <div>暂无数据</div>
+        </div>
+
+        <div id="table-container" class="preview-table-container hidden">
+            <table class="preview-table">
+                <thead class="preview-table-header">
+                    <tr>
+                        <th class="preview-table-header-cell">名称</th>
+                        <th class="preview-table-header-cell">API Key</th>
+                        <th class="preview-table-header-cell">提供商</th>
+                        <th class="preview-table-header-cell">描述</th>
+                        <th class="preview-table-header-cell">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="preview-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="preview-footer">
+        <div class="preview-button-group">
+            <button id="cancel-btn" class="preview-button" type="button">
+                返回
+            </button>
+            <button id="confirm-btn" class="preview-button primary" type="button">
+                确认导入
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let previewData = [];
+        let duplicateSet = new Set();
+
+        // 初始化预览窗口（使用后端注入的数据，无需依赖Tauri JS API）
+        function initializePreviewWindow() {
+            try {
+                if (Array.isArray(window.__PREVIEW_DATA__)) {
+                    previewData = window.__PREVIEW_DATA__;
+                } else if (window.__PREVIEW_DATA__) {
+                    previewData = JSON.parse(String(window.__PREVIEW_DATA__));
+                } else {
+                    console.warn('No injected preview data found');
+                    previewData = [];
+                }
+                console.log('Preview data (injected):', previewData);
+                checkAndMarkDuplicates();
+            } catch (e) {
+                console.error('Failed to initialize from injected data:', e);
+                showEmptyState();
+            }
+        }
+
+        function normalizeKey(s){
+            if (typeof s !== 'string') return '';
+            return s
+              .replace(/[\u200B-\u200D\u2060\uFEFF\u200E\u200F\u202A-\u202E]/g,'')
+              .replace(/[\u00A0\u202F\u2009\u2008\u2002-\u2007\u200A\u205F\u3000]/g,'')
+              .replace(/[\x00-\x1F\x7F]/g,'')
+              .trim();
+        }
+
+        async function checkAndMarkDuplicates() {
+            try {
+                const keys = (previewData || []).map(i => i && normalizeKey(i.keyValue)).filter(Boolean);
+                let existing = [];
+                if (window.__TAURI_INVOKE__) {
+                    existing = await window.__TAURI_INVOKE__('check_api_keys_exists', { keys });
+                    console.log('Existing keys in DB:', existing);
+                } else {
+                    console.warn('Invoke bridge not available, skip server-side duplicate check');
+                }
+                computeDuplicates(existing);
+                renderTable();
+            } catch (err) {
+                console.warn('Duplicate check failed:', err);
+                computeDuplicates([]);
+                renderTable();
+            }
+        }
+
+        function computeDuplicates(existingKeys) {
+            const set = new Set(existingKeys || []);
+            const counter = new Map();
+            (previewData || []).forEach(item => {
+                const k = normalizeKey((item && item.keyValue) || '');
+                if (!k) return;
+                counter.set(k, (counter.get(k) || 0) + 1);
+            });
+            counter.forEach((count, k) => {
+                if (k && count > 1) set.add(k);
+            });
+            duplicateSet = set;
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePreviewWindow);
+
+        function renderTable() {
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('empty-state');
+            const tableContainer = document.getElementById('table-container');
+            const tableBody = document.getElementById('table-body');
+
+            loading.style.display = 'none';
+
+            if (!previewData || previewData.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+
+            // 清空表格内容
+            tableBody.innerHTML = '';
+
+            // 渲染数据行
+            previewData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'preview-table-row';
+                const isDup = duplicateSet && item && duplicateSet.has(item.keyValue);
+                if (isDup) row.classList.add('duplicate');
+
+                row.innerHTML = `
+                    <td class="preview-table-cell">${escapeHtml(item.name || '')}</td>
+                    <td class="preview-table-cell api-key" title="${isDup ? '与已有数据或本批内重复' : ''}">${escapeHtml(item.keyValue || '')}</td>
+                    <td class="preview-table-cell">${escapeHtml(item.platform || '')}</td>
+                    <td class="preview-table-cell">${escapeHtml(item.description || '')}</td>
+                    <td class="preview-table-cell"><button class="delete-btn" data-index="${index}" title="删除此行">×</button></td>
+                `;
+
+                const delBtn = row.querySelector('.delete-btn');
+                if (delBtn) {
+                    delBtn.addEventListener('click', () => {
+                        try {
+                            previewData.splice(index, 1);
+                            checkAndMarkDuplicates();
+                        } catch (e) {
+                            console.error('Failed to delete row:', e);
+                        }
+                    });
+                }
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showEmptyState() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('table-container').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 按钮事件处理 - 等待DOM加载完成后绑定
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 绑定返回按钮事件
+            const cancelBtn = document.getElementById('cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', async () => {
+                    console.log('Cancel button clicked');
+                    try {
+                        if (window.__TAURI_INVOKE__) {
+                            await window.__TAURI_INVOKE__('close_preview_window');
+                        } else {
+                            console.warn('Invoke bridge not available, fallback to window.close()');
+                            window.close();
+                        }
+                    } catch (error) {
+                        console.error('Failed to close preview window:', error);
+                        window.close();
+                    }
+                });
+            }
+
+            // 绑定确认按钮事件
+            const confirmBtn = document.getElementById('confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', async () => {
+                    console.log('Confirm button clicked with data:', previewData);
+                    try {
+                        if (window.__TAURI_INVOKE__) {
+                            await window.__TAURI_INVOKE__('confirm_import_preview', { data: JSON.stringify(previewData) });
+                        } else {
+                            console.error('Invoke bridge not available, data cannot be imported');
+                            window.close();
+                        }
+                    } catch (error) {
+                        console.error('Failed to confirm import:', error);
+                        window.close();
+                    }
+                });
+            }
+        });
+
+        // 窗口关闭时的清理
+        window.addEventListener('beforeunload', () => {
+            previewData = [];
+        });
+    </script>
+</body>
+</html>

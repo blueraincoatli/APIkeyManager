@@ -36,7 +36,7 @@ const DANGEROUS_PATTERNS = {
 // API密钥格式模式
 const API_KEY_PATTERNS = {
   // 常见API密钥格式（可根据需要扩展）
-  ALPHANUMERIC: /^[a-zA-Z0-9\-_\.=+\/]+$/,
+  ALPHANUMERIC: /^[a-zA-Z0-9\-_\.=+\/:\*]+$/,
   HEX_KEY: /^[a-fA-F0-9\-]+$/,
   BASE64: /^[A-Za-z0-9\-_]+=*$/,
   UUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -106,8 +106,64 @@ export function validateApiKeyFormat(keyValue: string): boolean {
   // 检查是否符合常见的API密钥格式
   const validFormats = Object.values(API_KEY_PATTERNS);
   return validFormats.some(pattern => pattern.test(keyValue)) ||
-         /^[\w\-\.=+\/]+$/.test(keyValue); // 通用格式
+         /^[\w\-\.=+\/:\*]+$/.test(keyValue); // 通用格式（放宽，允许 : 和 *）
 }
+
+/**
+ * 规范化API Key输入：
+ * - 去除零宽字符/BOM/方向控制等不可见字符
+ * - 去除常见的非断行空格/全角空格等
+ * - 去除控制字符并trim
+ */
+export function normalizeApiKey(raw: string): string {
+  if (typeof raw !== 'string') return '';
+  let s = raw;
+  // 零宽&方向控制字符
+  s = s.replace(/[\u200B-\u200D\u2060\uFEFF\u200E\u200F\u202A-\u202E]/g, '');
+  // 各类空格（NBSP、窄不换行空格、细空格、全角空格等）
+  s = s.replace(/[\u00A0\u202F\u2009\u2008\u2002-\u2007\u200A\u205F\u3000]/g, '');
+  // 控制字符
+  s = s.replace(/[\x00-\x1F\x7F]/g, '');
+  // 常规trim
+  s = s.trim();
+  return s;
+}
+
+/**
+ * 返回更具体的API Key格式问题描述；若合法返回null
+ */
+export function getApiKeyFormatIssue(keyValue: string): string | null {
+  if (!keyValue || typeof keyValue !== 'string') {
+    return '值为空或类型错误';
+  }
+  if (keyValue.length < 8) {
+    return `长度不足 (当前 ${keyValue.length})`;
+  }
+  // XSS/协议前缀
+  const xss = keyValue.match(/javascript:|data:|vbscript:|on\w+\s*=|<script/i);
+  if (xss) {
+    return `包含可疑片段 "${xss[0]}"`;
+  }
+  // 命令注入类单字符
+  const cmd = keyValue.match(/[;&|`$(){}\[\]]/);
+  if (cmd) {
+    return `包含非法字符 "${cmd[0]}"`;
+  }
+  // 路径穿越
+  if (/\.\.[/\\]/.test(keyValue)) {
+    return '包含路径穿越片段 ".."';
+  }
+  // 不在允许字符集
+  const allowedChar = /[A-Za-z0-9_\-\.=+\/:\*]/;
+  for (const ch of keyValue) {
+    if (!allowedChar.test(ch)) {
+      const code = ch.charCodeAt(0).toString(16).toUpperCase();
+      return `包含不支持的字符 "${ch}" (U+${code})`;
+    }
+  }
+  return null;
+}
+
 
 /**
  * 验证和清理API密钥输入
@@ -164,14 +220,17 @@ export function validateAndSanitizeApiKey(input: ApiKeyInput): ValidationResult 
     if (!input.keyValue || typeof input.keyValue !== 'string' || input.keyValue.trim().length === 0) {
       errors.push("API Key值不能为空");
     } else {
-      const trimmedKey = input.keyValue.trim();
+      const cleanedKey = normalizeApiKey(input.keyValue);
 
-      if (trimmedKey.length > 1000) {
+      if (cleanedKey.length > 1000) {
         errors.push("API Key值不能超过1000个字符");
-      } else if (!validateApiKeyFormat(trimmedKey)) {
-        errors.push("API Key格式无效，请检查是否包含非法字符");
       } else {
-        sanitized.keyValue = trimmedKey;
+        const issue = getApiKeyFormatIssue(cleanedKey);
+        if (issue) {
+          errors.push(`API Key格式无效：${issue}`);
+        } else {
+          sanitized.keyValue = cleanedKey;
+        }
       }
     }
   }

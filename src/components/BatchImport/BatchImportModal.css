@@ -1,0 +1,192 @@
+/* BatchImportModal Component Styles */
+
+.batch-import-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.batch-import-modal-container {
+  background: linear-gradient(135deg, rgb(255, 255, 255), rgb(230, 235, 245));
+  border-radius: var(--radius-m);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  width: 400px;
+  max-width: 90vw;
+  max-height: 90vh;
+  transform: translateZ(0);
+  overflow: hidden;
+}
+
+.dark .batch-import-modal-container {
+  background: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.batch-import-modal-header {
+  padding: var(--space-m) var(--space-m) var(--space-s);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .batch-import-modal-header {
+  border-bottom: 1px solid rgba(55, 65, 81, 0.4);
+}
+
+.batch-import-modal-title {
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(17, 24, 39, 1);
+  margin: 0;
+}
+
+.dark .batch-import-modal-title {
+  color: rgba(243, 244, 246, 1);
+}
+
+.batch-import-modal-content {
+  padding: var(--space-m);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.batch-import-modal-footer {
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  border-top: 1px solid rgba(229, 231, 235, 0.4);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+}
+
+.dark .batch-import-modal-footer {
+  border-top: 1px solid rgba(55, 65, 81, 0.4);
+}
+
+.batch-import-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: var(--space-l);
+}
+
+.batch-import-info-text {
+  color: rgba(75, 85, 99, 1);
+  font-size: var(--font-size-s);
+  margin-bottom: var(--space-m);
+  line-height: 1.5;
+}
+
+.dark .batch-import-info-text {
+  color: rgba(209, 213, 219, 1);
+}
+
+.batch-import-file-button {
+  width: 100%;
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-s);
+  border: 2px dashed rgba(209, 213, 219, 1);
+  background-color: transparent;
+  color: rgba(55, 65, 81, 1);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  margin-bottom: var(--space-s);
+}
+
+.batch-import-file-button:hover {
+  border-color: rgba(59, 130, 246, 1);
+  background-color: rgba(59, 130, 246, 0.05);
+  color: rgba(59, 130, 246, 1);
+}
+
+.dark .batch-import-file-button {
+  border-color: rgba(75, 85, 105, 1);
+  color: rgba(209, 213, 219, 1);
+}
+
+.dark .batch-import-file-button:hover {
+  border-color: rgba(59, 130, 246, 1);
+  background-color: rgba(59, 130, 246, 0.1);
+  color: rgba(59, 130, 246, 1);
+}
+
+.batch-import-template-link {
+  color: rgba(59, 130, 246, 1);
+  text-decoration: none;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+}
+
+.batch-import-template-link:hover {
+  color: rgba(37, 99, 235, 1);
+  text-decoration: underline;
+}
+
+.dark .batch-import-template-link {
+  color: rgba(96, 165, 250, 1);
+}
+
+.dark .batch-import-template-link:hover {
+  color: rgba(147, 197, 253, 1);
+}
+
+.batch-import-button {
+  padding: var(--space-2xs) var(--space-m);
+  border-radius: var(--radius-s);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.batch-import-button-secondary {
+  background-color: transparent;
+  color: rgba(75, 85, 99, 1);
+  border-color: rgba(209, 213, 219, 1);
+}
+
+.batch-import-button-secondary:hover {
+  background-color: rgba(249, 250, 251, 1);
+  border-color: rgba(156, 163, 175, 1);
+}
+
+.dark .batch-import-button-secondary {
+  color: rgba(209, 213, 219, 1);
+  border-color: rgba(75, 85, 105, 1);
+}
+
+.dark .batch-import-button-secondary:hover {
+  background-color: rgba(55, 65, 81, 1);
+  border-color: rgba(107, 114, 128, 1);
+}
+
+.batch-import-button-primary {
+  background-color: rgba(59, 130, 246, 1);
+  color: white;
+  border-color: rgba(59, 130, 246, 1);
+}
+
+.batch-import-button-primary:hover {
+  background-color: rgba(37, 99, 235, 1);
+  border-color: rgba(37, 99, 235, 1);
+}
+
+.batch-import-button-primary:disabled {
+  background-color: rgba(156, 163, 175, 1);
+  border-color: rgba(156, 163, 175, 1);
+  cursor: not-allowed;
+}
+
+.dark .batch-import-button-primary:disabled {
+  background-color: rgba(75, 85, 105, 1);
+  border-color: rgba(75, 85, 105, 1);
+}

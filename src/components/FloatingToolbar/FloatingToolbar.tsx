@@ -295,9 +295,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
   // 创建径向菜单选项
   const radialMenuOptions = useMemo(() => {
-    // 使用从数据库获取的platforms数据，但限制显示数量
-    const displayPlatforms = platforms.slice(0, 10); // 显示前10个platforms
-    
+    // 使用从数据库获取的platforms数据（不再限制数量，滚轮滚动查看更多）
+    const displayPlatforms = platforms;
+
     // 将platforms转换为径向菜单选项格式，并添加计数
     const platformOptions = displayPlatforms.map(platform => {
       // 计算该platform的API key数量

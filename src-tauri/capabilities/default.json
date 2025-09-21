@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for all windows",
-  "windows": ["main", "floating-toolbar"],
+  "windows": ["main", "floating-toolbar", "preview"],
   "permissions": [
     "core:default",
     "core:window:allow-set-size",

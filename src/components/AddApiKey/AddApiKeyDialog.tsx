@@ -1,12 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { apiKeyService, batchImportService } from "../../services/apiKeyService";
 import { useApiToast } from "../../hooks/useToast";
-import { validateApiKeyFormat } from "../../services/inputValidation";
+import { validateApiKeyFormat, normalizeApiKey } from "../../services/inputValidation";
+import { parseExcelFile, isValidExcelFile, generateExcelTemplate } from "../../services/excelService";
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./AddApiKeyDialog.css";
 import "../SearchResults/SearchResults.css"; // 导入SearchResults的CSS以使用模态对话框样式
 
-// 检测是否在Tauri环境中
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+// 检测是否在Tauri环境中（兼容 v1/v2）
+const isTauri = typeof window !== 'undefined' && (
+  '__TAURI__' in window ||
+  '__TAURI_INTERNALS__' in window ||
+  (typeof window !== 'undefined' && window.location?.protocol === 'tauri:')
+);
 
 // 条件导入Tauri插件，在非Tauri环境中提供降级方案
 let tauriDialog: {
@@ -22,11 +29,16 @@ let tauriPath: {
 } | null = null;
 
 if (isTauri) {
-  // 在Tauri环境中直接使用全局API
-  tauriDialog = (window as any).__TAURI__.dialog;
-  tauriFs = (window as any).__TAURI__.fs;
-  tauriPath = (window as any).__TAURI__.path;
-  console.log('Tauri plugins available in desktop environment');
+  // 在Tauri环境中尽量使用可用的全局API（兼容 v1/v2）
+  if ((window as any).__TAURI__) {
+    tauriDialog = (window as any).__TAURI__.dialog;
+    tauriFs = (window as any).__TAURI__.fs;
+    tauriPath = (window as any).__TAURI__.path;
+    console.log('Tauri global APIs available in desktop environment');
+  } else {
+    // v2 场景下没有 __TAURI__，但可以通过 @tauri-apps/api 的模块访问，或直接使用 invoke
+    console.log('Tauri v2 detected (no __TAURI__ global). Will use @tauri-apps/api and invoke bridge.');
+  }
 } else {
   console.warn('Tauri plugins not available, using fallback implementations');
 }
@@ -63,19 +75,140 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const [submitting, setSubmitting] = useState(false);
   const [touched, setTouched] = useState<{ name?: boolean; key?: boolean }>({});
   const [showBatchImport, setShowBatchImport] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewData, setPreviewData] = useState<ApiKeyTemplate[]>([]);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState | null>(null);
 
+  // 创建预览窗口的函数
+  const createPreviewWindow = async (data: ApiKeyTemplate[]) => {
+    console.log('createPreviewWindow called with data:', data);
+    console.log('isTauri:', isTauri);
+    console.log('window.__TAURI__:', typeof window !== 'undefined' ? window.__TAURI__ : 'undefined');
+    console.log('window.__TAURI_INTERNALS__:', typeof window !== 'undefined' ? window.__TAURI_INTERNALS__ : 'undefined');
+    console.log('window object:', typeof window);
 
-  
+    // 更准确的Tauri环境检测 - 检查 __TAURI_INTERNALS__ 或 invoke 函数
+    const isActuallyTauri = typeof window !== 'undefined' && (
+      (window.__TAURI__ && typeof window.__TAURI__.core !== 'undefined') ||
+      (window.__TAURI_INTERNALS__) ||
+      (typeof invoke === 'function')
+    );
+
+    console.log('isActuallyTauri:', isActuallyTauri);
+
+    if (!isActuallyTauri) {
+      console.warn('Not in Tauri environment, cannot create preview window');
+      console.log('Available window properties:', typeof window !== 'undefined' ? Object.keys(window).filter(k => k.includes('TAURI') || k.includes('tauri')) : 'no window');
+
+      // 使用统一的模态框样式显示错误
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '预览功能不可用',
+        message: '请在Tauri桌面环境中使用此功能'
+      });
+      return;
+    }
+
+    try {
+      const dataJson = JSON.stringify(data);
+      console.log('Invoking create_preview_window with data:', dataJson);
+
+      // 使用更安全的invoke调用
+      if (typeof invoke === 'function') {
+        await invoke('create_preview_window', { previewData: dataJson });
+        console.log('create_preview_window invoked successfully');
+      } else if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
+        await window.__TAURI__.core.invoke('create_preview_window', { previewData: dataJson });
+        console.log('create_preview_window invoked successfully via window.__TAURI__.core');
+      } else {
+        throw new Error('Tauri invoke function not available');
+      }
+    } catch (error) {
+      console.error('Failed to create preview window:', error);
+      // 使用统一的模态框样式显示错误
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '无法创建预览窗口',
+        message: `错误: ${error}`
+      });
+    }
+  };
+
+  // 监听来自预览窗口的确认导入事件
+  useEffect(() => {
+    if (!isTauri) return;
+
+    console.log('[BatchImport] attaching confirm-import listener');
+    const unlisten = listen('confirm-import', async (event: any) => {
+      try {
+        let importData: ApiKeyTemplate[] = [];
+        const payload = event.payload;
+        if (typeof payload === 'string') {
+          try {
+            importData = JSON.parse(payload);
+          } catch (e) {
+            console.error('Failed to parse confirm-import payload:', e);
+            importData = [] as any;
+          }
+        } else {
+          importData = payload as ApiKeyTemplate[];
+        }
+
+        console.log('[BatchImport] confirm-import received, items:', Array.isArray(importData) ? importData.length : 'N/A');
+
+        // 使用批量导入服务
+        const batchKeys = importData.map(item => ({
+          name: item.name,
+          keyValue: item.keyValue,
+          platform: item.platform,
+          description: item.description
+        }));
+
+        const result = await batchImportService.importApiKeysBatch(batchKeys);
+
+        if (result.success && result.data) {
+          setModal({
+            isOpen: true,
+            type: 'success',
+            title: '导入成功',
+            message: `成功导入 ${result.data.succeeded} 个API Key${result.data.failed > 0 ? `，失败 ${result.data.failed} 个` : ''}`,
+            onConfirm: () => {
+              setModal(null);
+              onAdded?.();
+            }
+          });
+        } else {
+          setModal({
+            isOpen: true,
+            type: 'error',
+            title: '导入失败',
+            message: result.error?.message || '无法导入API Keys'
+          });
+        }
+      } catch (error: any) {
+        console.error('导入失败:', error);
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '导入失败',
+          message: error.message || '导入过程中发生错误'
+        });
+      }
+    });
+
+    return () => {
+      unlisten.then(fn => fn());
+    };
+  }, [onAdded, toast]);
+
   // 表单验证
   const errors = useMemo(() => {
     const errs: { name?: string; key?: string } = {};
     if (!name.trim()) errs.name = "名称不能为空";
-    if (!keyValue.trim()) errs.key = "API Key 不能为空";
-    else if (!validateApiKeyFormat(keyValue.trim())) errs.key = "API Key 格式不合法";
+    const normalized = normalizeApiKey(keyValue);
+    if (!normalized) errs.key = "API Key 不能为空";
+    else if (!validateApiKeyFormat(normalized)) errs.key = "API Key 格式不合法";
     return errs;
   }, [name, keyValue]);
 
@@ -89,28 +222,65 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.xlsx,.xls';
-        input.onchange = (e) => {
+        input.onchange = async (e) => {
           const file = (e.target as HTMLInputElement).files?.[0];
+          console.log('File selected:', file?.name, file?.type, file?.size);
+
           if (file) {
-            // 模拟Excel解析（实际需要使用适当的库如xlsx）
-            const mockData: ApiKeyTemplate[] = [
-              {
-                name: "OpenAI Key",
-                keyValue: "sk-xxxx...xxxx",
-                platform: "OpenAI",
-                description: "用于GPT-4访问"
-              },
-              {
-                name: "Claude Key",
-                keyValue: "claude-xxxx...xxxx",
-                platform: "Anthropic",
-                description: "用于Claude模型"
+            // 验证文件格式
+            if (!isValidExcelFile(file)) {
+              console.error('Invalid file format:', file.name, file.type);
+              setModal({
+                isOpen: true,
+                type: 'error',
+                title: '文件格式错误',
+                message: '请选择Excel文件(.xlsx或.xls)'
+              });
+              return;
+            }
+
+            console.log('File format valid, starting to parse...');
+
+            try {
+              // 解析Excel文件
+              const parseResult = await parseExcelFile(file);
+              console.log('Parse result:', parseResult);
+
+              if (parseResult.success && parseResult.data) {
+                console.log('Parsed data:', parseResult.data);
+
+                // 转换数据格式
+                const apiKeyData: ApiKeyTemplate[] = parseResult.data.map(item => ({
+                  name: item.name,
+                  keyValue: item.keyValue,
+                  platform: item.platform,
+                  description: item.description
+                }));
+
+                console.log('Converted data:', apiKeyData);
+                console.log('Creating preview window...');
+
+                // 直接创建独立预览窗口
+                await createPreviewWindow(apiKeyData);
+                console.log('Preview window creation completed');
+              } else {
+                console.error('Parse failed:', parseResult.error);
+                setModal({
+                  isOpen: true,
+                  type: 'error',
+                  title: 'Excel解析失败',
+                  message: parseResult.error || '无法解析Excel文件'
+                });
               }
-            ];
-            
-            // 显示预览
-            setPreviewData(mockData);
-            setShowPreview(true);
+            } catch (error: any) {
+              console.error('Excel解析错误:', error);
+              setModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Excel解析失败',
+                message: error.message || '解析过程中发生错误'
+              });
+            }
           }
         };
         input.click();
@@ -128,79 +298,85 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       });
 
       if (filePath && typeof filePath === 'string') {
-        // 模拟Excel解析（实际需要使用适当的库如xlsx）
-        const mockData: ApiKeyTemplate[] = [
-          {
-            name: "OpenAI Key",
-            keyValue: "sk-xxxx...xxxx",
-            platform: "OpenAI",
-            description: "用于GPT-4访问"
-          },
-          {
-            name: "Claude Key",
-            keyValue: "claude-xxxx...xxxx",
-            platform: "Anthropic",
-            description: "用于Claude模型"
+        console.log('Tauri file selected:', filePath);
+
+        // 验证文件格式
+        if (!isValidExcelFile(filePath)) {
+          console.error('Invalid file format:', filePath);
+          setModal({
+            isOpen: true,
+            type: 'error',
+            title: '文件格式错误',
+            message: '请选择Excel文件(.xlsx或.xls)'
+          });
+          return;
+        }
+
+        console.log('File format valid, starting to parse...');
+
+        try {
+          // 解析Excel文件
+          const parseResult = await parseExcelFile(filePath);
+          console.log('Parse result:', parseResult);
+
+          if (parseResult.success && parseResult.data) {
+            console.log('Parsed data:', parseResult.data);
+
+            // 转换数据格式
+            const apiKeyData: ApiKeyTemplate[] = parseResult.data.map(item => ({
+              name: item.name,
+              keyValue: item.keyValue,
+              platform: item.platform,
+              description: item.description
+            }));
+
+            console.log('Converted data:', apiKeyData);
+            console.log('Creating preview window...');
+
+            // 直接创建独立预览窗口
+            await createPreviewWindow(apiKeyData);
+            console.log('Preview window creation completed');
+          } else {
+            console.error('Parse failed:', parseResult.error);
+            setModal({
+              isOpen: true,
+              type: 'error',
+              title: 'Excel解析失败',
+              message: parseResult.error || '无法解析Excel文件'
+            });
           }
-        ];
-        
-        // 显示预览
-        setPreviewData(mockData);
-        setShowPreview(true);
+        } catch (error: any) {
+          console.error('Excel解析错误:', error);
+          setModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Excel解析失败',
+            message: error.message || '解析过程中发生错误'
+          });
+        }
       }
     } catch (error: any) {
       console.error('文件选择失败:', error);
       // 更准确的错误信息
       if (error.message?.includes('invoke') || error.message?.includes('plugin')) {
-        toast.error('Tauri插件未初始化', '请确保在Tauri桌面环境中运行');
-      } else {
-        toast.error('文件选择失败', error.message || '无法打开文件对话框');
-      }
-    }
-  };
-
-  const handleConfirmImport = async () => {
-    try {
-      // 使用批量导入服务
-      const batchKeys = previewData.map(item => ({
-        name: item.name,
-        key_value: item.keyValue,
-        platform: item.platform,
-        description: item.description
-      }));
-
-      const result = await batchImportService.importApiKeysBatch(batchKeys);
-      
-      if (result.success && result.data) {
         setModal({
           isOpen: true,
-          type: 'success',
-          title: '导入成功',
-          message: `成功导入 ${result.data.importedCount} 个API Key`,
-          onConfirm: () => {
-            setModal(null);
-            setShowPreview(false);
-            onAdded?.();
-          }
+          type: 'error',
+          title: 'Tauri插件未初始化',
+          message: '请确保在Tauri桌面环境中运行'
         });
       } else {
         setModal({
           isOpen: true,
           type: 'error',
-          title: '导入失败',
-          message: result.error?.message || '无法导入API Keys'
+          title: '文件选择失败',
+          message: error.message || '无法打开文件对话框'
         });
       }
-    } catch (error: any) {
-      console.error('导入失败:', error);
-      setModal({
-        isOpen: true,
-        type: 'error',
-        title: '导入失败',
-        message: error.message || '导入过程中发生错误'
-      });
     }
   };
+
+
 
   // 共享的容器组件
   /*
@@ -213,73 +389,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
 
   */
 
-  // 预览窗口组件
-  const PreviewWindow = () => (
-    <div className="add-api-key-dialog-container">
-      <div className="add-api-key-dialog-overlay" onClick={() => setShowPreview(false)} />
-      <div
-        className="add-api-key-preview-window"
-      >
-        <div className="add-api-key-preview-header">
-          <h2 className="add-api-key-preview-title">数据预览</h2>
-          <button
-            type="button"
-            onClick={() => setShowPreview(false)}
-            className="add-api-key-preview-close-button"
-            aria-label="关闭预览"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div className="add-api-key-preview-content">
-          <div className="add-api-key-preview-table-container">
-            <table className="add-api-key-preview-table">
-              <thead className="add-api-key-preview-table-header">
-                <tr>
-                  <th className="add-api-key-preview-table-header-cell">名称</th>
-                  <th className="add-api-key-preview-table-header-cell">API Key</th>
-                  <th className="add-api-key-preview-table-header-cell">提供商</th>
-                  <th className="add-api-key-preview-table-header-cell">描述</th>
-                </tr>
-              </thead>
-              <tbody className="add-api-key-preview-table-body">
-                {previewData.map((item, index) => (
-                  <tr key={index} className="add-api-key-preview-table-row">
-                    <td className="add-api-key-preview-table-cell">{item.name}</td>
-                    <td className="add-api-key-preview-table-cell api-key">{item.keyValue}</td>
-                    <td className="add-api-key-preview-table-cell">{item.platform}</td>
-                    <td className="add-api-key-preview-table-cell">{item.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <div className="add-api-key-preview-footer">
-          <div className="add-api-key-preview-button-group">
-            <button
-              type="button"
-              onClick={() => setShowPreview(false)}
-              className="add-api-key-button"
-            >
-              关闭
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmImport}
-              className="add-api-key-button primary"
-            >
-              确认导入
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -335,12 +445,11 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       let fileName = 'api_key_template.xlsx';
       
       if (!isTauri || !tauriDialog || !tauriFs || !tauriPath) {
-        // 非Tauri环境下的降级方案
-        const response = await fetch('/templates/api_key_template.xlsx');
-        if (!response.ok) {
-          throw new Error('模板文件下载失败');
-        }
-        const blob = await response.blob();
+        // 非Tauri环境下的降级方案 - 生成Excel模板
+        const templateData = generateExcelTemplate();
+        const blob = new Blob([templateData], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
@@ -350,7 +459,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         // 在非Tauri环境下，显示下载到浏览器的通知
         toast.success('模板下载成功', '文件已下载到浏览器默认下载位置');
         return;
@@ -369,9 +478,9 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       });
       
       if (filePath) {
-        // 读取模板文件内容（从public目录）
-        const templateContent = await tauriFs.readBinaryFile('templates/api_key_template.xlsx');
-        
+        // 生成Excel模板内容
+        const templateContent = generateExcelTemplate();
+
         // 写入到用户选择的位置
         await tauriFs.writeBinaryFile(filePath, templateContent);
         
@@ -390,9 +499,19 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       setDownloadedFilePath(null);
       // 更准确的错误信息
       if (error.message?.includes('invoke') || error.message?.includes('plugin')) {
-        toast.error('Tauri插件未初始化', '请确保在Tauri桌面环境中运行');
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Tauri插件未初始化',
+          message: '请确保在Tauri桌面环境中运行'
+        });
       } else {
-        toast.error('下载失败', error.message || '模板下载过程中发生错误');
+        setModal({
+          isOpen: true,
+          type: 'error',
+          title: '下载失败',
+          message: error.message || '模板下载过程中发生错误'
+        });
       }
     }
   };
@@ -404,7 +523,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       toast.info('提示', `文件已保存到: ${filePath}`);
     } catch (error) {
       console.error('打开文件失败:', error);
-      toast.error('打开文件失败', '无法打开下载的文件');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: '打开文件失败',
+        message: '无法打开下载的文件'
+      });
     }
   };
 
@@ -611,6 +735,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 </div>
                 <div className="add-api-key-modal-footer">
                   <button
+                    type="button"
                     onClick={() => {
                       if (modal.type === 'success' && modal.onConfirm) {
                         modal.onConfirm();
@@ -628,9 +753,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           )}
         </div>
       </div>
-      
-      {/* 预览窗口 */}
-      {showPreview && <PreviewWindow />}
+
     </>
   );
 }

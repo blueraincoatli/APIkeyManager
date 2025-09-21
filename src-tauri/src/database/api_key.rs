@@ -116,7 +116,7 @@ pub async fn get_all_api_keys(pool: &SqlitePool) -> Result<Vec<ApiKey>, Database
         .fetch_all(pool)
         .await
         .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
-    
+
     Ok(keys)
 }
 
@@ -128,7 +128,7 @@ pub async fn get_api_key_by_id(pool: &SqlitePool, id: &str) -> Result<Option<Api
         .fetch_optional(pool)
         .await
         .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
-    
+
     Ok(key)
 }
 
@@ -137,7 +137,7 @@ pub async fn search_api_keys(pool: &SqlitePool, keyword: &str) -> Result<Vec<Api
     let search_term = format!("%{}%", keyword);
     let keys = sqlx::query_as::<_, ApiKey>(
         r#"
-        SELECT * FROM api_keys 
+        SELECT * FROM api_keys
         WHERE name LIKE ?1 OR platform LIKE ?2 OR description LIKE ?3
         "#
     )
@@ -147,7 +147,7 @@ pub async fn search_api_keys(pool: &SqlitePool, keyword: &str) -> Result<Vec<Api
     .fetch_all(pool)
     .await
     .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
-    
+
     Ok(keys)
 }
 
@@ -157,6 +157,35 @@ pub async fn get_all_platforms(pool: &SqlitePool) -> Result<Vec<String>, Databas
         .fetch_all(pool)
         .await
         .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
-    
+
     Ok(platforms)
+}
+
+// 批量检查给定 key_value 是否已存在，返回已存在的 key_value 列表
+pub async fn get_existing_key_values(
+    pool: &SqlitePool,
+    keys: &[String]
+) -> Result<Vec<String>, DatabaseError> {
+    if keys.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    // 构造动态 IN 子句
+    let placeholders = vec!["?"; keys.len()].join(",");
+    let query = format!(
+        "SELECT key_value FROM api_keys WHERE key_value IN ({})",
+        placeholders
+    );
+
+    let mut q = sqlx::query_scalar::<_, String>(&query);
+    for k in keys {
+        q = q.bind(k);
+    }
+
+    let existing = q
+        .fetch_all(pool)
+        .await
+        .map_err(|e| DatabaseError::SqlxError(e.to_string()))?;
+
+    Ok(existing)
 }

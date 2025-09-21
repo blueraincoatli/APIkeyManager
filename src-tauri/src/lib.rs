@@ -80,7 +80,7 @@ pub fn run() {
         )
         .setup(|app| {
             // 初始化数据库
-            let handle = app.handle().clone();
+            let _handle = app.handle().clone();
 
             // 确保主窗口可见并设置为浮动工具条
             if let Some(window) = app.get_webview_window("main") {
@@ -135,8 +135,12 @@ pub fn run() {
             set_window_position,
             set_window_size,
             set_click_through,
+            create_preview_window,
+            close_preview_window,
+            confirm_import_preview,
             add_group,
             list_groups,
+            check_api_keys_exists,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

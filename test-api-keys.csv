@@ -1,0 +1,5 @@
+名称,API Key,提供商,描述
+OpenAI GPT-4,sk-test1234567890abcdef1234567890abcdef,OpenAI,用于GPT-4模型访问的测试密钥
+Claude API,claude-test1234567890abcdef1234567890abcdef,Anthropic,用于Claude模型访问的测试密钥
+Google Gemini,AIzaSytest1234567890abcdef1234567890abcdef,Google,用于Gemini模型访问的测试密钥
+Azure OpenAI,azure-test1234567890abcdef1234567890abcdef,Microsoft,用于Azure OpenAI服务的测试密钥

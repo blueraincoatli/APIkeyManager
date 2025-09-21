@@ -441,7 +441,7 @@ export const batchImportService = {
       const key = keys[i];
       const validation = validateAndSanitizeApiKey({
         name: key.name,
-        keyValue: key.key_value,
+        keyValue: key.keyValue,
         platform: key.platform,
         description: key.description
       });
@@ -451,7 +451,7 @@ export const batchImportService = {
       } else {
         validatedKeys.push({
           name: (validation.sanitized as ApiKeyInput)?.name || key.name,
-          key_value: (validation.sanitized as ApiKeyInput)?.keyValue || key.key_value,
+          keyValue: (validation.sanitized as ApiKeyInput)?.keyValue || key.keyValue,
           platform: (validation.sanitized as ApiKeyInput)?.platform || key.platform,
           description: (validation.sanitized as ApiKeyInput)?.description || key.description
         });

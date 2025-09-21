@@ -49,7 +49,7 @@ export interface BatchImportRecord {
 
 export interface BatchApiKey {
   name: string;
-  key_value: string;
+  keyValue: string;
   platform?: string;
   description?: string;
 }
