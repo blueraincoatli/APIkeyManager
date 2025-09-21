@@ -136,7 +136,8 @@
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start; /* 名称与描述同一行显示 */
+  gap: var(--space-2xs);
   margin-bottom: var(--space-3xs);
 }
 
@@ -147,14 +148,17 @@
 .search-results-item-description {
   font-weight: normal;
   font-size: var(--font-size-xs);
-  opacity: 0.7;
-  margin-left: var(--space-xs);
+  opacity: 0.8;
+  margin-left: var(--space-2xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  text-align: right;
   color: rgba(55, 65, 81, 1);
+}
+
+.search-results-item-sep {
+  opacity: 0.5;
+  margin: 0 var(--space-2xs);
 }
 
 .dark .search-results-item-description {

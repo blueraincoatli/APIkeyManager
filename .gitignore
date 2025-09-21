@@ -26,3 +26,8 @@ src-tauri/Cargo.lock
 *.njsproj
 *.sln
 *.sw?
+
+
+# Local exports and data dumps
+exports/
+export/

@@ -10,9 +10,10 @@ interface SearchResultsProps {
   onCopy: (key: ApiKey) => void;
   providerLabel?: string;
   onRefresh?: () => void; // 添加刷新回调
+  onCopyConfirmed?: () => void; // 复制确认后收起父面板
 }
 
-export function SearchResults({ results, onCopy, providerLabel, onRefresh }: SearchResultsProps) {
+export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCopyConfirmed }: SearchResultsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -20,45 +21,56 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modal, setModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string; onConfirm?: () => void } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null); // 短暂UI反馈
+  const clearClipboardTimerRef = useRef<number | null>(null); // 30秒自动清空
 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (clearClipboardTimerRef.current) {
+        clearTimeout(clearClipboardTimerRef.current);
+      }
     };
   }, []);
 
   const handleCopy = async (key: ApiKey) => {
     try {
-      // 调用后端的复制命令，传递 API Key 的实际内容
+      // 通过后端命令复制到系统剪贴板（不在前端日志中打印敏感值）
       const result = await invoke('copy_to_clipboard', { content: key.keyValue });
 
       if (result) {
-        // 复制成功，设置视觉反馈
+        // 复制成功 UI 反馈
         setCopiedId(key.id);
-
-        // 调用父组件的回调函数（如果需要）
         onCopy(key);
 
-        // 显示成功反馈，2秒后恢复
+        // 2 秒后恢复复制图标
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = window.setTimeout(() => {
           setCopiedId(null);
           timeoutRef.current = null;
         }, 2000);
 
-        // 显示成功模态框
+        // 30 秒后自动清空剪贴板
+        if (clearClipboardTimerRef.current) clearTimeout(clearClipboardTimerRef.current);
+        clearClipboardTimerRef.current = window.setTimeout(() => {
+          invoke('copy_to_clipboard', { content: '' }).catch(() => {});
+          clearClipboardTimerRef.current = null;
+        }, 30000);
+
+        // 风险提示模态框
         setModal({
           isOpen: true,
           type: 'success',
           title: '复制成功',
-          message: `${key.name} 的 API Key 已复制到剪贴板`,
-          onConfirm: () => setModal(null)
+          message: 'API Key 已复制到剪贴板，请注意风险。系统将在 30 秒后自动清空剪贴板。',
+          onConfirm: () => {
+            if (onCopyConfirmed) onCopyConfirmed();
+            setModal(null);
+          }
         });
       } else {
-        // 复制失败
         setModal({
           isOpen: true,
           type: 'error',
@@ -67,9 +79,8 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
         });
       }
     } catch (error) {
-      console.error('复制 API Key 失败:', error);
-
-      // 显示错误模态框
+      // 仅记录通用错误，不输出任何敏感内容
+      console.error('复制失败：', error);
       setModal({
         isOpen: true,
         type: 'error',
@@ -80,9 +91,11 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
   };
 
   const formatApiKey = (keyValue: string) => {
-    if (keyValue.length <= 15) return keyValue;
-    const prefix = keyValue.substring(0, 6);
-    const suffix = keyValue.substring(keyValue.length - 6);
+    const prefixLen = 9;
+    const suffixLen = 9;
+    if (keyValue.length <= prefixLen + suffixLen) return keyValue;
+    const prefix = keyValue.substring(0, prefixLen);
+    const suffix = keyValue.substring(keyValue.length - suffixLen);
     return `${prefix}...${suffix}`;
   };
 
@@ -279,11 +292,12 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh }: Sea
                       <div className="search-results-item-header">
                         <div className="search-results-item-info">
                           <div className="search-results-item-name">
-                            {key.name}
+                            <span className="search-results-item-name-text">{key.name}</span>
                             {key.description && (
-                              <span className="search-results-item-description">
-                                {key.description}
-                              </span>
+                              <>
+                                <span className="search-results-item-sep"> | </span>
+                                <span className="search-results-item-description">{key.description}</span>
+                              </>
                             )}
                           </div>
                           <div className="search-results-item-key">{formatApiKey(key.keyValue)}</div>

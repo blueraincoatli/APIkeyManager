@@ -262,10 +262,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   }, []);
 
   const copyToClipboard = async (key: ApiKey) => {
-    await apiKeyService.copyToClipboard(key.id);
-    // 复制后隐藏搜索结果面板
-    setSearchResults([]);
-    setActivePanel('none');
+    // 仅记录一次复制行为（不再折叠面板，避免打断子组件的模态提示）
+    try { await apiKeyService.copyToClipboard(key.id); } catch (_) {}
+    // 保持当前面板，交由 SearchResults 内部模态框提示与自动清空
   };
 
   // 选择环形菜单项（按提供商过滤）
@@ -568,10 +567,14 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
         {/* 结果面板（统一组件） */}
         {activePanel === 'search' && searchResults.length > 0 && (
-          <SearchResults 
-            results={searchResults} 
-            onCopy={copyToClipboard} 
+          <SearchResults
+            results={searchResults}
+            onCopy={copyToClipboard}
             providerLabel={providerLabel}
+            onCopyConfirmed={() => {
+              setSearchResults([]);
+              setActivePanel('none');
+            }}
             onRefresh={async () => {
               // 重新搜索以刷新结果
               if (searchTerm) {
