@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon, EditIcon, CloseIcon } from "../Icon/Icon";
 import "./SearchResults.css";
@@ -20,7 +21,9 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
   const [editKeyValue, setEditKeyValue] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modal, setModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string; onConfirm?: () => void } | null>(null);
+  const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null); // 短暂UI反馈
   const clearClipboardTimerRef = useRef<number | null>(null); // 30秒自动清空
 
@@ -34,6 +37,14 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
       }
     };
   }, []);
+
+  // 处理模态框定位
+  useEffect(() => {
+    if (modalRef.current && modalPos) {
+      modalRef.current.style.setProperty('--modal-top', `${modalPos.top}px`);
+      modalRef.current.style.setProperty('--modal-left', `${modalPos.left}px`);
+    }
+  }, [modalPos]);
 
   const handleCopy = async (key: ApiKey) => {
     try {
@@ -60,6 +71,14 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
         }, 30000);
 
         // 风险提示模态框
+        // 计算模态框相对结果面板的中心位置
+        const rect = resultsRef.current?.getBoundingClientRect();
+        if (rect) {
+          setModalPos({ top: rect.top + rect.height / 2, left: rect.left + rect.width / 2 });
+        } else {
+          setModalPos({ top: window.innerHeight / 2, left: window.innerWidth / 2 });
+        }
+
         setModal({
           isOpen: true,
           type: 'success',
@@ -345,9 +364,12 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
       </div>
 
       {/* 模态对话框 */}
-      {modal && modal.isOpen && (
+      {modal && modal.isOpen && createPortal(
         <div className="search-results-modal-overlay">
-          <div className="search-results-modal-container">
+          <div
+            ref={modalRef}
+            className={`search-results-modal-container ${modalPos ? 'positioned' : ''}`}
+          >
             <div className="search-results-modal-header">
               <div className={`search-results-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
                 {modal.title}
@@ -373,7 +395,8 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

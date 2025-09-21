@@ -11,6 +11,28 @@
             // 在Tauri环境中，API应该自动可用
             // 如果不可用，可能需要等待加载
         }
+        // 主题应用：优先使用主窗口传入的主题，fallback 到系统
+        const applyTheme = () => {
+          // 等待 initialization_script 注入的 __THEME__ 可用
+          setTimeout(() => {
+            if (typeof window.__THEME__ === 'string') {
+              console.log('Applying theme from main window:', window.__THEME__);
+              if (window.__THEME__ === 'dark') {
+                document.documentElement.classList.add('dark');
+              } else if (window.__THEME__ === 'light') {
+                document.documentElement.classList.remove('dark');
+              }
+            } else {
+              // fallback 到系统主题
+              const media = window.matchMedia('(prefers-color-scheme: dark)');
+              document.documentElement.classList.toggle('dark', media.matches);
+              try { media.addEventListener('change', () => {
+                document.documentElement.classList.toggle('dark', media.matches);
+              }); } catch(_) {}
+            }
+          }, 50);
+        };
+        applyTheme();
     </script>
     <style>
         :root {
@@ -49,6 +71,48 @@
             --shadow-m: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
+        /* 深色主题变量（与主应用保持一致的风格） */
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --border: 217.2 32.6% 17.5%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+        }
+
+        /* 深色主题：与新增面板风格一致 */
+        .dark body {
+            background: linear-gradient(135deg, rgb(55, 65, 85), rgb(28, 38, 58));
+        }
+        .dark .preview-page-title,
+        .dark .preview-footer {
+            background: transparent;
+            border-color: rgb(75, 85, 105);
+        }
+        .dark .preview-table-container {
+            background: rgba(55, 65, 85, 0.95);
+            border-color: rgb(75, 85, 105);
+        }
+        .dark .preview-table-header {
+            background: rgba(30, 41, 59, 1);
+        }
+        .dark .preview-table-cell {
+            color: rgba(226, 232, 240, 1);
+            border-bottom-color: rgba(51, 65, 85, 1);
+        }
+        .dark .preview-table-row:nth-child(even) {
+            background: rgba(30, 41, 59, 1);
+        }
+        .dark .preview-table-row:hover {
+            background: rgba(51, 65, 85, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -58,38 +122,48 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: hsl(var(--background));
+
+
             color: hsl(var(--foreground));
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* 仅内容区域滚动，去掉右侧全局滚动条 */
         }
 
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-m) var(--space-l);
-            background: hsl(var(--card));
-            border-bottom: 1px solid hsl(var(--border));
-            box-shadow: var(--shadow-s);
+        /* 隐藏系统标题栏，但保留页面内标题 */
+        .preview-page-title {
+            padding: var(--space-l) var(--space-l) var(--space-m) var(--space-l);
+            font-size: var(--font-size-l);
+
+
+            font-weight: var(--font-weight-semibold);
+            color: hsl(var(--foreground));
+            background: hsl(var(--background));
         }
 
         .preview-title {
             font-size: var(--font-size-l);
             font-weight: var(--font-weight-semibold);
             color: hsl(var(--card-foreground));
+
+
         }
 
         .preview-content {
             flex: 1;
             overflow: auto;
             padding: var(--space-l);
+
+
         }
 
         .preview-table-container {
             background: hsl(var(--card));
             border-radius: var(--radius);
             border: 1px solid hsl(var(--border));
+
+
             overflow: hidden;
             box-shadow: var(--shadow-s);
         }
@@ -98,6 +172,13 @@
             width: 100%;
             border-collapse: collapse;
         }
+
+        /* 深色模式下的滚动条（仅作用于预览区域，避免影响全局） */
+        .dark .preview-content::-webkit-scrollbar { width: 6px; height: 6px; }
+        .dark .preview-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 6px; }
+        .dark .preview-content::-webkit-scrollbar-thumb { background: rgba(75, 85, 105, 0.6); border-radius: 6px; }
+        .dark .preview-content::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.65); }
+
 
         .preview-table-header {
             background: hsl(var(--muted));
@@ -245,9 +326,7 @@
     </style>
 </head>
 <body>
-    <div class="preview-header">
-        <h2 class="preview-title">数据预览</h2>
-    </div>
+    <div class="preview-page-title">数据预览</div>
 
     <div class="preview-content">
         <div id="loading" class="loading">
