@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { apiKeyService, batchImportService } from "../../services/apiKeyService";
 import { useApiToast } from "../../hooks/useToast";
 import { validateApiKeyFormat, normalizeApiKey } from "../../services/inputValidation";
@@ -67,6 +68,7 @@ interface ModalState {
 }
 
 export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps) {
+  const { t } = useTranslation();
   const toast = useApiToast();
   const [name, setName] = useState("");
   const [keyValue, setKeyValue] = useState("");
@@ -103,8 +105,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       setModal({
         isOpen: true,
         type: 'error',
-        title: '预览功能不可用',
-        message: '请在Tauri桌面环境中使用此功能'
+        title: t('addApiKeyDialog.previewNotAvailable'),
+        message: t('addApiKeyDialog.previewNotAvailableMessage')
       });
       return;
     }
@@ -116,12 +118,43 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       // 读取当前主题（与主窗口保持一致）
       const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
 
+      // 获取当前语言设置
+      const getCurrentLanguage = () => {
+        try {
+          // 尝试从i18next获取当前语言
+          if (window.i18next && window.i18next.language) {
+            return window.i18next.language;
+          }
+          // 尝试从localStorage获取语言设置
+          const savedLang = localStorage.getItem('i18nextLng');
+          if (savedLang) {
+            return savedLang;
+          }
+          // 返回默认语言
+          return 'zh-CN';
+        } catch (error) {
+          console.warn('Failed to get current language:', error);
+          return 'zh-CN';
+        }
+      };
+
+      const currentLanguage = getCurrentLanguage();
+      console.log('Current language for preview window:', currentLanguage);
+
       // 使用更安全的invoke调用
       if (typeof invoke === 'function') {
-        await invoke('create_preview_window', { previewData: dataJson, theme: isDark ? 'dark' : 'light' });
+        await invoke('create_preview_window', { 
+          previewData: dataJson, 
+          theme: isDark ? 'dark' : 'light',
+          language: currentLanguage
+        });
         console.log('create_preview_window invoked successfully');
       } else if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
-        await window.__TAURI__.core.invoke('create_preview_window', { previewData: dataJson, theme: isDark ? 'dark' : 'light' });
+        await window.__TAURI__.core.invoke('create_preview_window', { 
+          previewData: dataJson, 
+          theme: isDark ? 'dark' : 'light',
+          language: currentLanguage
+        });
         console.log('create_preview_window invoked successfully via window.__TAURI__.core');
       } else {
         throw new Error('Tauri invoke function not available');
@@ -132,8 +165,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       setModal({
         isOpen: true,
         type: 'error',
-        title: '无法创建预览窗口',
-        message: `错误: ${error}`
+        title: t('addApiKeyDialog.previewWindowError'),
+        message: `${t('addApiKeyDialog.error')}: ${error}`
       });
     }
   };
@@ -174,8 +207,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           setModal({
             isOpen: true,
             type: 'success',
-            title: '导入成功',
-            message: `成功导入 ${result.data.succeeded} 个API Key${result.data.failed > 0 ? `，失败 ${result.data.failed} 个` : ''}`,
+            title: t('addApiKeyDialog.importSuccess'),
+            message: t('addApiKeyDialog.importSuccessMessage', { succeeded: result.data.succeeded, failed: result.data.failed }),
             onConfirm: () => {
               setModal(null);
               onAdded?.();
@@ -183,20 +216,20 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           });
         } else {
           setModal({
-            isOpen: true,
-            type: 'error',
-            title: '导入失败',
-            message: result.error?.message || '无法导入API Keys'
-          });
+          isOpen: true,
+          type: 'error',
+          title: t('addApiKeyDialog.importFailed'),
+          message: result.error?.message || t('addApiKeyDialog.importFailedMessage')
+        });
         }
       } catch (error: any) {
         console.error('导入失败:', error);
         setModal({
-          isOpen: true,
-          type: 'error',
-          title: '导入失败',
-          message: error.message || '导入过程中发生错误'
-        });
+        isOpen: true,
+        type: 'error',
+        title: t('addApiKeyDialog.importFailed'),
+        message: error.message || t('addApiKeyDialog.importProcessError')
+      });
       }
     });
 
@@ -208,12 +241,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   // 表单验证
   const errors = useMemo(() => {
     const errs: { name?: string; key?: string } = {};
-    if (!name.trim()) errs.name = "名称不能为空";
+    if (!name.trim()) errs.name = t('addApiKeyDialog.errors.nameRequired');
     const normalized = normalizeApiKey(keyValue);
-    if (!normalized) errs.key = "API Key 不能为空";
-    else if (!validateApiKeyFormat(normalized)) errs.key = "API Key 格式不合法";
+    if (!normalized) errs.key = t('addApiKeyDialog.errors.keyRequired');
+    else if (!validateApiKeyFormat(normalized)) errs.key = t('addApiKeyDialog.errors.keyInvalid');
     return errs;
-  }, [name, keyValue]);
+  }, [name, keyValue, t]);
 
   const handleFileSelect = async () => {
     try {
@@ -236,8 +269,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               setModal({
                 isOpen: true,
                 type: 'error',
-                title: '文件格式错误',
-                message: '请选择Excel文件(.xlsx或.xls)'
+                title: t('addApiKeyDialog.fileFormatError'),
+                message: t('addApiKeyDialog.fileFormatErrorMessage')
               });
               return;
             }
@@ -271,8 +304,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                 setModal({
                   isOpen: true,
                   type: 'error',
-                  title: 'Excel解析失败',
-                  message: parseResult.error || '无法解析Excel文件'
+                  title: t('addApiKeyDialog.excelParseError'),
+                  message: parseResult.error || t('addApiKeyDialog.cannotParseExcelFile')
                 });
               }
             } catch (error: any) {
@@ -280,8 +313,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
               setModal({
                 isOpen: true,
                 type: 'error',
-                title: 'Excel解析失败',
-                message: error.message || '解析过程中发生错误'
+                title: t('addApiKeyDialog.excelParseError'),
+                message: error.message || t('addApiKeyDialog.parseProcessError')
               });
             }
           }
@@ -309,8 +342,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           setModal({
             isOpen: true,
             type: 'error',
-            title: '文件格式错误',
-            message: '请选择Excel文件(.xlsx或.xls)'
+            title: t('addApiKeyDialog.fileFormatError'),
+            message: t('addApiKeyDialog.fileFormatErrorMessage')
           });
           return;
         }
@@ -372,8 +405,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         setModal({
           isOpen: true,
           type: 'error',
-          title: '文件选择失败',
-          message: error.message || '无法打开文件对话框'
+          title: t('addApiKeyDialog.fileSelectionFailed'),
+          message: error.message || t('addApiKeyDialog.cannotOpenFileDialog')
         });
       }
     }
@@ -407,8 +440,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       setModal({
         isOpen: true,
         type: 'success',
-        title: '新增成功',
-        message: `${name} 已添加到系统中`,
+        title: t('addApiKeyDialog.addSuccess'),
+        message: t('addApiKeyDialog.addSuccessMessage', { name }),
         onConfirm: () => {
           setModal(null);
           onAdded?.();
@@ -420,8 +453,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       setModal({
         isOpen: true,
         type: 'error',
-        title: '新增失败',
-        message: res.error?.message || '无法添加API Key'
+        title: t('addApiKeyDialog.addFailed'),
+        message: res.error?.message || t('addApiKeyDialog.addFailedMessage')
       });
     }
   };
@@ -464,7 +497,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         document.body.removeChild(a);
 
         // 在非Tauri环境下，显示下载到浏览器的通知
-        toast.success('模板下载成功', '文件已下载到浏览器默认下载位置');
+        toast.success(t('addApiKeyDialog.templateDownloadSuccess'), t('addApiKeyDialog.downloadedToBrowser'));
         return;
       }
 
@@ -495,7 +528,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         const savedFileName = pathParts[pathParts.length - 1];
         
         // 显示更友好的通知，包含文件打开功能
-        toast.success('📁 模板下载成功', `Excel模板文件 "${savedFileName}" 已保存到您的下载文件夹`);
+        toast.success('📁 ' + t('addApiKeyDialog.templateDownloadSuccess'), t('addApiKeyDialog.templateSavedMessage', { fileName: savedFileName }));
       }
     } catch (error: any) {
       console.error('下载模板失败:', error);
@@ -512,8 +545,8 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         setModal({
           isOpen: true,
           type: 'error',
-          title: '下载失败',
-          message: error.message || '模板下载过程中发生错误'
+          title: t('addApiKeyDialog.downloadFailed'),
+          message: error.message || t('addApiKeyDialog.downloadProcessError')
         });
       }
     }
@@ -523,14 +556,14 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   const handleOpenFile = async (filePath: string) => {
     try {
       // 简单地通知用户文件已保存，不实际打开文件
-      toast.info('提示', `文件已保存到: ${filePath}`);
+      toast.info(t('addApiKeyDialog.info'), t('addApiKeyDialog.fileSavedTo', { filePath }));
     } catch (error) {
       console.error('打开文件失败:', error);
       setModal({
         isOpen: true,
         type: 'error',
-        title: '打开文件失败',
-        message: '无法打开下载的文件'
+        title: t('addApiKeyDialog.openFileFailed'),
+        message: t('addApiKeyDialog.cannotOpenDownloadedFile')
       });
     }
   };
@@ -557,11 +590,11 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
             {showBatchImport ? (
             // 批量导入说明面板
             <>
-              <h5 className="add-api-key-dialog-title">批量导入API Key</h5>
+              <h5 className="add-api-key-dialog-title">{t('addApiKeyDialog.batchImport')}</h5>
               <div className="add-api-key-batch-section">
                 <div className="add-api-key-batch-info">
                   <p className="add-api-key-batch-info-text">
-                    请下载模板文件，按照格式填写API Key信息后上传
+                    {t('addApiKeyDialog.batchImportInstructions')}
                   </p>
                 </div>
                 
@@ -571,7 +604,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                     onClick={handleDownloadTemplate}
                     className="add-api-key-file-button primary"
                   >
-                    下载模板
+                    {t('addApiKeyDialog.downloadTemplate')}
                   </button>
                   
                   {/* 下载文件路径显示 */}
@@ -589,11 +622,11 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                           onClick={() => handleOpenFile(downloadedFilePath)}
                           className="add-api-key-open-file-button"
                         >
-                          📋 打开文件
+                          📋 {t('addApiKeyDialog.openFile')}
                         </button>
                       </div>
                       <p className="add-api-key-file-status">
-                        已保存到下载文件夹
+                        {t('addApiKeyDialog.savedToDownloads')}
                       </p>
                     </div>
                   )}
@@ -603,14 +636,14 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                     onClick={handleFileSelect}
                     className="add-api-key-file-button"
                   >
-                    选择Excel文件
+                    {t('addApiKeyDialog.selectExcelFile')}
                   </button>
                 </div>
                 
                 <div className="add-api-key-batch-info">
                   <p className="add-api-key-file-support-info">
-                    支持的格式：Excel文件 (.xlsx)<br/>
-                    需包含列：名称 | API Key | 提供商 | 描述
+                    {t('addApiKeyDialog.supportedFormats')}<br/>
+                    {t('addApiKeyDialog.requiredColumns')}
                   </p>
                 </div>
               </div>
@@ -623,7 +656,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                       onClick={handleBackToSingle}
                       className="add-api-key-button"
                     >
-                      返回
+                      {t('addApiKeyDialog.back')}
                     </button>
                   </div>
                   <div className="flex justify-center">
@@ -632,7 +665,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                       onClick={onClose}
                       className="add-api-key-button"
                     >
-                      取消
+                      {t('common.cancel')}
                     </button>
                   </div>
                 </div>
@@ -641,13 +674,13 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
           ) : (
             // 单个添加API Key表单
             <>
-              <h5 className="add-api-key-dialog-title">新增API Key</h5>
+              <h5 className="add-api-key-dialog-title">{t('addApiKeyDialog.title')}</h5>
               <div className="add-api-key-form-section">
                 <div className="add-api-key-form-group">
-                  <label className="add-api-key-form-label">名称</label>
+                  <label className="add-api-key-form-label">{t('addApiKeyDialog.form.nameLabel')}</label>
                   <input
                     type="text"
-                    placeholder="请输入API Key名称"
+                    placeholder={t('addApiKeyDialog.form.namePlaceholder')}
                     value={name}
                     onChange={(e)=>setName(e.target.value)}
                     onBlur={()=>setTouched(prev=>({ ...prev, name: true }))}
@@ -657,33 +690,33 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                   {touched.name && errors.name && (<p className="add-api-key-form-error">{errors.name}</p>)}
                 </div>
                 <div className="add-api-key-form-group">
-                  <label className="add-api-key-form-label">API Key</label>
+                  <label className="add-api-key-form-label">{t('addApiKeyDialog.form.keyLabel')}</label>
                   <input
                     value={keyValue}
                     onChange={(e)=>setKeyValue(e.target.value)}
                     onBlur={()=>setTouched(prev=>({ ...prev, key: true }))}
                     className={`add-api-key-form-input api-key ${touched.key && errors.key ? 'error' : ''}`}
-                    placeholder="请输入API Key"
+                    placeholder={t('addApiKeyDialog.form.keyPlaceholder')}
                     required
                   />
                   {touched.key && errors.key && (<p className="add-api-key-form-error">{errors.key}</p>)}
                 </div>
                 <div className="add-api-key-form-group">
-                  <label className="add-api-key-form-label">提供商</label>
+                  <label className="add-api-key-form-label">{t('addApiKeyDialog.form.platformLabel')}</label>
                   <input
                     value={platform}
                     onChange={(e)=>setPlatform(e.target.value)}
                     className="add-api-key-form-input"
-                    placeholder="如：OpenAI、Claude、Gemini..."
+                    placeholder={t('addApiKeyDialog.form.platformPlaceholder')}
                   />
                 </div>
                 <div className="add-api-key-form-group">
-                  <label className="add-api-key-form-label">描述</label>
+                  <label className="add-api-key-form-label">{t('addApiKeyDialog.form.descriptionLabel')}</label>
                   <input
                     value={description}
                     onChange={(e)=>setDescription(e.target.value)}
                     className="add-api-key-form-input"
-                    placeholder="可选描述信息..."
+                    placeholder={t('addApiKeyDialog.form.descriptionPlaceholder')}
                   />
                 </div>
               </div>
@@ -695,7 +728,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                       onClick={onClose}
                       className="add-api-key-button"
                     >
-                      取消
+                      {t('common.cancel')}
                     </button>
                   </div>
                   <div className="flex justify-center">
@@ -704,7 +737,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                       onClick={handleBatchImport}
                       className="add-api-key-button"
                     >
-                      批量导入
+                      {t('addApiKeyDialog.batchImport')}
                     </button>
                   </div>
                   <div className="flex justify-center">
@@ -713,7 +746,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                       disabled={submitting || !!errors.name || !!errors.key}
                       className="add-api-key-button primary"
                     >
-                      {submitting? '提交中…':'保存'}
+                      {submitting? t('addApiKeyDialog.submitting'):t('common.save')}
                     </button>
                   </div>
                 </div>
@@ -748,7 +781,7 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
                     }}
                     className={`add-api-key-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
                   >
-                    {modal.type === 'success' ? '确定' : '关闭'}
+                    {modal.type === 'success' ? t('common.ok') : t('common.close')}
                   </button>
                 </div>
               </div>

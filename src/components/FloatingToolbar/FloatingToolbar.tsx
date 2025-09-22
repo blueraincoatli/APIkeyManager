@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiKey } from "../../types/apiKey";
 import { searchService } from "../../services/searchService";
 import { RadialMenu } from "../RadialMenu/RadialMenu";
@@ -26,6 +27,7 @@ interface FloatingToolbarProps {
 }
 
 export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
   const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
@@ -465,7 +467,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search API keys..."
+              placeholder={t('floatingToolbar.searchPlaceholder')}
               className="floating-toolbar-search-input"
             />
           </div>
@@ -483,7 +485,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setShowAddDialog(true);
                 setActivePanel('add');
               }}
-              aria-label="Add API Key"
+              aria-label={t('floatingToolbar.addApiKey')}
             >
               <PlusIcon />
             </button>
@@ -502,7 +504,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setActivePanel('radial');
               }}
               ref={moreBtnRef}
-              aria-label="More"
+              aria-label={t('floatingToolbar.more')}
             >
               <EllipsisIcon />
             </button>
@@ -520,7 +522,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setShowSettingsPanel(true);
                 setActivePanel('settings');
               }}
-              aria-label="Settings"
+              aria-label={t('floatingToolbar.settings')}
             >
               <GearIcon />
             </button>
@@ -530,8 +532,8 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               type="button"
               className="floating-toolbar-button"
               onClick={handleExitClick}
-              aria-label="Exit Application"
-              title="退出应用程序"
+              aria-label={t('floatingToolbar.exit')}
+              title={t('floatingToolbar.exit')}
             >
               <CloseIcon />
             </button>
@@ -543,7 +545,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
           {activePanel === 'radial' && (
             <div className="floating-toolbar-radial-menu">
               {isLoadingPlatforms ? (
-                <div className="loading-indicator">Loading platforms...</div>
+                <div className="loading-indicator">{t('floatingToolbar.loadingPlatforms')}</div>
               ) : (
                 <RadialMenu
                   options={radialMenuOptions}

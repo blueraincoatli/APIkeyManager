@@ -30,11 +30,6 @@ const themeOptions: ThemeOption[] = [
     id: 'dark',
     label: '深色',
     icon: <MoonIcon className="settings-panel-theme-icon" />,
-  },
-  {
-    id: 'system',
-    label: '系统',
-    icon: <ComputerIcon className="settings-panel-theme-icon" />,
   }
 ];
 
@@ -92,24 +87,24 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           {/* 主题选择 */}
           <div className="settings-panel-section">
             <h3 className="settings-panel-section-title">{t('settings.theme')}</h3>
-            <div className="settings-panel-theme-options">
+            <div className="settings-panel-theme-options-horizontal">
               {themeOptions.map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   onClick={() => handleThemeChange(option.id)}
-                  className={`settings-panel-theme-option ${
+                  className={`settings-panel-theme-option-horizontal ${
                     currentTheme === option.id ? 'selected' : ''
                   }`}
                 >
-                  <div className="settings-panel-theme-option-icon">
+                  <div className="settings-panel-theme-option-icon-horizontal">
                     {option.icon}
                   </div>
-                  <div className="settings-panel-theme-option-label">
+                  <div className="settings-panel-theme-option-label-horizontal">
                     {t(`settings.themeOptions.${option.id}`)}
                   </div>
                   {currentTheme === option.id && (
-                    <div className="settings-panel-theme-option-selected">
+                    <div className="settings-panel-theme-option-selected-horizontal">
                       <CheckIcon className="settings-panel-selected-icon" />
                     </div>
                   )}
@@ -121,26 +116,18 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           {/* 语言选择 */}
           <div className="settings-panel-section">
             <h3 className="settings-panel-section-title">{t('settings.language')}</h3>
-            <div className="settings-panel-language-options">
-              {languageOptions.map((option) => (
-                <button
-                  key={option.code}
-                  type="button"
-                  onClick={() => handleLanguageChange(option.code)}
-                  className={`settings-panel-language-option ${
-                    currentLanguage === option.code ? 'selected' : ''
-                  }`}
-                >
-                  <div className="settings-panel-language-option-label">
+            <div className="settings-panel-language-select">
+              <select
+                value={currentLanguage}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="settings-panel-language-dropdown"
+              >
+                {languageOptions.map((option) => (
+                  <option key={option.code} value={option.code}>
                     {option.nativeName}
-                  </div>
-                  {currentLanguage === option.code && (
-                    <div className="settings-panel-language-option-selected">
-                      <CheckIcon className="settings-panel-selected-icon" />
-                    </div>
-                  )}
-                </button>
-              ))}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -151,7 +138,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               {shortcutOptions.map((shortcut, index) => (
                 <div key={index} className="settings-panel-shortcut-option">
                   <div className="settings-panel-shortcut-label">
-                    {t(`settings.shortcuts.${shortcut.label}`)}
+                    {t('settings.shortcutsToggle')}
                   </div>
                   <div className="settings-panel-shortcut-key">
                     {shortcut.key}
@@ -171,6 +158,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             <div className="settings-panel-about-info">
               <h3 className="settings-panel-about-title">{t('settings.about.title')}</h3>
               <div className="settings-panel-about-version">{t('settings.about.version')}</div>
+              <p className="settings-panel-about-description">{t('settings.about.description')}</p>
             </div>
           </div>
         </div>

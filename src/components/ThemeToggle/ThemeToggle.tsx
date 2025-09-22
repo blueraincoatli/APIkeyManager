@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import './ThemeToggle.css';
 
@@ -7,6 +8,7 @@ interface ThemeToggleProps {
 }
 
 export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
+  const { t } = useTranslation();
   const { theme, resolvedTheme, setTheme } = useTheme();
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
@@ -21,8 +23,8 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
         type="button"
         onClick={() => handleThemeChange('light')}
         className={`theme-toggle__button ${theme === 'light' ? 'theme-toggle__button--active' : ''}`}
-        title="浅色主题"
-        aria-label="切换到浅色主题"
+        title={t('themeToggle.lightTheme')}
+        aria-label={t('themeToggle.switchToLight')}
       >
         <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
@@ -38,8 +40,8 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
         type="button"
         onClick={() => handleThemeChange('dark')}
         className={`theme-toggle__button ${theme === 'dark' ? 'theme-toggle__button--active' : ''}`}
-        title="深色主题"
-        aria-label="切换到深色主题"
+        title={t('themeToggle.darkTheme')}
+        aria-label={t('themeToggle.switchToDark')}
       >
         <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
@@ -55,8 +57,8 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
         type="button"
         onClick={() => handleThemeChange('system')}
         className={`theme-toggle__button ${theme === 'system' ? 'theme-toggle__button--active' : ''}`}
-        title="系统主题"
-        aria-label="跟随系统主题"
+        title={t('themeToggle.systemTheme')}
+        aria-label={t('themeToggle.followSystem')}
       >
         <svg className="theme-toggle__icon" viewBox="0 0 24 24">
           <path
@@ -69,7 +71,7 @@ export const ThemeToggle = memo(({ className = '' }: ThemeToggleProps) => {
       </button>
 
       <div className="theme-toggle__status">
-        {theme === 'system' ? `系统 (${resolvedTheme})` : theme === 'dark' ? '深色' : '浅色'}
+        {theme === 'system' ? `${t('themeToggle.system')} (${resolvedTheme})` : theme === 'dark' ? t('themeToggle.dark') : t('themeToggle.light')}
       </div>
     </div>
   );

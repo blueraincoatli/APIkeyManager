@@ -18,13 +18,13 @@ export default {
     warning: "警告"
   },
 
-  toolbar: {
+  floatingToolbar: {
     searchPlaceholder: "APIキーを検索...",
     addApiKey: "APIキーを追加",
     more: "その他",
     settings: "設定",
-    exitApp: "アプリケーションを終了",
-    exitTooltip: "アプリケーションを終了"
+    exit: "アプリケーションを終了",
+    loadingPlatforms: "プラットフォームを読み込み中..."
   },
 
   settings: {
@@ -32,7 +32,7 @@ export default {
     theme: "テーマ",
     language: "言語",
     shortcuts: "ショートカット",
-    about: "について",
+    aboutTitle: "について",
     
     themeOptions: {
       light: "ライト",
@@ -40,9 +40,7 @@ export default {
       system: "システム"
     },
 
-    shortcuts: {
-      toggleToolbar: "表示/非表示"
-    },
+    shortcutsToggle: "表示/非表示",
 
     about: {
       title: "API Key Manager",
@@ -90,9 +88,31 @@ export default {
     }
   },
 
-  search: {
+  searchResults: {
     noResults: "結果がありません",
-    empty: "結果が見つかりませんでした"
+    namePlaceholder: "名前",
+    keyPlaceholder: "APIキー",
+    save: "保存",
+    cancel: "キャンセル",
+    confirmDelete: "削除してもよろしいですか？",
+    confirm: "確認",
+    edit: "編集",
+    delete: "削除",
+    copy: "コピー",
+    copySuccess: "コピー成功",
+    copySuccessMessage: "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
+    copyFailed: "コピー失敗",
+    copyFailedMessage: "APIキーをクリップボードにコピーできませんでした",
+    editSuccess: "編集成功",
+    editSuccessMessage: "{{name}}の更新が成功しました",
+    editFailed: "編集失敗",
+    editFailedMessage: "APIキーを更新できませんでした",
+    deleteSuccess: "削除成功",
+    deleteSuccessMessage: "APIキーがシステムから削除されました",
+    deleteFailed: "削除失敗",
+    deleteFailedMessage: "APIキーを削除できませんでした",
+    unknownError: "不明なエラーが発生しました",
+    close: "閉じる"
   },
 
   radialMenu: {
@@ -144,5 +164,86 @@ export default {
     validation: "検証エラーが発生しました",
     permission: "アクセスが拒否されました",
     notFound: "リソースが見つかりません"
+  },
+
+  addApiKeyDialog: {
+    title: "APIキーを追加",
+    batchImport: "一括インポート",
+    batchImportInstructions: "Excelテンプレートを使用してAPIキーを一括インポートします。まずテンプレートをダウンロードし、データを入力してからアップロードしてください。",
+    downloadTemplate: "テンプレートをダウンロード",
+    selectExcelFile: "Excelファイルを選択",
+    supportedFormats: "サポートされている形式：Excelファイル (.xlsx)",
+    requiredColumns: "必須列：名前 | APIキー | プラットフォーム | 説明",
+    savedToDownloads: "ダウンロードフォルダに保存されました",
+    openFile: "ファイルを開く",
+    back: "戻る",
+    submitting: "送信中…",
+    
+    form: {
+      nameLabel: "名前",
+      namePlaceholder: "APIキー名を入力してください",
+      keyLabel: "APIキー",
+      keyPlaceholder: "APIキーを入力してください",
+      platformLabel: "プラットフォーム",
+      platformPlaceholder: "例：OpenAI、Claude、Gemini...",
+      descriptionLabel: "説明",
+      descriptionPlaceholder: "オプションの説明..."
+    },
+
+    errors: {
+      nameRequired: "名前は必須です",
+      keyRequired: "APIキーは必須です",
+      keyInvalid: "APIキーの形式が無効です"
+    },
+
+    previewNotAvailable: "プレビューは利用できません",
+    previewNotAvailableMessage: "デスクトップ環境でプレビュー機能を使用してください",
+    previewWindowError: "プレビューウィンドウエラー",
+    error: "エラー",
+    
+    importSuccess: "インポート成功",
+    importSuccessMessage: "{{succeeded}}件のAPIキーがインポートされ、{{failed}}件が失敗しました",
+    importFailed: "インポート失敗",
+    importFailedMessage: "インポート中にエラーが発生しました",
+    importProcessError: "インポート処理中にエラーが発生しました",
+
+    addSuccess: "追加成功",
+    addSuccessMessage: "{{name}}が追加されました",
+    addFailed: "追加失敗",
+    addFailedMessage: "追加中にエラーが発生しました",
+
+    fileFormatError: "ファイル形式エラー",
+    fileFormatErrorMessage: "Excelファイル（.xlsxまたは.xls）を選択してください",
+    excelParseError: "Excel解析エラー",
+    cannotParseExcelFile: "Excelファイルを解析できません",
+    parseProcessError: "解析中にエラーが発生しました",
+
+    tauriPluginNotInitialized: "Tauriプラグインが初期化されていません",
+    tauriEnvironmentRequired: "Tauriデスクトップ環境で実行していることを確認してください",
+    fileSelectionFailed: "ファイル選択に失敗しました",
+    cannotOpenFileDialog: "ファイルダイアログを開けません",
+    downloadFailed: "ダウンロードに失敗しました",
+    downloadProcessError: "テンプレートのダウンロード中にエラーが発生しました",
+    openFileFailed: "ファイルを開けませんでした",
+    cannotOpenDownloadedFile: "ダウンロードしたファイルを開けません",
+    
+    templateDownloadSuccess: "テンプレートのダウンロードが成功しました",
+    downloadedToBrowser: "ファイルがブラウザのデフォルトダウンロード場所にダウンロードされました",
+    templateSavedMessage: "Excelテンプレートファイル \"{{fileName}}\" がダウンロードフォルダに保存されました",
+    
+    info: "情報",
+    fileSavedTo: "ファイルが保存されました：{{filePath}}"
+  },
+
+  themeToggle: {
+    lightTheme: "ライトテーマ",
+    switchToLight: "ライトテーマに切り替え",
+    darkTheme: "ダークテーマ",
+    switchToDark: "ダークテーマに切り替え",
+    systemTheme: "システムテーマ",
+    followSystem: "システムテーマに従う",
+    system: "システム",
+    dark: "ダーク",
+    light: "ライト"
   }
 };

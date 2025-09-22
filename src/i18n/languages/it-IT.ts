@@ -18,13 +18,13 @@ export default {
     warning: "Avvertimento"
   },
 
-  toolbar: {
+  floatingToolbar: {
     searchPlaceholder: "Cerca chiavi API...",
     addApiKey: "Aggiungi Chiave API",
     more: "Altro",
     settings: "Impostazioni",
-    exitApp: "Esci dall'Applicazione",
-    exitTooltip: "Esci dall'Applicazione"
+    exit: "Esci dall'Applicazione",
+    loadingPlatforms: "Caricamento piattaforme..."
   },
 
   settings: {
@@ -32,7 +32,7 @@ export default {
     theme: "Tema",
     language: "Lingua",
     shortcuts: "Scorciatoie",
-    about: "Informazioni",
+    aboutTitle: "Informazioni",
     
     themeOptions: {
       light: "Chiaro",
@@ -40,9 +40,7 @@ export default {
       system: "Sistema"
     },
 
-    shortcuts: {
-      toggleToolbar: "Mostra/Nascondi"
-    },
+    shortcutsToggle: "Mostra/Nascondi",
 
     about: {
       title: "API Key Manager",
@@ -90,9 +88,31 @@ export default {
     }
   },
 
-  search: {
+  searchResults: {
     noResults: "Nessun risultato",
-    empty: "Nessun risultato trovato"
+    namePlaceholder: "Nome",
+    keyPlaceholder: "Chiave API",
+    save: "Salva",
+    cancel: "Annulla",
+    confirmDelete: "Sei sicuro di voler eliminare?",
+    confirm: "Conferma",
+    edit: "Modifica",
+    delete: "Elimina",
+    copy: "Copia",
+    copySuccess: "Copia Riuscita",
+    copySuccessMessage: "La chiave API è stata copiata negli appunti. Si prega di essere consapevoli dei rischi di sicurezza. Il sistema cancellerà gli appunti tra 30 secondi.",
+    copyFailed: "Copia Fallita",
+    copyFailedMessage: "Impossibile copiare la chiave API negli appunti",
+    editSuccess: "Modifica Riuscita",
+    editSuccessMessage: "{{name}} aggiornato con successo",
+    editFailed: "Modifica Fallita",
+    editFailedMessage: "Impossibile aggiornare la chiave API",
+    deleteSuccess: "Eliminazione Riuscita",
+    deleteSuccessMessage: "Chiave API rimossa dal sistema",
+    deleteFailed: "Eliminazione Fallita",
+    deleteFailedMessage: "Impossibile eliminare la chiave API",
+    unknownError: "Si è verificato un errore sconosciuto",
+    close: "Chiudi"
   },
 
   radialMenu: {
@@ -144,5 +164,86 @@ export default {
     validation: "Si è verificato un errore di convalida",
     permission: "Accesso negato",
     notFound: "Risorsa non trovata"
+  },
+
+  addApiKeyDialog: {
+    title: "Aggiungi Chiave API",
+    batchImport: "Importazione in Lotti",
+    batchImportInstructions: "Usa il modello Excel per importare chiavi API in lotti. Per favore, scarica prima il modello, compila i dati e poi carica.",
+    downloadTemplate: "Scarica Modello",
+    selectExcelFile: "Seleziona File Excel",
+    supportedFormats: "Formati supportati: File Excel (.xlsx)",
+    requiredColumns: "Colonne richieste: Nome | Chiave API | Piattaforma | Descrizione",
+    savedToDownloads: "Salvato nella cartella dei download",
+    openFile: "Apri File",
+    back: "Indietro",
+    submitting: "Invio in corso…",
+    
+    form: {
+      nameLabel: "Nome",
+      namePlaceholder: "Per favore, inserisci il nome della chiave API",
+      keyLabel: "Chiave API",
+      keyPlaceholder: "Per favore, inserisci la chiave API",
+      platformLabel: "Piattaforma",
+      platformPlaceholder: "es.: OpenAI, Claude, Gemini...",
+      descriptionLabel: "Descrizione",
+      descriptionPlaceholder: "Descrizione opzionale..."
+    },
+
+    errors: {
+      nameRequired: "Il nome è richiesto",
+      keyRequired: "La chiave API è richiesta",
+      keyInvalid: "Il formato della chiave API non è valido"
+    },
+
+    previewNotAvailable: "Anteprima non disponibile",
+    previewNotAvailableMessage: "Per favore, usa la funzione di anteprima nell'ambiente desktop",
+    previewWindowError: "Errore della finestra di anteprima",
+    error: "Errore",
+    
+    importSuccess: "Importazione Riuscita",
+    importSuccessMessage: "{{succeeded}} chiavi API importate con successo, {{failed}} fallite",
+    importFailed: "Importazione Fallita",
+    importFailedMessage: "Si è verificato un errore durante l'importazione",
+    importProcessError: "Si è verificato un errore durante l'elaborazione dell'importazione",
+
+    addSuccess: "Aggiunta Riuscita",
+    addSuccessMessage: "{{name}} aggiunto con successo",
+    addFailed: "Aggiunta Fallita",
+    addFailedMessage: "Si è verificato un errore durante l'aggiunta",
+
+    fileFormatError: "Errore di Formato File",
+    fileFormatErrorMessage: "Per favore, seleziona un file Excel (.xlsx o .xls)",
+    excelParseError: "Errore di Analisi Excel",
+    cannotParseExcelFile: "Impossibile analizzare il file Excel",
+    parseProcessError: "Si è verificato un errore durante l'analisi",
+
+    tauriPluginNotInitialized: "Plugin Tauri non inizializzato",
+    tauriEnvironmentRequired: "Per favore, assicurati di eseguire nell'ambiente desktop Tauri",
+    fileSelectionFailed: "Selezione File Fallita",
+    cannotOpenFileDialog: "Impossibile aprire la finestra di dialogo del file",
+    downloadFailed: "Download Fallito",
+    downloadProcessError: "Si è verificato un errore durante il download del modello",
+    openFileFailed: "Apertura File Fallita",
+    cannotOpenDownloadedFile: "Impossibile aprire il file scaricato",
+    
+    templateDownloadSuccess: "Download del modello riuscito",
+    downloadedToBrowser: "File scaricato nella posizione di download predefinita del browser",
+    templateSavedMessage: "Il file del modello Excel \"{{fileName}}\" è stato salvato nella tua cartella dei download",
+    
+    info: "Informazione",
+    fileSavedTo: "File salvato in: {{filePath}}"
+  },
+
+  themeToggle: {
+    lightTheme: "Tema Chiaro",
+    switchToLight: "Passa a Tema Chiaro",
+    darkTheme: "Tema Scuro",
+    switchToDark: "Passa a Tema Scuro",
+    systemTheme: "Tema di Sistema",
+    followSystem: "Segui Tema di Sistema",
+    system: "Sistema",
+    dark: "Scuro",
+    light: "Chiaro"
   }
 };

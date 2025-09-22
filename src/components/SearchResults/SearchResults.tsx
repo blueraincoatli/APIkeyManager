@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { ApiKey } from "../../types/apiKey";
 import { CopyIcon, CheckIcon, EditIcon, CloseIcon } from "../Icon/Icon";
@@ -14,6 +15,7 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: SearchResultsProps) {
+  const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -81,8 +83,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'success',
-          title: '复制成功',
-          message: 'API Key 已复制到剪贴板，请注意风险。系统将在 30 秒后自动清空剪贴板。',
+          title: t('searchResults.copySuccess'),
+          message: t('searchResults.copySuccessMessage'),
           onConfirm: () => {
             if (onCopyConfirmed) onCopyConfirmed();
             setModal(null);
@@ -92,8 +94,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'error',
-          title: '复制失败',
-          message: '无法将 API Key 复制到剪贴板'
+          title: t('searchResults.copyFailed'),
+          message: t('searchResults.copyFailedMessage')
         });
       }
     } catch (error) {
@@ -145,8 +147,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'success',
-          title: '编辑成功',
-          message: `${key.name} 已更新`,
+          title: t('searchResults.editSuccess'),
+          message: t('searchResults.editSuccessMessage', { name: key.name }),
           onConfirm: () => {
             setModal(null);
             setEditingId(null);
@@ -160,8 +162,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'error',
-          title: '编辑失败',
-          message: result.error?.message || '无法更新API Key'
+          title: t('searchResults.editFailed'),
+          message: result.error?.message || t('searchResults.editFailedMessage')
         });
       }
     } catch (error) {
@@ -192,8 +194,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'success',
-          title: '删除成功',
-          message: 'API Key已从系统中移除',
+          title: t('searchResults.deleteSuccess'),
+          message: t('searchResults.deleteSuccessMessage'),
           onConfirm: () => {
             setModal(null);
             setDeletingId(null);
@@ -207,8 +209,8 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         setModal({
           isOpen: true,
           type: 'error',
-          title: '删除失败',
-          message: result.error?.message || '无法删除API Key'
+          title: t('searchResults.deleteFailed'),
+          message: result.error?.message || t('searchResults.deleteFailedMessage')
         });
       }
     } catch (error) {
@@ -234,7 +236,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
       <div className="search-results-list">
         {results.length === 0 ? (
           <div className="search-results-empty">
-            <div className="search-results-empty-text">暂无结果</div>
+            <div className="search-results-empty-text">{t('searchResults.noResults')}</div>
           </div>
         ) : (
           <>
@@ -252,46 +254,46 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
                         className="search-results-edit-input"
-                        placeholder="名称"
+                        placeholder={t('searchResults.namePlaceholder')}
                       />
                       <input
                         type="text"
                         value={editKeyValue}
                         onChange={(e) => setEditKeyValue(e.target.value)}
                         className="search-results-edit-input"
-                        placeholder="API Key"
+                        placeholder={t('searchResults.keyPlaceholder')}
                       />
                       <div className="search-results-edit-buttons">
                         <button 
                           onClick={() => saveEdit(key)}
                           className="search-results-edit-save-button"
                         >
-                          保存
+                          {t('searchResults.save')}
                         </button>
                         <button 
                           onClick={cancelEdit}
                           className="search-results-edit-cancel-button"
                         >
-                          取消
+                          {t('searchResults.cancel')}
                         </button>
                       </div>
                     </div>
                   ) : deletingId === key.id ? (
                     // 删除确认模式
                     <div className="search-results-delete-confirm">
-                      <div className="search-results-delete-text">确定要删除吗？</div>
+                      <div className="search-results-delete-text">{t('searchResults.confirmDelete')}</div>
                       <div className="search-results-delete-buttons">
                         <button 
                           onClick={executeDelete}
                           className="search-results-delete-confirm-button"
                         >
-                          确定
+                          {t('searchResults.confirm')}
                         </button>
                         <button 
                           onClick={cancelDelete}
                           className="search-results-delete-cancel-button"
                         >
-                          取消
+                          {t('searchResults.cancel')}
                         </button>
                       </div>
                     </div>
@@ -325,7 +327,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 startEditing(key);
                               }}
-                              aria-label="编辑"
+                              aria-label={t('searchResults.edit')}
                               className="search-results-action-button"
                             >
                               <EditIcon className="search-results-action-icon" />
@@ -335,7 +337,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 confirmDelete(key.id);
                               }}
-                              aria-label="删除"
+                              aria-label={t('searchResults.delete')}
                               className="search-results-action-button"
                             >
                               <CloseIcon className="search-results-action-icon" />
@@ -345,7 +347,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 handleCopy(key);
                               }}
-                              aria-label="复制"
+                              aria-label={t('searchResults.copy')}
                               className="search-results-action-button"
                             >
                               {copiedId === key.id ? <CheckIcon className="search-results-action-icon" /> : <CopyIcon className="search-results-action-icon" />}
@@ -390,7 +392,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                 }}
                 className={`search-results-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
               >
-                {modal.type === 'success' ? '确定' : '关闭'}
+                {modal.type === 'success' ? t('searchResults.confirm') : t('searchResults.close')}
               </button>
             </div>
           </div>

@@ -18,13 +18,13 @@ export default {
     warning: "Предупреждение"
   },
 
-  toolbar: {
+  floatingToolbar: {
     searchPlaceholder: "Поиск ключей API...",
     addApiKey: "Добавить ключ API",
     more: "Ещё",
     settings: "Настройки",
-    exitApp: "Выйти из приложения",
-    exitTooltip: "Выйти из приложения"
+    exit: "Выйти из приложения",
+    loadingPlatforms: "Загрузка платформ..."
   },
 
   settings: {
@@ -32,7 +32,7 @@ export default {
     theme: "Тема",
     language: "Язык",
     shortcuts: "Горячие клавиши",
-    about: "О приложении",
+    aboutTitle: "О приложении",
     
     themeOptions: {
       light: "Светлая",
@@ -40,9 +40,7 @@ export default {
       system: "Система"
     },
 
-    shortcuts: {
-      toggleToolbar: "Показать/Скрыть"
-    },
+    shortcutsToggle: "Показать/Скрыть",
 
     about: {
       title: "API Key Manager",
@@ -90,9 +88,31 @@ export default {
     }
   },
 
-  search: {
+  searchResults: {
     noResults: "Нет результатов",
-    empty: "Результаты не найдены"
+    namePlaceholder: "Имя",
+    keyPlaceholder: "Ключ API",
+    save: "Сохранить",
+    cancel: "Отмена",
+    confirmDelete: "Вы уверены, что хотите удалить?",
+    confirm: "Подтвердить",
+    edit: "Редактировать",
+    delete: "Удалить",
+    copy: "Копировать",
+    copySuccess: "Копирование успешно",
+    copySuccessMessage: "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
+    copyFailed: "Ошибка копирования",
+    copyFailedMessage: "Не удалось скопировать ключ API в буфер обмена",
+    editSuccess: "Редактирование успешно",
+    editSuccessMessage: "{{name}} успешно обновлено",
+    editFailed: "Ошибка редактирования",
+    editFailedMessage: "Не удалось обновить ключ API",
+    deleteSuccess: "Удаление успешно",
+    deleteSuccessMessage: "Ключ API удалён из системы",
+    deleteFailed: "Ошибка удаления",
+    deleteFailedMessage: "Не удалось удалить ключ API",
+    unknownError: "Произошла неизвестная ошибка",
+    close: "Закрыть"
   },
 
   radialMenu: {
@@ -144,5 +164,86 @@ export default {
     validation: "Произошла ошибка проверки",
     permission: "Доступ запрещён",
     notFound: "Ресурс не найден"
+  },
+
+  addApiKeyDialog: {
+    title: "Добавить ключ API",
+    batchImport: "Пакетный импорт",
+    batchImportInstructions: "Используйте шаблон Excel для пакетного импорта ключей API. Пожалуйста, сначала скачайте шаблон, заполните данные, а затем загрузите.",
+    downloadTemplate: "Скачать шаблон",
+    selectExcelFile: "Выбрать файл Excel",
+    supportedFormats: "Поддерживаемые форматы: файлы Excel (.xlsx)",
+    requiredColumns: "Обязательные столбцы: Имя | Ключ API | Платформа | Описание",
+    savedToDownloads: "Сохранено в папку загрузок",
+    openFile: "Открыть файл",
+    back: "Назад",
+    submitting: "Отправка…",
+    
+    form: {
+      nameLabel: "Имя",
+      namePlaceholder: "Пожалуйста, введите имя ключа API",
+      keyLabel: "Ключ API",
+      keyPlaceholder: "Пожалуйста, введите ключ API",
+      platformLabel: "Платформа",
+      platformPlaceholder: "напр.: OpenAI, Claude, Gemini...",
+      descriptionLabel: "Описание",
+      descriptionPlaceholder: "Необязательное описание..."
+    },
+
+    errors: {
+      nameRequired: "Имя обязательно",
+      keyRequired: "Ключ API обязателен",
+      keyInvalid: "Формат ключа API недействителен"
+    },
+
+    previewNotAvailable: "Предпросмотр недоступен",
+    previewNotAvailableMessage: "Пожалуйста, используйте функцию предпросмотра в настольной среде",
+    previewWindowError: "Ошибка окна предпросмотра",
+    error: "Ошибка",
+    
+    importSuccess: "Импорт успешен",
+    importSuccessMessage: "Успешно импортировано {{succeeded}} ключей API, {{failed}} с ошибками",
+    importFailed: "Ошибка импорта",
+    importFailedMessage: "Произошла ошибка во время импорта",
+    importProcessError: "Произошла ошибка во время обработки импорта",
+
+    addSuccess: "Добавление успешно",
+    addSuccessMessage: "{{name}} успешно добавлен",
+    addFailed: "Ошибка добавления",
+    addFailedMessage: "Произошла ошибка во время добавления",
+
+    fileFormatError: "Ошибка формата файла",
+    fileFormatErrorMessage: "Пожалуйста, выберите файл Excel (.xlsx или .xls)",
+    excelParseError: "Ошибка анализа Excel",
+    cannotParseExcelFile: "Не удалось проанализировать файл Excel",
+    parseProcessError: "Произошла ошибка во время анализа",
+
+    tauriPluginNotInitialized: "Плагин Tauri не инициализирован",
+    tauriEnvironmentRequired: "Пожалуйста, убедитесь, что вы работаете в настольной среде Tauri",
+    fileSelectionFailed: "Ошибка выбора файла",
+    cannotOpenFileDialog: "Не удалось открыть диалоговое окно файла",
+    downloadFailed: "Ошибка скачивания",
+    downloadProcessError: "Произошла ошибка во время скачивания шаблона",
+    openFileFailed: "Ошибка открытия файла",
+    cannotOpenDownloadedFile: "Не удалось открыть скачанный файл",
+    
+    templateDownloadSuccess: "Скачивание шаблона успешно",
+    downloadedToBrowser: "Файл скачан в место скачивания по умолчанию браузера",
+    templateSavedMessage: "Файл шаблона Excel \"{{fileName}}\" был сохранён в вашу папку загрузок",
+    
+    info: "Информация",
+    fileSavedTo: "Файл сохранён в: {{filePath}}"
+  },
+
+  themeToggle: {
+    lightTheme: "Светлая тема",
+    switchToLight: "Переключить на светлую тему",
+    darkTheme: "Тёмная тема",
+    switchToDark: "Переключить на тёмную тему",
+    systemTheme: "Системная тема",
+    followSystem: "Следовать системной теме",
+    system: "Система",
+    dark: "Тёмная",
+    light: "Светлая"
   }
 };

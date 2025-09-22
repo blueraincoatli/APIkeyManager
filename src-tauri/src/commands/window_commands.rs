@@ -98,6 +98,7 @@ pub async fn create_preview_window(
     app: tauri::AppHandle,
     preview_data: String,
     theme: Option<String>,
+    language: Option<String>,
 ) -> Result<(), String> {
     // 检查预览窗口是否已存在
     if let Some(existing_window) = app.get_webview_window("preview") {
@@ -139,6 +140,11 @@ pub async fn create_preview_window(
           }}
         }} catch (_) {{}}
 
+        // 注入语言设置
+        try {{
+          window.__PREVIEW_LANGUAGE__ = {language_json};
+        }} catch (_) {{}}
+
         // 提供一个统一的调用桥，兼容不同 Tauri 版本
         window.__TAURI_INVOKE__ = (cmd, args) => {{
           try {{
@@ -155,7 +161,8 @@ pub async fn create_preview_window(
         }};
         "#,
         data_json = serde_json::to_string(&preview_data).unwrap_or_else(|_| "[]".to_string()),
-        theme_json = serde_json::to_string(&theme.unwrap_or_else(|| "system".to_string())).unwrap_or_else(|_| "\"system\"".to_string())
+        theme_json = serde_json::to_string(&theme.unwrap_or_else(|| "system".to_string())).unwrap_or_else(|_| "\"system\"".to_string()),
+        language_json = serde_json::to_string(&language.unwrap_or_else(|| "zh-CN".to_string())).unwrap_or_else(|_| "\"zh-CN\"".to_string())
     ))
     .build()
     .map_err(|e| e.to_string())?;
