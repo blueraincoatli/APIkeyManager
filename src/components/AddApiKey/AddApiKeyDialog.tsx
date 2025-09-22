@@ -113,12 +113,15 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       const dataJson = JSON.stringify(data);
       console.log('Invoking create_preview_window with data:', dataJson);
 
+      // 读取当前主题（与主窗口保持一致）
+      const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+
       // 使用更安全的invoke调用
       if (typeof invoke === 'function') {
-        await invoke('create_preview_window', { previewData: dataJson });
+        await invoke('create_preview_window', { previewData: dataJson, theme: isDark ? 'dark' : 'light' });
         console.log('create_preview_window invoked successfully');
       } else if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
-        await window.__TAURI__.core.invoke('create_preview_window', { previewData: dataJson });
+        await window.__TAURI__.core.invoke('create_preview_window', { previewData: dataJson, theme: isDark ? 'dark' : 'light' });
         console.log('create_preview_window invoked successfully via window.__TAURI__.core');
       } else {
         throw new Error('Tauri invoke function not available');

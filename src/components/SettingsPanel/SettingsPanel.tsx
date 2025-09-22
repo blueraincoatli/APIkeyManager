@@ -1,5 +1,7 @@
 import { CheckIcon, SunIcon, MoonIcon, ComputerIcon } from '../Icon/Icon';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLocale } from '../../contexts/LocaleContext';
+import { useTranslation } from 'react-i18next';
 import './SettingsPanel.css';
 
 interface ThemeOption {
@@ -45,9 +47,15 @@ const shortcutOptions: ShortcutOption[] = [
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const { theme: currentTheme, setTheme } = useTheme();
+  const { currentLanguage, setLanguage, languageOptions } = useLocale();
+  const { t } = useTranslation();
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     setTheme(theme);
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang as any);
   };
 
   // 阻止事件冒泡，防止点击面板内部时关闭面板
@@ -67,12 +75,12 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         onClick={handlePanelClick}
       >
         <div className="settings-panel-header">
-          <h2 className="settings-panel-title">设置</h2>
+          <h2 className="settings-panel-title">{t('settings.title')}</h2>
           <button
             type="button"
             onClick={onClose}
             className="settings-panel-close-button"
-            aria-label="关闭设置"
+            aria-label={t('common.close')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -83,7 +91,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         <div className="settings-panel-content">
           {/* 主题选择 */}
           <div className="settings-panel-section">
-            <h3 className="settings-panel-section-title">颜色主题</h3>
+            <h3 className="settings-panel-section-title">{t('settings.theme')}</h3>
             <div className="settings-panel-theme-options">
               {themeOptions.map((option) => (
                 <button
@@ -98,7 +106,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                     {option.icon}
                   </div>
                   <div className="settings-panel-theme-option-label">
-                    {option.label}
+                    {t(`settings.themeOptions.${option.id}`)}
                   </div>
                   {currentTheme === option.id && (
                     <div className="settings-panel-theme-option-selected">
@@ -110,14 +118,40 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             </div>
           </div>
 
+          {/* 语言选择 */}
+          <div className="settings-panel-section">
+            <h3 className="settings-panel-section-title">{t('settings.language')}</h3>
+            <div className="settings-panel-language-options">
+              {languageOptions.map((option) => (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => handleLanguageChange(option.code)}
+                  className={`settings-panel-language-option ${
+                    currentLanguage === option.code ? 'selected' : ''
+                  }`}
+                >
+                  <div className="settings-panel-language-option-label">
+                    {option.nativeName}
+                  </div>
+                  {currentLanguage === option.code && (
+                    <div className="settings-panel-language-option-selected">
+                      <CheckIcon className="settings-panel-selected-icon" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 快捷键 */}
           <div className="settings-panel-section">
-            <h3 className="settings-panel-section-title">快捷键</h3>
+            <h3 className="settings-panel-section-title">{t('settings.shortcuts')}</h3>
             <div className="settings-panel-shortcut-options">
               {shortcutOptions.map((shortcut, index) => (
                 <div key={index} className="settings-panel-shortcut-option">
                   <div className="settings-panel-shortcut-label">
-                    {shortcut.label}
+                    {t(`settings.shortcuts.${shortcut.label}`)}
                   </div>
                   <div className="settings-panel-shortcut-key">
                     {shortcut.key}
@@ -134,11 +168,10 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <h3 className="settings-panel-about-title">API Key Manager</h3>
-            <div className="settings-panel-about-version">v1.0.0</div>
-            <p className="settings-panel-about-description">
-              一个现代化的API密钥管理工具，帮助开发者安全地存储和管理API密钥。
-            </p>
+            <div className="settings-panel-about-info">
+              <h3 className="settings-panel-about-title">{t('settings.about.title')}</h3>
+              <div className="settings-panel-about-version">{t('settings.about.version')}</div>
+            </div>
           </div>
         </div>
       </div>

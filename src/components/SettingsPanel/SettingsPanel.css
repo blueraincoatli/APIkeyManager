@@ -249,97 +249,73 @@
   color: rgba(96, 165, 250, 1);
 }
 
-/* Background options */
-.settings-panel-background-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-s);
+/* Language options */
+.settings-panel-language-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3列布局 */
+  gap: var(--space-xs);
 }
 
-.settings-panel-background-option {
+.settings-panel-language-option {
   display: flex;
   flex-direction: column;
-  padding: var(--space-m);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs);
   border-radius: var(--radius-2xs);
   border: var(--border-width-s) solid var(--glass-border-light);
   background-color: transparent;
   transition: all var(--transition-fast);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
+  min-height: 48px;
+  position: relative;
 }
 
-.settings-panel-background-option:hover {
+.settings-panel-language-option:hover {
   background-color: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.dark .settings-panel-background-option {
+.settings-panel-language-option.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.dark .settings-panel-language-option {
   border: var(--border-width-s) solid var(--glass-border-dark);
 }
 
-.dark .settings-panel-background-option:hover {
+.dark .settings-panel-language-option:hover {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Background option header */
-.settings-panel-background-option-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-m);
+.dark .settings-panel-language-option.selected {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.6);
 }
 
-/* Background option icon */
-.settings-panel-background-option-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-2xs);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
-  flex-shrink: 0;
-}
-
-.dark .settings-panel-background-option-icon {
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(196, 181, 253, 0.2));
-}
-
-.settings-panel-background-icon {
-  width: 20px;
-  height: 20px;
-  color: rgba(59, 130, 246, 1);
-}
-
-.dark .settings-panel-background-icon {
-  color: rgba(96, 165, 250, 1);
-}
-
-/* Background option info */
-.settings-panel-background-option-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.settings-panel-background-option-label {
-  font-size: var(--font-size-s);
+.settings-panel-language-option-label {
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: rgba(31, 41, 55, 1);
-  margin-bottom: var(--space-2xs);
+  line-height: 1.2;
 }
 
-.dark .settings-panel-background-option-label {
+.dark .settings-panel-language-option-label {
   color: rgba(255, 255, 255, 1);
 }
 
-.settings-panel-background-option-description {
-  font-size: var(--font-size-xs);
-  color: rgba(107, 114, 128, 1);
-  line-height: 1.4;
-}
-
-.dark .settings-panel-background-option-description {
-  color: rgba(156, 163, 175, 1);
+.settings-panel-language-option-selected {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Shortcut options */
@@ -390,10 +366,13 @@
 
 /* About section */
 .settings-panel-about {
-  text-align: center;
-  padding: var(--space-m) var(--space-s); /* 减小内边距 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-s) var(--space-m); /* 大幅减小内边距 */
   border-top: var(--border-width-s) solid var(--glass-border-light);
-  margin-top: var(--space-m); /* 减小顶部间距 */
+  margin-top: var(--space-s); /* 减小顶部间距 */
+  gap: var(--space-xs); /* Logo和文字之间的间距 */
 }
 
 .dark .settings-panel-about {
@@ -401,16 +380,21 @@
 }
 
 .settings-panel-about-logo {
-  width: 32px; /* 减小图标大小 */
-  height: 32px;
-  margin: 0 auto var(--space-xs); /* 减小间距 */
+  width: 24px; /* 大幅减小图标大小 */
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.settings-panel-about-info {
+  text-align: left;
 }
 
 .settings-panel-about-title {
-  font-size: var(--font-size-m); /* 减小字体大小 */
+  font-size: var(--font-size-s); /* 减小字体大小 */
   font-weight: var(--font-weight-semibold);
   color: rgba(31, 41, 55, 1);
-  margin: 0 0 var(--space-xs); /* 减小间距 */
+  margin: 0 0 var(--space-3xs); /* 大幅减小间距 */
+  line-height: 1.2;
 }
 
 .dark .settings-panel-about-title {
@@ -420,17 +404,11 @@
 .settings-panel-about-version {
   font-size: var(--font-size-xs);
   color: rgba(107, 114, 128, 1);
-  margin: 0 0 var(--space-xs); /* 减小间距 */
+  margin: 0;
+  line-height: 1.2;
 }
 
 .dark .settings-panel-about-version {
   color: rgba(156, 163, 175, 1);
-}
-
-.settings-panel-about-description {
-  font-size: var(--font-size-xs); /* 减小字体大小 */
-  color: rgba(107, 114, 128, 1);
-  line-height: 1.4; /* 减小行高 */
-  margin: 0;
 }
 

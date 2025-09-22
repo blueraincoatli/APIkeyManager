@@ -4,8 +4,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { FloatingToolbar } from "./components/FloatingToolbar/FloatingToolbar";
 import ToastContainer from "./components/Toast/ToastContainer";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LocaleProvider } from "./contexts/LocaleContext";
 import "./App.css";
 import "./styles/theme.css";
+import "./i18n";
 
 // 检查是否在Tauri环境中
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
@@ -111,29 +113,31 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div
-        className="app-container floating-toolbar-window"
-        id="app-bg"
-      >
-        {/* 渲染浮动工具条 */}
-        {showFloatingToolbar && (
-          <FloatingToolbar onClose={async () => {
-            setShowFloatingToolbar(false);
-            // 仅在Tauri环境中调用
-            if (isTauri) {
-              try {
-                const window = getCurrentWebviewWindow();
-                await window.hide();
-              } catch (error) {
-                console.warn("Failed to hide window:", error);
+      <LocaleProvider>
+        <div
+          className="app-container floating-toolbar-window"
+          id="app-bg"
+        >
+          {/* 渲染浮动工具条 */}
+          {showFloatingToolbar && (
+            <FloatingToolbar onClose={async () => {
+              setShowFloatingToolbar(false);
+              // 仅在Tauri环境中调用
+              if (isTauri) {
+                try {
+                  const window = getCurrentWebviewWindow();
+                  await window.hide();
+                } catch (error) {
+                  console.warn("Failed to hide window:", error);
+                }
               }
-            }
-          }} />
-        )}
+            }} />
+          )}
 
-        {/* Toast 通知容器 */}
-        <ToastContainer />
-      </div>
+          {/* Toast 通知容器 */}
+          <ToastContainer />
+        </div>
+      </LocaleProvider>
     </ErrorBoundary>
   );
 }

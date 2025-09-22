@@ -97,6 +97,7 @@ pub async fn set_click_through(
 pub async fn create_preview_window(
     app: tauri::AppHandle,
     preview_data: String,
+    theme: Option<String>,
 ) -> Result<(), String> {
     // 检查预览窗口是否已存在
     if let Some(existing_window) = app.get_webview_window("preview") {
@@ -114,10 +115,10 @@ pub async fn create_preview_window(
     .inner_size(800.0, 600.0)
     .min_inner_size(600.0, 400.0)
     .center()
-    .decorations(true)
+    .decorations(false)
     .resizable(true)
     .visible(false) // 先隐藏，等数据传递完成后再显示
-    // 将数据与调用桥自动注入到预览窗口，避免依赖前端 Tauri API 的可用性
+    // 将数据、主题与调用桥自动注入到预览窗口，避免依赖前端 Tauri API 的可用性
     .initialization_script(&format!(
         r#"
         // 预置数据供页面直接渲染
@@ -127,6 +128,16 @@ pub async fn create_preview_window(
           console.error('Failed to parse injected preview data:', e);
           window.__PREVIEW_DATA__ = [];
         }}
+
+        // 应用主题（由主窗口传入，fallback 到系统）
+        try {{
+          window.__THEME__ = {theme_json};
+          if (window.__THEME__ === 'dark') {{
+            document.documentElement.classList.add('dark');
+          }} else if (window.__THEME__ === 'light') {{
+            document.documentElement.classList.remove('dark');
+          }}
+        }} catch (_) {{}}
 
         // 提供一个统一的调用桥，兼容不同 Tauri 版本
         window.__TAURI_INVOKE__ = (cmd, args) => {{
@@ -143,7 +154,8 @@ pub async fn create_preview_window(
           }}
         }};
         "#,
-        data_json = serde_json::to_string(&preview_data).unwrap_or_else(|_| "[]".to_string())
+        data_json = serde_json::to_string(&preview_data).unwrap_or_else(|_| "[]".to_string()),
+        theme_json = serde_json::to_string(&theme.unwrap_or_else(|| "system".to_string())).unwrap_or_else(|_| "\"system\"".to_string())
     ))
     .build()
     .map_err(|e| e.to_string())?;
