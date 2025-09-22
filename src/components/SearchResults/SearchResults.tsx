@@ -9,12 +9,11 @@ import { invoke } from "@tauri-apps/api/core";
 interface SearchResultsProps {
   results: ApiKey[];
   onCopy: (key: ApiKey) => void;
-  providerLabel?: string;
   onRefresh?: () => void; // 添加刷新回调
   onCopyConfirmed?: () => void; // 复制确认后收起父面板
 }
 
-export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCopyConfirmed }: SearchResultsProps) {
+export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: SearchResultsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -232,15 +231,6 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
       ref={resultsRef}
       className="search-results-container"
     >
-      {providerLabel && (
-        <div className="search-results-provider-label-container">
-          <div className="search-results-provider-label-wrapper">
-            <span className="search-results-provider-label">
-              {providerLabel}
-            </span>
-          </div>
-        </div>
-      )}
       <div className="search-results-list">
         {results.length === 0 ? (
           <div className="search-results-empty">
@@ -321,37 +311,46 @@ export function SearchResults({ results, onCopy, providerLabel, onRefresh, onCop
                           </div>
                           <div className="search-results-item-key">{formatApiKey(key.keyValue)}</div>
                         </div>
-                        <div className="search-results-item-actions">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEditing(key);
-                            }}
-                            aria-label="编辑"
-                            className="search-results-action-button"
-                          >
-                            <EditIcon className="search-results-action-icon" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              confirmDelete(key.id);
-                            }}
-                            aria-label="删除"
-                            className="search-results-action-button"
-                          >
-                            <CloseIcon className="search-results-action-icon" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCopy(key);
-                            }}
-                            aria-label="复制"
-                            className="search-results-action-button"
-                          >
-                            {copiedId === key.id ? <CheckIcon className="search-results-action-icon" /> : <CopyIcon className="search-results-action-icon" />}
-                          </button>
+                        <div className="search-results-item-right-section">
+                          {key.platform && (
+                            <div className="search-results-item-provider">
+                              <span className="search-results-item-provider-label">
+                                {key.platform}
+                              </span>
+                            </div>
+                          )}
+                          <div className="search-results-item-actions">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditing(key);
+                              }}
+                              aria-label="编辑"
+                              className="search-results-action-button"
+                            >
+                              <EditIcon className="search-results-action-icon" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                confirmDelete(key.id);
+                              }}
+                              aria-label="删除"
+                              className="search-results-action-button"
+                            >
+                              <CloseIcon className="search-results-action-icon" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopy(key);
+                              }}
+                              aria-label="复制"
+                              className="search-results-action-button"
+                            >
+                              {copiedId === key.id ? <CheckIcon className="search-results-action-icon" /> : <CopyIcon className="search-results-action-icon" />}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </>
