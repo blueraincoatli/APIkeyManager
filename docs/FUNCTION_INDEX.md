@@ -1,4 +1,4 @@
-# 函数索引（更新于 2025-09-17）
+# 函数索引（更新于 2025-09-22）
 
 本文档列出项目中主要的服务、组件与工具函数，便于查找与复用。
 
@@ -12,6 +12,11 @@
 - listApiKeys(): Promise<ServiceResult<ApiKey[]>>
 - searchKeys(keyword: string): Promise<ServiceResult<ApiKey[]>>
 - copyToClipboard(id: string): Promise<ServiceResult<boolean>>
+
+### batchImportService（src/services/apiKeyService.ts）
+- importApiKeysBatch(keys: BatchApiKey[]): Promise<ServiceResult<BatchImportResult>>
+  - 批量导入API Key，支持Excel文件和多语言表头匹配
+  - 返回成功/失败统计和错误信息
 
 ### groupService（同文件导出）
 - listGroups(): Promise<ServiceResult<Group[]>>
@@ -73,9 +78,21 @@
 ### AddApiKeyDialog（src/components/AddApiKey/AddApiKeyDialog.tsx）
 - AddApiKeyDialog({ open, onClose, onAdded })
 - 表单项：名称、Key、提供商、描述；提交调用 apiKeyService.addApiKey。
+- 支持批量导入Excel文件，创建独立预览窗口
+- 多语言界面支持，动态获取当前语言设置
 
 ### Icon 库（src/components/Icon/Icon.tsx）
 - SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon, CopyIcon, CheckIcon
+
+### 独立窗口组件
+- preview.html（public/preview.html）
+  - 数据预览独立窗口，支持多语言界面
+  - 通过 initialization_script 注入数据、主题和语言设置
+  - 包含完整的表格展示、操作按钮和事件处理
+- preview-i18n.js（public/preview-i18n.js）
+  - 预览窗口多语言支持系统
+  - 支持9种语言的完整翻译
+  - 动态语言切换和文本更新功能
 
 ### VirtualList（src/components/VirtualScroll/VirtualList.tsx）
 - VirtualList<T>({ items, renderItem, itemHeight, containerHeight, overscan?, className?, onScroll? })
@@ -115,6 +132,17 @@
 - 在生产环境中应用启动时自动隐藏主窗口
 - 通过 getCurrentWebviewWindow().hide() 隐藏窗口
 - 悬浮工具条通过状态控制显示/隐藏
+
+### 窗口命令（src-tauri/src/commands/window_commands.rs）
+- create_preview_window(preview_data: String, theme: Option<String>, language: Option<String>): Result<(), String>
+  - 创建批量导入预览窗口，支持多语言标题
+  - 注入数据、主题和语言设置到预览窗口
+- close_preview_window(): Result<(), String>
+  - 关闭预览窗口
+- confirm_import_preview(data: String): Result<(), String>
+  - 确认导入预览数据，广播事件给主窗口
+- get_preview_window_title(language: &Option<String>): String
+  - 获取预览窗口的多语言标题
 
 ## 五、样式系统
 

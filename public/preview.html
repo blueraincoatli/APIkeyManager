@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据预览</title>
+    <title data-i18n="title">数据预览</title>
     <script src="preview-i18n.js"></script>
     <script type="module">
         // 确保Tauri API可用
@@ -327,27 +327,27 @@
     </style>
 </head>
 <body>
-    <div class="preview-page-title">数据预览</div>
+    <div class="preview-page-title" data-i18n="title">数据预览</div>
 
     <div class="preview-content">
-        <div id="loading" class="loading">
+        <div id="loading" class="loading" data-i18n="loading">
             正在加载数据...
         </div>
 
         <div id="empty-state" class="empty-state hidden">
             <div class="empty-state-icon">📄</div>
-            <div>暂无数据</div>
+            <div data-i18n="emptyState">暂无数据</div>
         </div>
 
         <div id="table-container" class="preview-table-container hidden">
             <table class="preview-table">
                 <thead class="preview-table-header">
                     <tr>
-                        <th class="preview-table-header-cell">名称</th>
-                        <th class="preview-table-header-cell">API Key</th>
-                        <th class="preview-table-header-cell">提供商</th>
-                        <th class="preview-table-header-cell">描述</th>
-                        <th class="preview-table-header-cell">操作</th>
+                        <th class="preview-table-header-cell" data-i18n="tableHeaders.name">名称</th>
+                        <th class="preview-table-header-cell" data-i18n="tableHeaders.apiKey">API Key</th>
+                        <th class="preview-table-header-cell" data-i18n="tableHeaders.platform">提供商</th>
+                        <th class="preview-table-header-cell" data-i18n="tableHeaders.description">描述</th>
+                        <th class="preview-table-header-cell" data-i18n="tableHeaders.action">操作</th>
                     </tr>
                 </thead>
                 <tbody id="table-body" class="preview-table-body">
@@ -358,10 +358,10 @@
 
     <div class="preview-footer">
         <div class="preview-button-group">
-            <button id="cancel-btn" class="preview-button" type="button">
+            <button id="cancel-btn" class="preview-button" type="button" data-i18n="buttons.back">
                 返回
             </button>
-            <button id="confirm-btn" class="preview-button primary" type="button">
+            <button id="confirm-btn" class="preview-button primary" type="button" data-i18n="buttons.confirmImport">
                 确认导入
             </button>
         </div>
@@ -373,6 +373,10 @@
 
         // 初始化预览窗口（使用后端注入的数据，无需依赖Tauri JS API）
         function initializePreviewWindow() {
+            console.log('Initializing preview window...');
+            console.log('Language setting:', window.__PREVIEW_LANGUAGE__);
+            console.log('PreviewI18n instance:', window.previewI18n);
+            
             try {
                 if (Array.isArray(window.__PREVIEW_DATA__)) {
                     previewData = window.__PREVIEW_DATA__;
@@ -383,7 +387,11 @@
                     previewData = [];
                 }
                 console.log('Preview data (injected):', previewData);
-                checkAndMarkDuplicates();
+                
+                // 等待 i18n 初始化完成后再处理数据
+                setTimeout(() => {
+                    checkAndMarkDuplicates();
+                }, 100);
             } catch (e) {
                 console.error('Failed to initialize from injected data:', e);
                 showEmptyState();
@@ -433,7 +441,30 @@
         }
 
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initializePreviewWindow);
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOMContentLoaded event fired');
+            initializePreviewWindow();
+            
+            // 添加调试函数，可以在控制台中手动调用
+            window.forceUpdateLanguage = () => {
+                console.log('Force updating language...');
+                if (window.previewI18n) {
+                    console.log('Current language:', window.previewI18n.getCurrentLanguage());
+                    console.log('Available languages:', Object.keys(window.previewI18n.translations));
+                    
+                    // 使用统一的更新函数
+                    if (window.updateAllText) {
+                        window.updateAllText();
+                    }
+                }
+            };
+            
+            // 延迟执行强制更新，确保所有组件都已初始化
+            setTimeout(() => {
+                console.log('Delayed language update...');
+                window.forceUpdateLanguage();
+            }, 500);
+        });
 
         function renderTable() {
             const loading = document.getElementById('loading');
@@ -463,10 +494,10 @@
 
                 row.innerHTML = `
                     <td class="preview-table-cell">${escapeHtml(item.name || '')}</td>
-                    <td class="preview-table-cell api-key" title="${isDup ? '与已有数据或本批内重复' : ''}">${escapeHtml(item.keyValue || '')}</td>
+                    <td class="preview-table-cell api-key" data-duplicate="${isDup ? 'true' : 'false'}" title="${isDup ? window.previewI18n.t('tooltips.duplicate') : ''}">${escapeHtml(item.keyValue || '')}</td>
                     <td class="preview-table-cell">${escapeHtml(item.platform || '')}</td>
                     <td class="preview-table-cell">${escapeHtml(item.description || '')}</td>
-                    <td class="preview-table-cell"><button class="delete-btn" data-index="${index}" title="删除此行">×</button></td>
+                    <td class="preview-table-cell"><button class="delete-btn" data-index="${index}" title="${window.previewI18n.t('tooltips.delete')}">×</button></td>
                 `;
 
                 const delBtn = row.querySelector('.delete-btn');

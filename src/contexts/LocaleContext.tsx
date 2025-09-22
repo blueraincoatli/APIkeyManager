@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import i18n, { LanguageCode } from '../i18n';
 import { languageOptions } from '../i18n';
+import { emit } from '@tauri-apps/api/event';
 
 interface LocaleContextType {
   currentLanguage: LanguageCode;
@@ -41,6 +42,15 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
     setCurrentLanguage(lang);
     i18n.changeLanguage(lang);
     localStorage.setItem('app-language', lang);
+    // [1m[22m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m[0m
+    try {
+      // 通过 Tauri 事件总线通知其他窗口（例如独立预览窗口）
+      // 在非 Tauri 环境下（开发网页预览）此调用会被忽略
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      emit('language-change', lang);
+    } catch (e) {
+      // ignore if tauri event api is not available
+    }
   };
 
   const value: LocaleContextType = {

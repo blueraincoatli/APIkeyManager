@@ -118,23 +118,17 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
       // 读取当前主题（与主窗口保持一致）
       const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
 
-      // 获取当前语言设置
+      // 获取当前语言设置（优先使用主应用保存的 app-language）
       const getCurrentLanguage = () => {
         try {
-          // 尝试从i18next获取当前语言
-          if (window.i18next && window.i18next.language) {
-            return window.i18next.language;
-          }
-          // 尝试从localStorage获取语言设置
-          const savedLang = localStorage.getItem('i18nextLng');
-          if (savedLang) {
-            return savedLang;
-          }
-          // 返回默认语言
-          return 'zh-CN';
+          const savedLang = localStorage.getItem('app-language');
+          if (savedLang) return savedLang;
+          if (window.i18next && window.i18next.language) return window.i18next.language;
+          const nav = navigator.language || 'en-US';
+          return nav.startsWith('zh') ? 'zh-CN' : 'en-US';
         } catch (error) {
           console.warn('Failed to get current language:', error);
-          return 'zh-CN';
+          return 'en-US';
         }
       };
 
@@ -497,7 +491,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         document.body.removeChild(a);
 
         // 在非Tauri环境下，显示下载到浏览器的通知
-        toast.success(t('addApiKeyDialog.templateDownloadSuccess'), t('addApiKeyDialog.downloadedToBrowser'));
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: t('addApiKeyDialog.templateDownloadSuccess'),
+          message: t('addApiKeyDialog.downloadedToBrowser')
+        });
         return;
       }
 
@@ -528,7 +527,12 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
         const savedFileName = pathParts[pathParts.length - 1];
         
         // 显示更友好的通知，包含文件打开功能
-        toast.success('📁 ' + t('addApiKeyDialog.templateDownloadSuccess'), t('addApiKeyDialog.templateSavedMessage', { fileName: savedFileName }));
+        setModal({
+          isOpen: true,
+          type: 'success',
+          title: '📁 ' + t('addApiKeyDialog.templateDownloadSuccess'),
+          message: t('addApiKeyDialog.templateSavedMessage', { fileName: savedFileName })
+        });
       }
     } catch (error: any) {
       console.error('下载模板失败:', error);
@@ -555,8 +559,13 @@ export function AddApiKeyDialog({ open, onClose, onAdded }: AddApiKeyDialogProps
   // 打开下载的文件
   const handleOpenFile = async (filePath: string) => {
     try {
-      // 简单地通知用户文件已保存，不实际打开文件
-      toast.info(t('addApiKeyDialog.info'), t('addApiKeyDialog.fileSavedTo', { filePath }));
+      // 通知用户文件已保存，不实际打开文件
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: t('addApiKeyDialog.info'),
+        message: t('addApiKeyDialog.fileSavedTo', { filePath })
+      });
     } catch (error) {
       console.error('打开文件失败:', error);
       setModal({

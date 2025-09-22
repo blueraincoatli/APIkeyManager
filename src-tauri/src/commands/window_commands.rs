@@ -77,6 +77,21 @@ pub async fn set_window_size(
     Ok(())
 }
 
+// 获取预览窗口标题的多语言翻译
+fn get_preview_window_title(language: &Option<String>) -> String {
+    match language.as_deref() {
+        Some("en-US") => "Data Preview".to_string(),
+        Some("zh-TW") => "資料預覽".to_string(),
+        Some("pt-BR") => "Visualização de Dados".to_string(),
+        Some("es-ES") => "Vista Previa de Datos".to_string(),
+        Some("fr-FR") => "Aperçu des Données".to_string(),
+        Some("it-IT") => "Anteprima Dati".to_string(),
+        Some("ja-JP") => "データプレビュー".to_string(),
+        Some("ru-RU") => "Предпросмотр Данных".to_string(),
+        _ => "数据预览".to_string(), // 默认中文
+    }
+}
+
 // 设置窗口点击穿透模式 - 使用Tauri内置API
 #[tauri::command]
 pub async fn set_click_through(
@@ -100,6 +115,7 @@ pub async fn create_preview_window(
     theme: Option<String>,
     language: Option<String>,
 ) -> Result<(), String> {
+    println!("Creating preview window with language: {:?}", language);
     // 检查预览窗口是否已存在
     if let Some(existing_window) = app.get_webview_window("preview") {
         // 如果存在，先关闭它
@@ -107,12 +123,15 @@ pub async fn create_preview_window(
     }
 
     // 创建新的预览窗口
+    let window_title = get_preview_window_title(&language);
+    println!("Creating preview window with title: {}", window_title);
+    
     let window = WebviewWindowBuilder::new(
         &app,
         "preview",
         WebviewUrl::App("preview.html".into())
     )
-    .title("数据预览")
+    .title(&window_title)
     .inner_size(800.0, 600.0)
     .min_inner_size(600.0, 400.0)
     .center()
@@ -143,7 +162,10 @@ pub async fn create_preview_window(
         // 注入语言设置
         try {{
           window.__PREVIEW_LANGUAGE__ = {language_json};
-        }} catch (_) {{}}
+          console.log('Language injected to preview window:', {language_json});
+        }} catch (e) {{
+          console.error('Failed to inject language:', e);
+        }}
 
         // 提供一个统一的调用桥，兼容不同 Tauri 版本
         window.__TAURI_INVOKE__ = (cmd, args) => {{

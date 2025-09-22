@@ -6,6 +6,85 @@ const isTauri = typeof window !== 'undefined' && (
   '__TAURI_INTERNALS__' in window
 );
 
+// 多语言表头映射
+const COLUMN_HEADERS = {
+  'zh-CN': {
+    name: '名称',
+    apiKey: 'API Key',
+    platform: '提供商',
+    description: '描述'
+  },
+  'en-US': {
+    name: 'Name',
+    apiKey: 'API Key',
+    platform: 'Platform',
+    description: 'Description'
+  },
+  'zh-TW': {
+    name: '名稱',
+    apiKey: 'API 金鑰',
+    platform: '平台',
+    description: '描述'
+  },
+  'pt-BR': {
+    name: 'Nome',
+    apiKey: 'Chave API',
+    platform: 'Plataforma',
+    description: 'Descrição'
+  },
+  'es-ES': {
+    name: 'Nombre',
+    apiKey: 'Clave API',
+    platform: 'Plataforma',
+    description: 'Descripción'
+  },
+  'fr-FR': {
+    name: 'Nom',
+    apiKey: 'Clé API',
+    platform: 'Plateforme',
+    description: 'Description'
+  },
+  'it-IT': {
+    name: 'Nome',
+    apiKey: 'Chiave API',
+    platform: 'Piattaforma',
+    description: 'Descrizione'
+  },
+  'ja-JP': {
+    name: '名前',
+    apiKey: 'APIキー',
+    platform: 'プラットフォーム',
+    description: '説明'
+  },
+  'ru-RU': {
+    name: 'Имя',
+    apiKey: 'Ключ API',
+    platform: 'Платформа',
+    description: 'Описание'
+  }
+};
+
+// 获取当前语言的表头配置
+function getCurrentLanguageHeaders() {
+  try {
+    // 尝试从i18next获取当前语言
+    if (window.i18next && window.i18next.language) {
+      const lang = window.i18next.language;
+      return COLUMN_HEADERS[lang] || COLUMN_HEADERS['zh-CN'];
+    }
+    // 尝试从localStorage获取语言设置
+    const savedLang = localStorage.getItem('i18nextLng');
+    if (savedLang) {
+      return COLUMN_HEADERS[savedLang] || COLUMN_HEADERS['zh-CN'];
+    }
+    // 返回默认语言
+    return COLUMN_HEADERS['zh-CN'];
+  } catch (error) {
+    console.warn('Failed to get current language for Excel headers:', error);
+    return COLUMN_HEADERS['zh-CN'];
+  }
+}
+
 // Tauri文件系统API
 let tauriFs: any = null;
 
@@ -103,22 +182,37 @@ export async function parseExcelFile(filePath: string | File): Promise<ExcelPars
     const headers = jsonData[0] as string[];
     console.log('Headers found:', headers);
     
-    // 验证必需的列是否存在
-    const requiredColumns = ['名称', 'API Key', '提供商', '描述'];
+    // 获取当前语言的表头配置
+    const currentHeaders = getCurrentLanguageHeaders();
+    console.log('Using headers for current language:', currentHeaders);
+    
+    // 验证必需的列是否存在（支持多语言表头）
+    const requiredColumns = [
+      { key: 'name', headers: [currentHeaders.name, '名称', 'Name'] },
+      { key: 'apiKey', headers: [currentHeaders.apiKey, 'API Key'] },
+      { key: 'platform', headers: [currentHeaders.platform, '提供商', 'Platform'] },
+      { key: 'description', headers: [currentHeaders.description, '描述', 'Description'] }
+    ];
     const columnIndexes: { [key: string]: number } = {};
     
     for (const col of requiredColumns) {
-      const index = headers.findIndex(header =>
-        header && header.toString().trim() === col
-      );
+      let index = -1;
+      // 尝试匹配当前语言的首选表头，然后是备选表头
+      for (const header of col.headers) {
+        index = headers.findIndex(h => 
+          h && h.toString().trim() === header
+        );
+        if (index !== -1) break;
+      }
+      
       if (index === -1) {
-        console.error(`Missing column: ${col}. Available headers:`, headers);
+        console.error(`Missing column: ${col.key}. Expected headers: ${col.headers.join(', ')}. Available headers:`, headers);
         return {
           success: false,
-          error: `缺少必需的列: ${col}。可用列: ${headers.join(', ')}`
+          error: `缺少必需的列: ${col.headers[0]}。可用列: ${headers.join(', ')}`
         };
       }
-      columnIndexes[col] = index;
+      columnIndexes[col.key] = index;
     }
 
     // 解析数据行
@@ -132,10 +226,10 @@ export async function parseExcelFile(filePath: string | File): Promise<ExcelPars
         continue;
       }
 
-      const name = row[columnIndexes['名称']]?.toString().trim();
-      const keyValue = row[columnIndexes['API Key']]?.toString().trim();
-      const platform = row[columnIndexes['提供商']]?.toString().trim();
-      const description = row[columnIndexes['描述']]?.toString().trim();
+      const name = row[columnIndexes['name']]?.toString().trim();
+      const keyValue = row[columnIndexes['apiKey']]?.toString().trim();
+      const platform = row[columnIndexes['platform']]?.toString().trim();
+      const description = row[columnIndexes['description']]?.toString().trim();
 
       // 验证必需字段
       if (!name || !keyValue) {
@@ -180,9 +274,12 @@ export function generateExcelTemplate(): Uint8Array {
   // 创建工作簿
   const workbook = XLSX.utils.book_new();
   
-  // 创建示例数据
+  // 获取当前语言的表头
+  const currentHeaders = getCurrentLanguageHeaders();
+  
+  // 创建示例数据（支持多语言）
   const templateData = [
-    ['名称', 'API Key', '提供商', '描述'],
+    [currentHeaders.name, currentHeaders.apiKey, currentHeaders.platform, currentHeaders.description],
     ['OpenAI GPT-4', 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'OpenAI', '用于GPT-4模型访问'],
     ['Claude API', 'claude-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'Anthropic', '用于Claude模型访问'],
     ['Google Gemini', 'AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'Google', '用于Gemini模型访问']
