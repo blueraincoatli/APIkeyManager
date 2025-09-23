@@ -1,13 +1,13 @@
 // 格式化日期时间
 export const formatDateTime = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
+  return new Date(timestamp).toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
   });
 };
 
@@ -18,21 +18,23 @@ export const cn = (
   const out: string[] = [];
   for (const c of classes) {
     if (!c) continue;
-    if (typeof c === 'string') out.push(c);
+    if (typeof c === "string") out.push(c);
     else {
       for (const [k, v] of Object.entries(c)) if (v) out.push(k);
     }
   }
-  return out.join(' ');
+  return out.join(" ");
 };
 
 export const generateId = (): string => {
-  return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
 export const debounce = <T extends (...args: any[]) => void>(
   func: T,
-  wait: number
+  wait: number,
 ): T => {
   let timeout: number;
   return ((...args: any[]) => {
@@ -44,8 +46,8 @@ export const debounce = <T extends (...args: any[]) => void>(
 // 节流函数
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  limit: number
-): (...args: Parameters<T>) => void => {
+  limit: number,
+): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean = false;
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
@@ -58,7 +60,7 @@ export const throttle = <T extends (...args: any[]) => any>(
 
 // 深拷贝对象
 export const deepClone = <T>(obj: T): T => {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return obj;
   }
 
@@ -74,7 +76,7 @@ export const deepClone = <T>(obj: T): T => {
     return clonedArray;
   }
 
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     const clonedObj = {} as T;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {

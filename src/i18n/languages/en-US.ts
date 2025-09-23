@@ -15,7 +15,7 @@ export default {
     loading: "Loading...",
     error: "Error",
     success: "Success",
-    warning: "Warning"
+    warning: "Warning",
   },
 
   floatingToolbar: {
@@ -24,7 +24,7 @@ export default {
     more: "More",
     settings: "Settings",
     exit: "Exit Application",
-    loadingPlatforms: "Loading platforms..."
+    loadingPlatforms: "Loading platforms...",
   },
 
   settings: {
@@ -33,11 +33,11 @@ export default {
     language: "Language",
     shortcuts: "Shortcuts",
     aboutTitle: "About",
-    
+
     themeOptions: {
       light: "Light",
       dark: "Dark",
-      system: "System"
+      system: "System",
     },
 
     shortcutsToggle: "Toggle/Hide",
@@ -45,8 +45,9 @@ export default {
     about: {
       title: "API Key Manager",
       version: "v1.0.0",
-      description: "A modern API key management tool for developers to securely store and manage API keys."
-    }
+      description:
+        "A modern API key management tool for developers to securely store and manage API keys.",
+    },
   },
 
   apiKey: {
@@ -66,10 +67,11 @@ export default {
       delete: "Delete",
       copy: "Copy",
       copySuccess: "Copied to clipboard",
-      copyWarning: "API Key copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
+      copyWarning:
+        "API Key copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
       deleteConfirm: "Are you sure you want to delete?",
       deleteSuccess: "API Key removed from system",
-      editSuccess: "Updated successfully"
+      editSuccess: "Updated successfully",
     },
 
     form: {
@@ -84,8 +86,8 @@ export default {
       tagsLabel: "Tags",
       tagsPlaceholder: "Enter tags separated by commas",
       submit: "Save",
-      cancel: "Cancel"
-    }
+      cancel: "Cancel",
+    },
   },
 
   searchResults: {
@@ -100,7 +102,8 @@ export default {
     delete: "Delete",
     copy: "Copy",
     copySuccess: "Copy Successful",
-    copySuccessMessage: "API Key has been copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
+    copySuccessMessage:
+      "API Key has been copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
     copyFailed: "Copy Failed",
     copyFailedMessage: "Unable to copy API Key to clipboard",
     editSuccess: "Edit Successful",
@@ -112,49 +115,50 @@ export default {
     deleteFailed: "Delete Failed",
     deleteFailedMessage: "Unable to delete API Key",
     unknownError: "An unknown error occurred",
-    close: "Close"
+    close: "Close",
   },
 
   radialMenu: {
-    loading: "Loading platforms..."
+    loading: "Loading platforms...",
   },
 
   modal: {
     copySuccess: {
       title: "Copy Successful",
-      message: "API Key has been copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
-      confirm: "OK"
+      message:
+        "API Key has been copied to clipboard. Please be aware of security risks. System will clear clipboard in 30 seconds.",
+      confirm: "OK",
     },
     copyError: {
       title: "Copy Failed",
       message: "Unable to copy API Key to clipboard",
-      close: "Close"
+      close: "Close",
     },
     editSuccess: {
       title: "Edit Successful",
       message: "Updated successfully",
-      confirm: "OK"
+      confirm: "OK",
     },
     editError: {
       title: "Edit Failed",
       message: "Unable to update API Key",
-      close: "Close"
+      close: "Close",
     },
     deleteSuccess: {
       title: "Delete Successful",
       message: "API Key removed from system",
-      confirm: "OK"
+      confirm: "OK",
     },
     deleteError: {
       title: "Delete Failed",
       message: "Unable to delete API Key",
-      close: "Close"
+      close: "Close",
     },
     genericError: {
       title: "Error",
       message: "An unknown error occurred",
-      close: "Close"
-    }
+      close: "Close",
+    },
   },
 
   errors: {
@@ -163,22 +167,24 @@ export default {
     database: "Database error occurred",
     validation: "Validation error occurred",
     permission: "Permission denied",
-    notFound: "Resource not found"
+    notFound: "Resource not found",
   },
 
   addApiKeyDialog: {
     title: "Add API Key",
     batchImport: "Batch Import",
-    batchImportInstructions: "Use Excel template to batch import API keys. Please download the template first, fill in the data, and then upload.",
+    batchImportInstructions:
+      "Use Excel template to batch import API keys. Please download the template first, fill in the data, and then upload.",
     downloadTemplate: "Download Template",
     selectExcelFile: "Select Excel File",
     supportedFormats: "Supported formats: Excel files (.xlsx)",
-    requiredColumns: "Required columns: Name | API Key | Platform | Description",
+    requiredColumns:
+      "Required columns: Name | API Key | Platform | Description",
     savedToDownloads: "Saved to downloads folder",
     openFile: "Open File",
     back: "Back",
     submitting: "Submitting…",
-    
+
     form: {
       nameLabel: "Name",
       namePlaceholder: "Please enter API key name",
@@ -187,22 +193,24 @@ export default {
       platformLabel: "Platform",
       platformPlaceholder: "e.g.: OpenAI, Claude, Gemini...",
       descriptionLabel: "Description",
-      descriptionPlaceholder: "Optional description..."
+      descriptionPlaceholder: "Optional description...",
     },
 
     errors: {
       nameRequired: "Name is required",
       keyRequired: "API key is required",
-      keyInvalid: "API key format is invalid"
+      keyInvalid: "API key format is invalid",
     },
 
     previewNotAvailable: "Preview not available",
-    previewNotAvailableMessage: "Please use preview function in desktop environment",
+    previewNotAvailableMessage:
+      "Please use preview function in desktop environment",
     previewWindowError: "Preview window error",
     error: "Error",
-    
+
     importSuccess: "Import Success",
-    importSuccessMessage: "Successfully imported {{succeeded}} API keys, {{failed}} failed",
+    importSuccessMessage:
+      "Successfully imported {{succeeded}} API keys, {{failed}} failed",
     importFailed: "Import Failed",
     importFailedMessage: "Error occurred during import",
     importProcessError: "Error occurred during import processing",
@@ -219,20 +227,22 @@ export default {
     parseProcessError: "Error occurred during parsing",
 
     tauriPluginNotInitialized: "Tauri plugin not initialized",
-    tauriEnvironmentRequired: "Please ensure running in Tauri desktop environment",
+    tauriEnvironmentRequired:
+      "Please ensure running in Tauri desktop environment",
     fileSelectionFailed: "File Selection Failed",
     cannotOpenFileDialog: "Cannot open file dialog",
     downloadFailed: "Download Failed",
     downloadProcessError: "Error occurred during template download",
     openFileFailed: "Open File Failed",
     cannotOpenDownloadedFile: "Cannot open downloaded file",
-    
+
     templateDownloadSuccess: "Template download success",
     downloadedToBrowser: "File downloaded to browser default download location",
-    templateSavedMessage: "Excel template file \"{{fileName}}\" has been saved to your downloads folder",
-    
+    templateSavedMessage:
+      'Excel template file "{{fileName}}" has been saved to your downloads folder',
+
     info: "Info",
-    fileSavedTo: "File saved to: {{filePath}}"
+    fileSavedTo: "File saved to: {{filePath}}",
   },
 
   themeToggle: {
@@ -244,6 +254,6 @@ export default {
     followSystem: "Follow System Theme",
     system: "System",
     dark: "Dark",
-    light: "Light"
-  }
+    light: "Light",
+  },
 };

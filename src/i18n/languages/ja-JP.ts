@@ -15,7 +15,7 @@ export default {
     loading: "読み込み中...",
     error: "エラー",
     success: "成功",
-    warning: "警告"
+    warning: "警告",
   },
 
   floatingToolbar: {
@@ -24,7 +24,7 @@ export default {
     more: "その他",
     settings: "設定",
     exit: "アプリケーションを終了",
-    loadingPlatforms: "プラットフォームを読み込み中..."
+    loadingPlatforms: "プラットフォームを読み込み中...",
   },
 
   settings: {
@@ -33,11 +33,11 @@ export default {
     language: "言語",
     shortcuts: "ショートカット",
     aboutTitle: "について",
-    
+
     themeOptions: {
       light: "ライト",
       dark: "ダーク",
-      system: "システム"
+      system: "システム",
     },
 
     shortcutsToggle: "表示/非表示",
@@ -45,8 +45,9 @@ export default {
     about: {
       title: "API Key Manager",
       version: "v1.0.0",
-      description: "開発者がAPIキーを安全に保存・管理するための現代的なAPIキー管理ツールです。"
-    }
+      description:
+        "開発者がAPIキーを安全に保存・管理するための現代的なAPIキー管理ツールです。",
+    },
   },
 
   apiKey: {
@@ -66,10 +67,11 @@ export default {
       delete: "削除",
       copy: "コピー",
       copySuccess: "クリップボードにコピーしました",
-      copyWarning: "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
+      copyWarning:
+        "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
       deleteConfirm: "削除してもよろしいですか？",
       deleteSuccess: "APIキーがシステムから削除されました",
-      editSuccess: "更新が成功しました"
+      editSuccess: "更新が成功しました",
     },
 
     form: {
@@ -84,8 +86,8 @@ export default {
       tagsLabel: "タグ",
       tagsPlaceholder: "タグをカンマで区切って入力",
       submit: "保存",
-      cancel: "キャンセル"
-    }
+      cancel: "キャンセル",
+    },
   },
 
   searchResults: {
@@ -100,7 +102,8 @@ export default {
     delete: "削除",
     copy: "コピー",
     copySuccess: "コピー成功",
-    copySuccessMessage: "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
+    copySuccessMessage:
+      "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
     copyFailed: "コピー失敗",
     copyFailedMessage: "APIキーをクリップボードにコピーできませんでした",
     editSuccess: "編集成功",
@@ -112,49 +115,50 @@ export default {
     deleteFailed: "削除失敗",
     deleteFailedMessage: "APIキーを削除できませんでした",
     unknownError: "不明なエラーが発生しました",
-    close: "閉じる"
+    close: "閉じる",
   },
 
   radialMenu: {
-    loading: "プラットフォームを読み込み中..."
+    loading: "プラットフォームを読み込み中...",
   },
 
   modal: {
     copySuccess: {
       title: "コピー成功",
-      message: "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
-      confirm: "OK"
+      message:
+        "APIキーがクリップボードにコピーされました。セキュリティリスクにご注意ください。システムは30秒後にクリップボードをクリアします。",
+      confirm: "OK",
     },
     copyError: {
       title: "コピー失敗",
       message: "APIキーをクリップボードにコピーできませんでした",
-      close: "閉じる"
+      close: "閉じる",
     },
     editSuccess: {
       title: "編集成功",
       message: "更新が成功しました",
-      confirm: "OK"
+      confirm: "OK",
     },
     editError: {
       title: "編集失敗",
       message: "APIキーを更新できませんでした",
-      close: "閉じる"
+      close: "閉じる",
     },
     deleteSuccess: {
       title: "削除成功",
       message: "APIキーがシステムから削除されました",
-      confirm: "OK"
+      confirm: "OK",
     },
     deleteError: {
       title: "削除失敗",
       message: "APIキーを削除できませんでした",
-      close: "閉じる"
+      close: "閉じる",
     },
     genericError: {
       title: "エラー",
       message: "不明なエラーが発生しました",
-      close: "閉じる"
-    }
+      close: "閉じる",
+    },
   },
 
   errors: {
@@ -163,13 +167,14 @@ export default {
     database: "データベースエラーが発生しました",
     validation: "検証エラーが発生しました",
     permission: "アクセスが拒否されました",
-    notFound: "リソースが見つかりません"
+    notFound: "リソースが見つかりません",
   },
 
   addApiKeyDialog: {
     title: "APIキーを追加",
     batchImport: "一括インポート",
-    batchImportInstructions: "Excelテンプレートを使用してAPIキーを一括インポートします。まずテンプレートをダウンロードし、データを入力してからアップロードしてください。",
+    batchImportInstructions:
+      "Excelテンプレートを使用してAPIキーを一括インポートします。まずテンプレートをダウンロードし、データを入力してからアップロードしてください。",
     downloadTemplate: "テンプレートをダウンロード",
     selectExcelFile: "Excelファイルを選択",
     supportedFormats: "サポートされている形式：Excelファイル (.xlsx)",
@@ -178,7 +183,7 @@ export default {
     openFile: "ファイルを開く",
     back: "戻る",
     submitting: "送信中…",
-    
+
     form: {
       nameLabel: "名前",
       namePlaceholder: "APIキー名を入力してください",
@@ -187,22 +192,24 @@ export default {
       platformLabel: "プラットフォーム",
       platformPlaceholder: "例：OpenAI、Claude、Gemini...",
       descriptionLabel: "説明",
-      descriptionPlaceholder: "オプションの説明..."
+      descriptionPlaceholder: "オプションの説明...",
     },
 
     errors: {
       nameRequired: "名前は必須です",
       keyRequired: "APIキーは必須です",
-      keyInvalid: "APIキーの形式が無効です"
+      keyInvalid: "APIキーの形式が無効です",
     },
 
     previewNotAvailable: "プレビューは利用できません",
-    previewNotAvailableMessage: "デスクトップ環境でプレビュー機能を使用してください",
+    previewNotAvailableMessage:
+      "デスクトップ環境でプレビュー機能を使用してください",
     previewWindowError: "プレビューウィンドウエラー",
     error: "エラー",
-    
+
     importSuccess: "インポート成功",
-    importSuccessMessage: "{{succeeded}}件のAPIキーがインポートされ、{{failed}}件が失敗しました",
+    importSuccessMessage:
+      "{{succeeded}}件のAPIキーがインポートされ、{{failed}}件が失敗しました",
     importFailed: "インポート失敗",
     importFailedMessage: "インポート中にエラーが発生しました",
     importProcessError: "インポート処理中にエラーが発生しました",
@@ -213,26 +220,30 @@ export default {
     addFailedMessage: "追加中にエラーが発生しました",
 
     fileFormatError: "ファイル形式エラー",
-    fileFormatErrorMessage: "Excelファイル（.xlsxまたは.xls）を選択してください",
+    fileFormatErrorMessage:
+      "Excelファイル（.xlsxまたは.xls）を選択してください",
     excelParseError: "Excel解析エラー",
     cannotParseExcelFile: "Excelファイルを解析できません",
     parseProcessError: "解析中にエラーが発生しました",
 
     tauriPluginNotInitialized: "Tauriプラグインが初期化されていません",
-    tauriEnvironmentRequired: "Tauriデスクトップ環境で実行していることを確認してください",
+    tauriEnvironmentRequired:
+      "Tauriデスクトップ環境で実行していることを確認してください",
     fileSelectionFailed: "ファイル選択に失敗しました",
     cannotOpenFileDialog: "ファイルダイアログを開けません",
     downloadFailed: "ダウンロードに失敗しました",
     downloadProcessError: "テンプレートのダウンロード中にエラーが発生しました",
     openFileFailed: "ファイルを開けませんでした",
     cannotOpenDownloadedFile: "ダウンロードしたファイルを開けません",
-    
+
     templateDownloadSuccess: "テンプレートのダウンロードが成功しました",
-    downloadedToBrowser: "ファイルがブラウザのデフォルトダウンロード場所にダウンロードされました",
-    templateSavedMessage: "Excelテンプレートファイル \"{{fileName}}\" がダウンロードフォルダに保存されました",
-    
+    downloadedToBrowser:
+      "ファイルがブラウザのデフォルトダウンロード場所にダウンロードされました",
+    templateSavedMessage:
+      'Excelテンプレートファイル "{{fileName}}" がダウンロードフォルダに保存されました',
+
     info: "情報",
-    fileSavedTo: "ファイルが保存されました：{{filePath}}"
+    fileSavedTo: "ファイルが保存されました：{{filePath}}",
   },
 
   themeToggle: {
@@ -244,6 +255,6 @@ export default {
     followSystem: "システムテーマに従う",
     system: "システム",
     dark: "ダーク",
-    light: "ライト"
-  }
+    light: "ライト",
+  },
 };

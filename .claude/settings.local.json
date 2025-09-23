@@ -12,7 +12,8 @@
       "Bash(npm test)",
       "Bash(npx tsc:*)",
       "Bash(node:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

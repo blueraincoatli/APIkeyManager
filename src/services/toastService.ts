@@ -3,9 +3,9 @@
  * Provides a clean, non-intrusive way to display notifications to users
  */
 
-import { UI_CONSTANTS } from '../constants';
+import { UI_CONSTANTS } from "../constants";
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface ToastMessage {
   id: string;
@@ -19,7 +19,7 @@ export interface ToastMessage {
 export interface ToastOptions {
   duration?: number;
   persistent?: boolean;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
 }
 
 /**
@@ -48,7 +48,7 @@ class ToastService {
    */
   success(title: string, message?: string, options?: ToastOptions): void {
     this.show({
-      type: 'success',
+      type: "success",
       title,
       message,
       duration: options?.duration ?? UI_CONSTANTS.TOAST.DEFAULT_DURATION,
@@ -64,7 +64,7 @@ class ToastService {
    */
   error(title: string, message?: string, options?: ToastOptions): void {
     this.show({
-      type: 'error',
+      type: "error",
       title,
       message,
       duration: options?.duration ?? UI_CONSTANTS.TOAST.ERROR_DURATION, // Errors stay longer
@@ -80,7 +80,7 @@ class ToastService {
    */
   warning(title: string, message?: string, options?: ToastOptions): void {
     this.show({
-      type: 'warning',
+      type: "warning",
       title,
       message,
       duration: options?.duration ?? UI_CONSTANTS.TOAST.WARNING_DURATION,
@@ -96,7 +96,7 @@ class ToastService {
    */
   info(title: string, message?: string, options?: ToastOptions): void {
     this.show({
-      type: 'info',
+      type: "info",
       title,
       message,
       duration: options?.duration ?? UI_CONSTANTS.TOAST.DEFAULT_DURATION,
@@ -107,7 +107,7 @@ class ToastService {
   /**
    * Show a toast with custom configuration
    */
-  private show(config: Omit<ToastMessage, 'id'>): void {
+  private show(config: Omit<ToastMessage, "id">): void {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const toast: ToastMessage = {
       id,
@@ -132,7 +132,7 @@ class ToastService {
   remove(id: string): void {
     if (this.toasts.has(id)) {
       this.toasts.delete(id);
-      this.notifyListeners({ id, type: 'info', title: '' }); // Signal removal
+      this.notifyListeners({ id, type: "info", title: "" }); // Signal removal
     }
   }
 
@@ -154,11 +154,11 @@ class ToastService {
    * Notify all listeners about a toast
    */
   private notifyListeners(toast: ToastMessage): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(toast);
       } catch (error) {
-        console.error('Error in toast listener:', error);
+        console.error("Error in toast listener:", error);
       }
     });
   }
@@ -173,7 +173,7 @@ class ToastService {
   /**
    * Set default position for toasts
    */
-  setDefaultPosition(position: ToastOptions['position']): void {
+  setDefaultPosition(position: ToastOptions["position"]): void {
     (this as any).defaultPosition = position;
   }
 
@@ -182,8 +182,8 @@ class ToastService {
    */
   showApiKeySuccess(operation: string, details?: string): void {
     this.success(
-      'API Key 操作成功',
-      `${operation}${details ? ` - ${details}` : ''}`
+      "API Key 操作成功",
+      `${operation}${details ? ` - ${details}` : ""}`,
     );
   }
 
@@ -192,8 +192,8 @@ class ToastService {
    */
   showApiKeyError(operation: string, error?: string): void {
     this.error(
-      'API Key 操作失败',
-      error ? `${operation}: ${error}` : operation
+      "API Key 操作失败",
+      error ? `${operation}: ${error}` : operation,
     );
   }
 
@@ -201,14 +201,14 @@ class ToastService {
    * Show a clipboard operation toast
    */
   showClipboardSuccess(operation: string): void {
-    this.success('剪贴板操作成功', operation);
+    this.success("剪贴板操作成功", operation);
   }
 
   /**
    * Show a clipboard error toast
    */
   showClipboardError(operation: string, error?: string): void {
-    this.error('剪贴板操作失败', error ? `${operation}: ${error}` : operation);
+    this.error("剪贴板操作失败", error ? `${operation}: ${error}` : operation);
   }
 }
 

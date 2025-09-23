@@ -1,11 +1,19 @@
-# 函数索引（更新于 2025-09-22）
+---
+title: 函数索引
+author: 开发团队
+date: 2025-09-23
+version: v1.0
+---
+
+# 函数索引
 
 本文档列出项目中主要的服务、组件与工具函数，便于查找与复用。
 
 ## 一、服务层（services）
 
 ### apiKeyService（src/services/apiKeyService.ts）
-- addApiKey(apiKey: Omit<ApiKey, 'id'|'createdAt'|'updatedAt'>): Promise<ServiceResult<ApiKey>>
+- addApiKey(apiKey: Omit<ApiKey, 'id'|'createdAt'|'updatedAt'>):
+  Promise<ServiceResult<ApiKey>>
   - 新增 API Key，带输入验证与错误包装；被 AddApiKeyDialog 调用。
 - editApiKey(apiKey: ApiKey): Promise<ServiceResult<ApiKey>>
 - deleteApiKey(id: string): Promise<ServiceResult<boolean>>
@@ -14,13 +22,15 @@
 - copyToClipboard(id: string): Promise<ServiceResult<boolean>>
 
 ### batchImportService（src/services/apiKeyService.ts）
-- importApiKeysBatch(keys: BatchApiKey[]): Promise<ServiceResult<BatchImportResult>>
+- importApiKeysBatch(keys: BatchApiKey[]):
+  Promise<ServiceResult<BatchImportResult>>
   - 批量导入API Key，支持Excel文件和多语言表头匹配
   - 返回成功/失败统计和错误信息
 
 ### groupService（同文件导出）
 - listGroups(): Promise<ServiceResult<Group[]>>
-- addGroup(group: Omit<Group, 'id'|'createdAt'|'updatedAt'>): Promise<ServiceResult<Group>>
+- addGroup(group: Omit<Group, 'id'|'createdAt'|'updatedAt'>):
+  Promise<ServiceResult<Group>>
 
 ### usageHistoryService（同文件导出）
 - recordUsage(keyId: string): Promise<ServiceResult<UsageHistory>>
@@ -28,7 +38,8 @@
 
 ### clipboardService（src/services/clipboardService.ts）
 - getClipboardContent(authorization?, metadataId?): Promise<string>
-- copyToClipboard(text: string, level, authorization?, options?): Promise<{ success: boolean; metadataId?: string }>
+- copyToClipboard(text: string, level, authorization?, options?):
+  Promise<{ success: boolean; metadataId?: string }>
 - clearClipboard(metadataId?): Promise<boolean>
 - getClipboardMetadata(metadataId): ClipboardContentMetadata | undefined
 - isClipboardValid(metadataId): boolean
@@ -45,7 +56,8 @@
 - remove(id), clear(), subscribe(listener)
 
 ### secureLogging（src/services/secureLogging.ts）
-- logSecureError(context: OperationContext, error: any, additionalInfo?): void
+- logSecureError(context: OperationContext, error: any, additionalInfo?):
+  void
 - logSecureInfo(context: OperationContext, message: string, data?): void
 - logSecureWarning(context: OperationContext, message: string, data?): void
 - getUserFriendlyErrorMessage(context: OperationContext): string
@@ -58,8 +70,6 @@
 
 ## 二、组件（components）
 
-## 二、组件（components）
-
 ### FloatingToolbar（src/components/FloatingToolbar/FloatingToolbar.tsx）
 - 主界面搜索工具条：
   - 键入调用 searchService 搜索，结果由 SearchResults 显示；
@@ -69,7 +79,8 @@
 
 ### RadialMenu（src/components/RadialMenu/RadialMenu.tsx）
 - RadialMenu({ options: {id,label,icon?}[], onSelect, onClose, center? })
-- 胶囊按钮沿弧线排列；仅对悬停项绘制单条连线；外部点击或选择后关闭。
+- 胶囊按钮沿弧线排列；仅对悬停项绘制单条连线；
+  外部点击或选择后关闭。
 
 ### SearchResults（src/components/SearchResults/SearchResults.tsx）
 - SearchResults({ results, onCopy, position, providerLabel? })
@@ -77,7 +88,8 @@
 
 ### AddApiKeyDialog（src/components/AddApiKey/AddApiKeyDialog.tsx）
 - AddApiKeyDialog({ open, onClose, onAdded })
-- 表单项：名称、Key、提供商、描述；提交调用 apiKeyService.addApiKey。
+- 表单项：名称、Key、提供商、描述；提交调用
+  apiKeyService.addApiKey。
 - 支持批量导入Excel文件，创建独立预览窗口
 - 多语言界面支持，动态获取当前语言设置
 
@@ -95,7 +107,8 @@
   - 动态语言切换和文本更新功能
 
 ### VirtualList（src/components/VirtualScroll/VirtualList.tsx）
-- VirtualList<T>({ items, renderItem, itemHeight, containerHeight, overscan?, className?, onScroll? })
+- VirtualList<T>({ items, renderItem, itemHeight, containerHeight,
+  overscan?, className?, onScroll? })
 - 高性能虚拟滚动组件，支持动态高度和过扫描优化
 - useVirtualList<T>(items, options) - 虚拟滚动hook
 
@@ -110,7 +123,8 @@
 
 ### utils/helpers.ts
 - cn(...classes): string（支持对象条件写法）
-- formatDateTime(ts), generateId(), debounce(), throttle(), deepClone()
+- formatDateTime(ts), generateId(), debounce(), throttle(),
+  deepClone()
 
 ### hooks（src/hooks/）
 - useAdaptiveTheme(): AdaptiveThemeResult - 自适应主题hook
@@ -134,7 +148,8 @@
 - 悬浮工具条通过状态控制显示/隐藏
 
 ### 窗口命令（src-tauri/src/commands/window_commands.rs）
-- create_preview_window(preview_data: String, theme: Option<String>, language: Option<String>): Result<(), String>
+- create_preview_window(preview_data: String, theme: Option<String>,
+  language: Option<String>): Result<(), String>
   - 创建批量导入预览窗口，支持多语言标题
   - 注入数据、主题和语言设置到预览窗口
 - close_preview_window(): Result<(), String>
@@ -158,8 +173,10 @@
 
 ## 六、类型（types）
 - types/apiKey.ts：ApiKey, Group, UsageHistory...
-- types/clipboardSecurity.ts：ClipboardOperation, ClipboardSecurityLevel, ClipboardContentMetadata(iv 可选) 等
+- types/clipboardSecurity.ts：ClipboardOperation, ClipboardSecurityLevel,
+  ClipboardContentMetadata(iv 可选) 等
 
 ## 备注
-- 本次（2025-09-17）新增/更新：安全日志服务、统一错误处理、虚拟滚动组件、主题性能优化、设计系统化、自适应背景渐变等功能。
+- 本次（2025-09-17）新增/更新：安全日志服务、统一错误处理、
+  虚拟滚动组件、主题性能优化、设计系统化、自适应背景渐变等功能。
 

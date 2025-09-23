@@ -17,7 +17,7 @@ interface SearchCache {
 // 搜索建议接口
 interface SearchSuggestion {
   text: string;
-  type: 'name' | 'platform' | 'description';
+  type: "name" | "platform" | "description";
   frequency: number;
 }
 
@@ -38,7 +38,7 @@ const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   maxCacheSize: 100,
   enableSuggestions: true,
   enableFuzzySearch: true,
-  maxResults: 50
+  maxResults: 50,
 };
 
 export class SearchOptimizationService {
@@ -54,9 +54,11 @@ export class SearchOptimizationService {
   /**
    * 搜索API Keys（带缓存）
    */
-  async searchKeys(keyword: string): Promise<{ data: ApiKey[]; error?: string }> {
+  async searchKeys(
+    keyword: string,
+  ): Promise<{ data: ApiKey[]; error?: string }> {
     // 验证输入
-    if (!keyword || typeof keyword !== 'string') {
+    if (!keyword || typeof keyword !== "string") {
       return { data: [], error: "搜索关键词无效" };
     }
 
@@ -92,7 +94,9 @@ export class SearchOptimizationService {
   /**
    * 智能搜索（支持模糊搜索）
    */
-  async smartSearch(keyword: string): Promise<{ data: ApiKey[]; error?: string }> {
+  async smartSearch(
+    keyword: string,
+  ): Promise<{ data: ApiKey[]; error?: string }> {
     if (!this.config.enableFuzzySearch) {
       return this.searchKeys(keyword);
     }
@@ -121,8 +125,8 @@ export class SearchOptimizationService {
     const trimmedKeyword = keyword.toLowerCase();
 
     return this.suggestions
-      .filter(suggestion =>
-        suggestion.text.toLowerCase().includes(trimmedKeyword)
+      .filter((suggestion) =>
+        suggestion.text.toLowerCase().includes(trimmedKeyword),
       )
       .sort((a, b) => b.frequency - a.frequency)
       .slice(0, limit);
@@ -142,10 +146,14 @@ export class SearchOptimizationService {
 
     // 如果缓存过大，删除最旧的条目
     if (this.cache.size > this.config.maxCacheSize) {
-      const entries = Array.from(this.cache.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp);
+      const entries = Array.from(this.cache.entries()).sort(
+        (a, b) => a[1].timestamp - b[1].timestamp,
+      );
 
-      const toDelete = entries.slice(0, this.cache.size - this.config.maxCacheSize);
+      const toDelete = entries.slice(
+        0,
+        this.cache.size - this.config.maxCacheSize,
+      );
       toDelete.forEach(([key]) => this.cache.delete(key));
     }
   }
@@ -181,7 +189,7 @@ export class SearchOptimizationService {
       keyword,
       results,
       timestamp: Date.now(),
-      ttl: this.config.cacheTTL
+      ttl: this.config.cacheTTL,
     });
   }
 
@@ -189,23 +197,23 @@ export class SearchOptimizationService {
    * 更新搜索建议
    */
   private updateSuggestions(_keyword: string, results: ApiKey[]): void {
-    results.forEach(result => {
+    results.forEach((result) => {
       // 从名称提取建议
       if (result.name) {
-        this.addSuggestion(result.name.toLowerCase(), 'name');
+        this.addSuggestion(result.name.toLowerCase(), "name");
       }
 
       // 从平台提取建议
       if (result.platform) {
-        this.addSuggestion(result.platform.toLowerCase(), 'platform');
+        this.addSuggestion(result.platform.toLowerCase(), "platform");
       }
 
       // 从描述提取建议
       if (result.description) {
         const descWords = result.description.toLowerCase().split(/\s+/);
-        descWords.forEach(word => {
+        descWords.forEach((word) => {
           if (word.length > 2) {
-            this.addSuggestion(word, 'description');
+            this.addSuggestion(word, "description");
           }
         });
       }
@@ -222,8 +230,10 @@ export class SearchOptimizationService {
   /**
    * 添加搜索建议
    */
-  private addSuggestion(text: string, type: SearchSuggestion['type']): void {
-    const existing = this.suggestions.find(s => s.text === text && s.type === type);
+  private addSuggestion(text: string, type: SearchSuggestion["type"]): void {
+    const existing = this.suggestions.find(
+      (s) => s.text === text && s.type === type,
+    );
 
     if (existing) {
       existing.frequency++;
@@ -231,7 +241,7 @@ export class SearchOptimizationService {
       this.suggestions.push({
         text,
         type,
-        frequency: 1
+        frequency: 1,
       });
     }
   }
@@ -239,26 +249,33 @@ export class SearchOptimizationService {
   /**
    * 执行模糊搜索
    */
-  private async performFuzzySearch(keyword: string): Promise<{ data: ApiKey[]; error?: string }> {
+  private async performFuzzySearch(
+    keyword: string,
+  ): Promise<{ data: ApiKey[]; error?: string }> {
     try {
       // 获取所有API Keys
-      const allKeysResult = await searchService.searchKeys('');
+      const allKeysResult = await searchService.searchKeys("");
       if (allKeysResult.error) {
         return { data: [], error: allKeysResult.error };
       }
 
       // 简单的模糊匹配算法
-      const fuzzyResults = allKeysResult.data.filter(key => {
-        const searchText = `${key.name} ${key.platform || ''} ${key.description || ''}`.toLowerCase();
+      const fuzzyResults = allKeysResult.data.filter((key) => {
+        const searchText =
+          `${key.name} ${key.platform || ""} ${key.description || ""}`.toLowerCase();
         const searchTerms = keyword.toLowerCase().split(/\s+/);
 
-        return searchTerms.every(term =>
-          searchText.includes(term) ||
-          this.calculateSimilarity(term, searchText) > 0.6
+        return searchTerms.every(
+          (term) =>
+            searchText.includes(term) ||
+            this.calculateSimilarity(term, searchText) > 0.6,
         );
       });
 
-      return { data: fuzzyResults.slice(0, this.config.maxResults), error: undefined };
+      return {
+        data: fuzzyResults.slice(0, this.config.maxResults),
+        error: undefined,
+      };
     } catch (error) {
       return { data: [], error: "模糊搜索失败" };
     }
@@ -272,7 +289,9 @@ export class SearchOptimizationService {
       return 0;
     }
 
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    const matrix = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
 
     for (let i = 0; i <= str1.length; i++) {
       matrix[0][i] = i;
@@ -288,7 +307,7 @@ export class SearchOptimizationService {
         matrix[j][i] = Math.min(
           matrix[j][i - 1] + 1, // deletion
           matrix[j - 1][i] + 1, // insertion
-          matrix[j - 1][i - 1] + indicator // substitution
+          matrix[j - 1][i - 1] + indicator, // substitution
         );
       }
     }
@@ -296,7 +315,7 @@ export class SearchOptimizationService {
     const distance = matrix[str2.length][str1.length];
     const maxLength = Math.max(str1.length, str2.length);
 
-    return 1 - (distance / maxLength);
+    return 1 - distance / maxLength;
   }
 
   /**
@@ -304,24 +323,32 @@ export class SearchOptimizationService {
    */
   private startCacheCleanup(): void {
     // 每2分钟清理一次缓存
-    setInterval(() => {
-      this.cleanupCache();
-    }, 2 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupCache();
+      },
+      2 * 60 * 1000,
+    );
   }
 
   /**
    * 获取缓存统计
    */
-  getCacheStats(): { size: number; entries: Array<{ keyword: string; age: number }> } {
+  getCacheStats(): {
+    size: number;
+    entries: Array<{ keyword: string; age: number }>;
+  } {
     const now = Date.now();
-    const entries = Array.from(this.cache.entries()).map(([keyword, cache]) => ({
-      keyword,
-      age: now - cache.timestamp
-    }));
+    const entries = Array.from(this.cache.entries()).map(
+      ([keyword, cache]) => ({
+        keyword,
+        age: now - cache.timestamp,
+      }),
+    );
 
     return {
       size: this.cache.size,
-      entries
+      entries,
     };
   }
 

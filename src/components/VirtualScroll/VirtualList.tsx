@@ -7,7 +7,10 @@ interface VirtualListProps<T> {
   containerHeight: number;
   overscan?: number;
   className?: string;
-  onScroll?: (scrollInfo: { scrollTop: number; scrollDirection: 'up' | 'down' }) => void;
+  onScroll?: (scrollInfo: {
+    scrollTop: number;
+    scrollDirection: "up" | "down";
+  }) => void;
 }
 
 interface Range {
@@ -24,7 +27,7 @@ export function VirtualList<T>({
   containerHeight,
   overscan = 3,
   className = "",
-  onScroll
+  onScroll,
 }: VirtualListProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,10 +36,13 @@ export function VirtualList<T>({
 
   // 计算总高度
   const totalHeight = useMemo(() => {
-    if (typeof itemHeight === 'number') {
+    if (typeof itemHeight === "number") {
       return items.length * itemHeight;
     }
-    return items.reduce((total, _, index) => total + itemHeight(index, items[index]), 0);
+    return items.reduce(
+      (total, _, index) => total + itemHeight(index, items[index]),
+      0,
+    );
   }, [items, itemHeight]);
 
   // 计算项目位置的缓存
@@ -46,71 +52,82 @@ export function VirtualList<T>({
 
     for (let i = 0; i < items.length; i++) {
       positions[i] = currentOffset;
-      currentOffset += typeof itemHeight === 'number' ? itemHeight : itemHeight(i, items[i]);
+      currentOffset +=
+        typeof itemHeight === "number" ? itemHeight : itemHeight(i, items[i]);
     }
 
     return positions;
   }, [items, itemHeight]);
 
   // 根据滚动位置计算可见项目范围
-  const calculateRange = useCallback((scrollTopValue: number): Range => {
-    let startIndex = 0;
-    let endIndex = items.length - 1;
+  const calculateRange = useCallback(
+    (scrollTopValue: number): Range => {
+      let startIndex = 0;
+      let endIndex = items.length - 1;
 
-    // 二分查找开始位置
-    let low = 0;
-    let high = items.length - 1;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      if (itemPositions[mid] < scrollTopValue) {
-        low = mid + 1;
-      } else {
-        high = mid - 1;
+      // 二分查找开始位置
+      let low = 0;
+      let high = items.length - 1;
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        if (itemPositions[mid] < scrollTopValue) {
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
       }
-    }
-    startIndex = Math.max(0, low - 1);
+      startIndex = Math.max(0, low - 1);
 
-    // 二分查找结束位置
-    low = 0;
-    high = items.length - 1;
-    const scrollBottom = scrollTopValue + containerHeight;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      if (itemPositions[mid] < scrollBottom) {
-        low = mid + 1;
-      } else {
-        high = mid - 1;
+      // 二分查找结束位置
+      low = 0;
+      high = items.length - 1;
+      const scrollBottom = scrollTopValue + containerHeight;
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        if (itemPositions[mid] < scrollBottom) {
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
       }
-    }
-    endIndex = Math.min(items.length - 1, high);
+      endIndex = Math.min(items.length - 1, high);
 
-    // 添加过扫描区域
-    const overscanStartIndex = Math.max(0, startIndex - overscan);
-    const overscanEndIndex = Math.min(items.length - 1, endIndex + overscan);
+      // 添加过扫描区域
+      const overscanStartIndex = Math.max(0, startIndex - overscan);
+      const overscanEndIndex = Math.min(items.length - 1, endIndex + overscan);
 
-    return {
-      startIndex,
-      endIndex,
-      overscanStartIndex,
-      overscanEndIndex
-    };
-  }, [items, itemPositions, containerHeight, overscan]);
+      return {
+        startIndex,
+        endIndex,
+        overscanStartIndex,
+        overscanEndIndex,
+      };
+    },
+    [items, itemPositions, containerHeight, overscan],
+  );
 
-  const range = useMemo(() => calculateRange(scrollTop), [scrollTop, calculateRange]);
+  const range = useMemo(
+    () => calculateRange(scrollTop),
+    [scrollTop, calculateRange],
+  );
 
   // 处理滚动事件
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const currentScrollTop = e.currentTarget.scrollTop;
-    setScrollTop(currentScrollTop);
-    lastScrollTopRef.current = currentScrollTop;
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const currentScrollTop = e.currentTarget.scrollTop;
+      setScrollTop(currentScrollTop);
+      lastScrollTopRef.current = currentScrollTop;
 
-    if (onScroll) {
-      onScroll({
-        scrollTop: currentScrollTop,
-        scrollDirection: currentScrollTop > lastScrollTopRef.current ? 'down' : 'up'
-      });
-    }
-  }, [onScroll]);
+      if (onScroll) {
+        onScroll({
+          scrollTop: currentScrollTop,
+          scrollDirection:
+            currentScrollTop > lastScrollTopRef.current ? "down" : "up",
+        });
+      }
+    },
+    [onScroll],
+  );
 
   // 渲染可见项目
   const visibleItems = useMemo(() => {
@@ -118,20 +135,21 @@ export function VirtualList<T>({
     for (let i = range.overscanStartIndex; i <= range.overscanEndIndex; i++) {
       if (i >= 0 && i < items.length) {
         const top = itemPositions[i];
-        const height = typeof itemHeight === 'number' ? itemHeight : itemHeight(i, items[i]);
+        const height =
+          typeof itemHeight === "number" ? itemHeight : itemHeight(i, items[i]);
 
         itemsToRender.push(
           <div
             key={i}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: `${top}px`,
-              width: '100%',
-              height: `${height}px`
+              width: "100%",
+              height: `${height}px`,
             }}
           >
             {renderItem(items[i], i)}
-          </div>
+          </div>,
         );
       }
     }
@@ -180,7 +198,7 @@ export function VirtualList<T>({
     >
       <div
         ref={contentRef}
-        style={{ height: `${totalHeight}px`, position: 'relative' }}
+        style={{ height: `${totalHeight}px`, position: "relative" }}
       >
         {visibleItems}
       </div>
@@ -195,7 +213,7 @@ export function useVirtualList<T>(
     itemHeight: number | ((index: number, item: T) => number);
     containerHeight: number;
     overscan?: number;
-  }
+  },
 ) {
   const { itemHeight, containerHeight, overscan = 3 } = options;
 
@@ -229,6 +247,6 @@ export function useVirtualList<T>(
     // scrollToIndex,
     itemHeight,
     containerHeight,
-    overscan
+    overscan,
   };
 }

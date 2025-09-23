@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 export interface Props {
   children: ReactNode;
@@ -18,39 +18,39 @@ interface State {
  */
 export class ErrorBoundary extends Component<Props, State> {
   /**
- * Initializes the ErrorBoundary with default state
- * @param props - Component props containing children and optional fallback UI
- */
+   * Initializes the ErrorBoundary with default state
+   * @param props - Component props containing children and optional fallback UI
+   */
   constructor(props: Props) {
     super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
   /**
- * Updates state when an error is caught
- * @param error - The error that was thrown
- * @returns Partial state update to mark error boundary as having an error
- */
+   * Updates state when an error is caught
+   * @param error - The error that was thrown
+   * @returns Partial state update to mark error boundary as having an error
+   */
   static getDerivedStateFromError(error: Error): Partial<State> {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
   /**
- * Called when an error is caught by the boundary
- * @param error - The error that was thrown
- * @param errorInfo - Information about which component threw the error
- */
+   * Called when an error is caught by the boundary
+   * @param error - The error that was thrown
+   * @param errorInfo - Information about which component threw the error
+   */
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Call the error handler if provided
@@ -58,18 +58,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Log the error to console in development
     if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
   }
 
   /**
- * Resets the error boundary state, allowing the user to retry the failed operation
- */
+   * Resets the error boundary state, allowing the user to retry the failed operation
+   */
   handleReset = () => {
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     });
   };
 
@@ -86,8 +86,18 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
-                <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  className="h-6 w-6 text-red-600 dark:text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               </div>
 
@@ -96,7 +106,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </h1>
 
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                The application encountered an unexpected error. We have logged this issue.
+                The application encountered an unexpected error. We have logged
+                this issue.
               </p>
 
               {this.state.error && (
@@ -153,7 +164,7 @@ export class ErrorBoundary extends Component<Props, State> {
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<Props, 'children'>
+  errorBoundaryProps?: Omit<Props, "children">,
 ): React.ComponentType<P> {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>

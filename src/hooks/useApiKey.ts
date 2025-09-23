@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ApiKey, Group } from '../types/apiKey';
-import { apiKeyService, groupService } from '../services/apiKeyService';
+import { useState, useEffect } from "react";
+import { ApiKey, Group } from "../types/apiKey";
+import { apiKeyService, groupService } from "../services/apiKeyService";
 
 // 自定义Hook用于管理API Key相关的状态和逻辑
 export const useApiKeys = () => {
@@ -16,20 +16,20 @@ export const useApiKeys = () => {
     try {
       const keysResult = await apiKeyService.listApiKeys();
       const groupsResult = await groupService.listGroups();
-      
+
       if (keysResult.success) {
         setApiKeys(keysResult.data || []);
       } else if (keysResult.error) {
         setError(keysResult.error.message || String(keysResult.error.code));
       }
-      
+
       if (groupsResult.success) {
         setGroups(groupsResult.data || []);
       } else if (groupsResult.error && !error) {
         setError(groupsResult.error.message || String(groupsResult.error.code));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '获取数据失败');
+      setError(err instanceof Error ? err.message : "获取数据失败");
     } finally {
       setLoading(false);
     }

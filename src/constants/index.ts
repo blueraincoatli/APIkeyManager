@@ -20,7 +20,7 @@ export const UI_CONSTANTS = {
     ERROR_DURATION: 6000, // ms
     WARNING_DURATION: 5000, // ms
     INFO_DURATION: 4000, // ms
-    POSITION: 'top-right' as const,
+    POSITION: "top-right" as const,
     LIMIT: 5,
   },
 
@@ -59,7 +59,7 @@ export const SECURITY_CONSTANTS = {
   // Encryption
   ENCRYPTION: {
     KEY_LENGTH: 256, // bits
-    ALGORITHM: 'AES-256-GCM' as const,
+    ALGORITHM: "AES-256-GCM" as const,
     ITERATIONS: 3,
   },
 
@@ -102,8 +102,8 @@ export const SECURITY_CONSTANTS = {
 export const API_CONSTANTS = {
   // Service endpoints
   ENDPOINTS: {
-    OLLAMA: 'http://localhost:11434',
-    CLIPBOARD_ANALYZE: '/analyze',
+    OLLAMA: "http://localhost:11434",
+    CLIPBOARD_ANALYZE: "/analyze",
   },
 
   // Response codes
@@ -164,13 +164,13 @@ export const FEATURE_FLAGS = {
 // Default configurations
 export const DEFAULT_CONFIG = {
   CLIPBOARD: {
-    SECURITY_LEVEL: 'balanced' as const,
+    SECURITY_LEVEL: "balanced" as const,
     AUTO_CLEAR: true,
     TIMEOUT: 30000, // ms
     MAX_CONTENT_LENGTH: 5000,
   },
   THEME: {
-    DEFAULT: 'system' as const,
+    DEFAULT: "system" as const,
     TRANSITION_DURATION: 200,
   },
   PERFORMANCE: {
@@ -183,50 +183,50 @@ export const DEFAULT_CONFIG = {
 // Error messages
 export const ERROR_MESSAGES = {
   GENERAL: {
-    UNKNOWN: '发生未知错误',
-    NETWORK: '网络连接失败',
-    TIMEOUT: '请求超时',
-    VALIDATION: '输入验证失败',
+    UNKNOWN: "发生未知错误",
+    NETWORK: "网络连接失败",
+    TIMEOUT: "请求超时",
+    VALIDATION: "输入验证失败",
   },
   API_KEY: {
-    NOT_FOUND: 'API Key不存在',
-    INVALID: 'API Key格式无效',
-    DUPLICATE: 'API Key已存在',
-    SAVE_FAILED: '保存API Key失败',
-    DELETE_FAILED: '删除API Key失败',
+    NOT_FOUND: "API Key不存在",
+    INVALID: "API Key格式无效",
+    DUPLICATE: "API Key已存在",
+    SAVE_FAILED: "保存API Key失败",
+    DELETE_FAILED: "删除API Key失败",
   },
   CLIPBOARD: {
-    COPY_FAILED: '复制失败',
-    PASTE_FAILED: '粘贴失败',
-    CLEAR_FAILED: '清空失败',
-    ACCESS_DENIED: '剪贴板访问被拒绝',
-    CONTENT_TOO_LARGE: '内容过大',
+    COPY_FAILED: "复制失败",
+    PASTE_FAILED: "粘贴失败",
+    CLEAR_FAILED: "清空失败",
+    ACCESS_DENIED: "剪贴板访问被拒绝",
+    CONTENT_TOO_LARGE: "内容过大",
   },
   AUTH: {
-    INVALID_PASSWORD: '密码无效',
-    PASSWORD_TOO_SHORT: '密码长度不足',
-    AUTH_FAILED: '认证失败',
+    INVALID_PASSWORD: "密码无效",
+    PASSWORD_TOO_SHORT: "密码长度不足",
+    AUTH_FAILED: "认证失败",
   },
 } as const;
 
 // Success messages
 export const SUCCESS_MESSAGES = {
   GENERAL: {
-    SUCCESS: '操作成功',
-    SAVED: '保存成功',
-    DELETED: '删除成功',
-    UPDATED: '更新成功',
+    SUCCESS: "操作成功",
+    SAVED: "保存成功",
+    DELETED: "删除成功",
+    UPDATED: "更新成功",
   },
   API_KEY: {
-    COPIED: '已复制到剪贴板',
-    ADDED: '添加成功',
-    EDITED: '编辑成功',
-    DELETED: '删除成功',
+    COPIED: "已复制到剪贴板",
+    ADDED: "添加成功",
+    EDITED: "编辑成功",
+    DELETED: "删除成功",
   },
   CLIPBOARD: {
-    IMPORTED: '导入成功',
-    ANALYZED: '分析完成',
-    CLEARED: '清空成功',
+    IMPORTED: "导入成功",
+    ANALYZED: "分析完成",
+    CLEARED: "清空成功",
   },
 } as const;
 

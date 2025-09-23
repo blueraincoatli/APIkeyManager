@@ -14,15 +14,29 @@ interface SearchResultsProps {
   onCopyConfirmed?: () => void; // 复制确认后收起父面板
 }
 
-export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: SearchResultsProps) {
+export function SearchResults({
+  results,
+  onCopy,
+  onRefresh,
+  onCopyConfirmed,
+}: SearchResultsProps) {
   const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editKeyValue, setEditKeyValue] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [modal, setModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string; onConfirm?: () => void } | null>(null);
-  const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null);
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  } | null>(null);
+  const [modalPos, setModalPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null); // 短暂UI反馈
@@ -42,15 +56,17 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
   // 处理模态框定位
   useEffect(() => {
     if (modalRef.current && modalPos) {
-      modalRef.current.style.setProperty('--modal-top', `${modalPos.top}px`);
-      modalRef.current.style.setProperty('--modal-left', `${modalPos.left}px`);
+      modalRef.current.style.setProperty("--modal-top", `${modalPos.top}px`);
+      modalRef.current.style.setProperty("--modal-left", `${modalPos.left}px`);
     }
   }, [modalPos]);
 
   const handleCopy = async (key: ApiKey) => {
     try {
       // 通过后端命令复制到系统剪贴板（不在前端日志中打印敏感值）
-      const result = await invoke('copy_to_clipboard', { content: key.keyValue });
+      const result = await invoke("copy_to_clipboard", {
+        content: key.keyValue,
+      });
 
       if (result) {
         // 复制成功 UI 反馈
@@ -65,9 +81,10 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         }, 2000);
 
         // 30 秒后自动清空剪贴板
-        if (clearClipboardTimerRef.current) clearTimeout(clearClipboardTimerRef.current);
+        if (clearClipboardTimerRef.current)
+          clearTimeout(clearClipboardTimerRef.current);
         clearClipboardTimerRef.current = window.setTimeout(() => {
-          invoke('copy_to_clipboard', { content: '' }).catch(() => {});
+          invoke("copy_to_clipboard", { content: "" }).catch(() => {});
           clearClipboardTimerRef.current = null;
         }, 30000);
 
@@ -75,37 +92,43 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
         // 计算模态框相对结果面板的中心位置
         const rect = resultsRef.current?.getBoundingClientRect();
         if (rect) {
-          setModalPos({ top: rect.top + rect.height / 2, left: rect.left + rect.width / 2 });
+          setModalPos({
+            top: rect.top + rect.height / 2,
+            left: rect.left + rect.width / 2,
+          });
         } else {
-          setModalPos({ top: window.innerHeight / 2, left: window.innerWidth / 2 });
+          setModalPos({
+            top: window.innerHeight / 2,
+            left: window.innerWidth / 2,
+          });
         }
 
         setModal({
           isOpen: true,
-          type: 'success',
-          title: t('searchResults.copySuccess'),
-          message: t('searchResults.copySuccessMessage'),
+          type: "success",
+          title: t("searchResults.copySuccess"),
+          message: t("searchResults.copySuccessMessage"),
           onConfirm: () => {
             if (onCopyConfirmed) onCopyConfirmed();
             setModal(null);
-          }
+          },
         });
       } else {
         setModal({
           isOpen: true,
-          type: 'error',
-          title: t('searchResults.copyFailed'),
-          message: t('searchResults.copyFailedMessage')
+          type: "error",
+          title: t("searchResults.copyFailed"),
+          message: t("searchResults.copyFailedMessage"),
         });
       }
     } catch (error) {
       // 仅记录通用错误，不输出任何敏感内容
-      console.error('复制失败：', error);
+      console.error("复制失败：", error);
       setModal({
         isOpen: true,
-        type: 'error',
-        title: '复制失败',
-        message: '发生未知错误，无法复制到剪贴板'
+        type: "error",
+        title: "复制失败",
+        message: "发生未知错误，无法复制到剪贴板",
       });
     }
   };
@@ -127,7 +150,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
 
   const saveEdit = async (key: ApiKey) => {
     if (!editingId) return;
-    
+
     const updatedKey: ApiKey = {
       ...key,
       name: editName,
@@ -146,9 +169,9 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
       if (result.success) {
         setModal({
           isOpen: true,
-          type: 'success',
-          title: t('searchResults.editSuccess'),
-          message: t('searchResults.editSuccessMessage', { name: key.name }),
+          type: "success",
+          title: t("searchResults.editSuccess"),
+          message: t("searchResults.editSuccessMessage", { name: key.name }),
           onConfirm: () => {
             setModal(null);
             setEditingId(null);
@@ -156,22 +179,23 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
             if (onRefresh) {
               onRefresh();
             }
-          }
+          },
         });
       } else {
         setModal({
           isOpen: true,
-          type: 'error',
-          title: t('searchResults.editFailed'),
-          message: result.error?.message || t('searchResults.editFailedMessage')
+          type: "error",
+          title: t("searchResults.editFailed"),
+          message:
+            result.error?.message || t("searchResults.editFailedMessage"),
         });
       }
     } catch (error) {
       setModal({
         isOpen: true,
-        type: 'error',
-        title: '编辑失败',
-        message: '发生未知错误'
+        type: "error",
+        title: "编辑失败",
+        message: "发生未知错误",
       });
       console.error("编辑API Key失败:", error);
     }
@@ -187,15 +211,15 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
 
   const executeDelete = async () => {
     if (!deletingId) return;
-    
+
     try {
       const result = await apiKeyService.deleteApiKey(deletingId);
       if (result.success) {
         setModal({
           isOpen: true,
-          type: 'success',
-          title: t('searchResults.deleteSuccess'),
-          message: t('searchResults.deleteSuccessMessage'),
+          type: "success",
+          title: t("searchResults.deleteSuccess"),
+          message: t("searchResults.deleteSuccessMessage"),
           onConfirm: () => {
             setModal(null);
             setDeletingId(null);
@@ -203,22 +227,23 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
             if (onRefresh) {
               onRefresh();
             }
-          }
+          },
         });
       } else {
         setModal({
           isOpen: true,
-          type: 'error',
-          title: t('searchResults.deleteFailed'),
-          message: result.error?.message || t('searchResults.deleteFailedMessage')
+          type: "error",
+          title: t("searchResults.deleteFailed"),
+          message:
+            result.error?.message || t("searchResults.deleteFailedMessage"),
         });
       }
     } catch (error) {
       setModal({
         isOpen: true,
-        type: 'error',
-        title: '删除失败',
-        message: '发生未知错误'
+        type: "error",
+        title: "删除失败",
+        message: "发生未知错误",
       });
       console.error("删除API Key失败:", error);
     }
@@ -229,22 +254,18 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
   };
 
   return (
-    <div
-      ref={resultsRef}
-      className="search-results-container"
-    >
+    <div ref={resultsRef} className="search-results-container">
       <div className="search-results-list">
         {results.length === 0 ? (
           <div className="search-results-empty">
-            <div className="search-results-empty-text">{t('searchResults.noResults')}</div>
+            <div className="search-results-empty-text">
+              {t("searchResults.noResults")}
+            </div>
           </div>
         ) : (
           <>
             {results.map((key) => (
-              <div
-                key={key.id}
-                className="search-results-item"
-              >
+              <div key={key.id} className="search-results-item">
                 <div className="search-results-item-content">
                   {editingId === key.id ? (
                     // 编辑模式
@@ -254,46 +275,48 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
                         className="search-results-edit-input"
-                        placeholder={t('searchResults.namePlaceholder')}
+                        placeholder={t("searchResults.namePlaceholder")}
                       />
                       <input
                         type="text"
                         value={editKeyValue}
                         onChange={(e) => setEditKeyValue(e.target.value)}
                         className="search-results-edit-input"
-                        placeholder={t('searchResults.keyPlaceholder')}
+                        placeholder={t("searchResults.keyPlaceholder")}
                       />
                       <div className="search-results-edit-buttons">
-                        <button 
+                        <button
                           onClick={() => saveEdit(key)}
                           className="search-results-edit-save-button"
                         >
-                          {t('searchResults.save')}
+                          {t("searchResults.save")}
                         </button>
-                        <button 
+                        <button
                           onClick={cancelEdit}
                           className="search-results-edit-cancel-button"
                         >
-                          {t('searchResults.cancel')}
+                          {t("searchResults.cancel")}
                         </button>
                       </div>
                     </div>
                   ) : deletingId === key.id ? (
                     // 删除确认模式
                     <div className="search-results-delete-confirm">
-                      <div className="search-results-delete-text">{t('searchResults.confirmDelete')}</div>
+                      <div className="search-results-delete-text">
+                        {t("searchResults.confirmDelete")}
+                      </div>
                       <div className="search-results-delete-buttons">
-                        <button 
+                        <button
                           onClick={executeDelete}
                           className="search-results-delete-confirm-button"
                         >
-                          {t('searchResults.confirm')}
+                          {t("searchResults.confirm")}
                         </button>
-                        <button 
+                        <button
                           onClick={cancelDelete}
                           className="search-results-delete-cancel-button"
                         >
-                          {t('searchResults.cancel')}
+                          {t("searchResults.cancel")}
                         </button>
                       </div>
                     </div>
@@ -303,15 +326,24 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                       <div className="search-results-item-header">
                         <div className="search-results-item-info">
                           <div className="search-results-item-name">
-                            <span className="search-results-item-name-text">{key.name}</span>
+                            <span className="search-results-item-name-text">
+                              {key.name}
+                            </span>
                             {key.description && (
                               <>
-                                <span className="search-results-item-sep"> | </span>
-                                <span className="search-results-item-description">{key.description}</span>
+                                <span className="search-results-item-sep">
+                                  {" "}
+                                  |{" "}
+                                </span>
+                                <span className="search-results-item-description">
+                                  {key.description}
+                                </span>
                               </>
                             )}
                           </div>
-                          <div className="search-results-item-key">{formatApiKey(key.keyValue)}</div>
+                          <div className="search-results-item-key">
+                            {formatApiKey(key.keyValue)}
+                          </div>
                         </div>
                         <div className="search-results-item-right-section">
                           {key.platform && (
@@ -327,7 +359,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 startEditing(key);
                               }}
-                              aria-label={t('searchResults.edit')}
+                              aria-label={t("searchResults.edit")}
                               className="search-results-action-button"
                             >
                               <EditIcon className="search-results-action-icon" />
@@ -337,7 +369,7 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 confirmDelete(key.id);
                               }}
-                              aria-label={t('searchResults.delete')}
+                              aria-label={t("searchResults.delete")}
                               className="search-results-action-button"
                             >
                               <CloseIcon className="search-results-action-icon" />
@@ -347,10 +379,14 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
                                 e.stopPropagation();
                                 handleCopy(key);
                               }}
-                              aria-label={t('searchResults.copy')}
+                              aria-label={t("searchResults.copy")}
                               className="search-results-action-button"
                             >
-                              {copiedId === key.id ? <CheckIcon className="search-results-action-icon" /> : <CopyIcon className="search-results-action-icon" />}
+                              {copiedId === key.id ? (
+                                <CheckIcon className="search-results-action-icon" />
+                              ) : (
+                                <CopyIcon className="search-results-action-icon" />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -365,40 +401,46 @@ export function SearchResults({ results, onCopy, onRefresh, onCopyConfirmed }: S
       </div>
 
       {/* 模态对话框 */}
-      {modal && modal.isOpen && createPortal(
-        <div className="search-results-modal-overlay">
-          <div
-            ref={modalRef}
-            className={`search-results-modal-container ${modalPos ? 'positioned' : ''}`}
-          >
-            <div className="search-results-modal-header">
-              <div className={`search-results-modal-title ${modal.type === 'success' ? 'success' : 'error'}`}>
-                {modal.title}
+      {modal &&
+        modal.isOpen &&
+        createPortal(
+          <div className="search-results-modal-overlay">
+            <div
+              ref={modalRef}
+              className={`search-results-modal-container ${modalPos ? "positioned" : ""}`}
+            >
+              <div className="search-results-modal-header">
+                <div
+                  className={`search-results-modal-title ${modal.type === "success" ? "success" : "error"}`}
+                >
+                  {modal.title}
+                </div>
+              </div>
+              <div className="search-results-modal-body">
+                <div className="search-results-modal-message">
+                  {modal.message}
+                </div>
+              </div>
+              <div className="search-results-modal-footer">
+                <button
+                  onClick={() => {
+                    if (modal.type === "success" && modal.onConfirm) {
+                      modal.onConfirm();
+                    } else {
+                      setModal(null);
+                    }
+                  }}
+                  className={`search-results-modal-button ${modal.type === "success" ? "success" : "error"}`}
+                >
+                  {modal.type === "success"
+                    ? t("searchResults.confirm")
+                    : t("searchResults.close")}
+                </button>
               </div>
             </div>
-            <div className="search-results-modal-body">
-              <div className="search-results-modal-message">
-                {modal.message}
-              </div>
-            </div>
-            <div className="search-results-modal-footer">
-              <button
-                onClick={() => {
-                  if (modal.type === 'success' && modal.onConfirm) {
-                    modal.onConfirm();
-                  } else {
-                    setModal(null);
-                  }
-                }}
-                className={`search-results-modal-button ${modal.type === 'success' ? 'success' : 'error'}`}
-              >
-                {modal.type === 'success' ? t('searchResults.confirm') : t('searchResults.close')}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

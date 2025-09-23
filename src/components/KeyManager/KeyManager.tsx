@@ -15,7 +15,7 @@ const KeyManagerComponent = () => {
   const toast = useApiToast();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [isCopying, setIsCopying] = useState(false);
-  
+
   // 模拟复制到剪贴板的函数
   const copyToClipboard = async (text: string) => {
     setIsCopying(true);
@@ -26,18 +26,18 @@ const KeyManagerComponent = () => {
         return true;
       } else {
         // 降级方案：创建临时textarea元素
-        const textarea = document.createElement('textarea');
+        const textarea = document.createElement("textarea");
         textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
         document.body.appendChild(textarea);
         textarea.select();
-        const success = document.execCommand('copy');
+        const success = document.execCommand("copy");
         document.body.removeChild(textarea);
         return success;
       }
     } catch (error) {
-      console.error('复制失败:', error);
+      console.error("复制失败:", error);
       return false;
     } finally {
       setIsCopying(false);
@@ -50,34 +50,40 @@ const KeyManagerComponent = () => {
   }, []);
 
   // 复制API Key到剪贴板 - 使用useCallback避免重渲染
-  const handleCopyToClipboard = useCallback(async (keyValue: string) => {
-    const result = await copyToClipboard(keyValue);
-    if (result) {
-      // 显示成功提示
-      toast.showCopySuccess();
-    } else {
-      toast.showCopyError();
-    }
-  }, [copyToClipboard, toast]);
+  const handleCopyToClipboard = useCallback(
+    async (keyValue: string) => {
+      const result = await copyToClipboard(keyValue);
+      if (result) {
+        // 显示成功提示
+        toast.showCopySuccess();
+      } else {
+        toast.showCopyError();
+      }
+    },
+    [copyToClipboard, toast],
+  );
 
   // 删除API Key - 使用useCallback避免重渲染
-  const deleteApiKey = useCallback(async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this API Key?")) {
-      const result = await apiKeyService.deleteApiKey(id);
-      if (result.success) {
-        // 显示成功提示并刷新数据
-        toast.showDeleteSuccess();
-        refetch();
-      } else {
-        toast.showDeleteError(result.error?.message);
+  const deleteApiKey = useCallback(
+    async (id: string) => {
+      if (window.confirm("Are you sure you want to delete this API Key?")) {
+        const result = await apiKeyService.deleteApiKey(id);
+        if (result.success) {
+          // 显示成功提示并刷新数据
+          toast.showDeleteSuccess();
+          refetch();
+        } else {
+          toast.showDeleteError(result.error?.message);
+        }
       }
-    }
-  }, [toast]);
+    },
+    [toast],
+  );
 
   // 过滤API Keys - 使用useMemo避免重复计算
   const filteredKeys = useMemo(() => {
     return selectedGroup
-      ? apiKeys.filter(key => key.groupId === selectedGroup)
+      ? apiKeys.filter((key) => key.groupId === selectedGroup)
       : apiKeys;
   }, [apiKeys, selectedGroup]);
 
@@ -86,98 +92,106 @@ const KeyManagerComponent = () => {
     return groups.reduce((map, group) => {
       map.set(group.id, group);
       return map;
-    }, new Map<string, typeof groups[0]>());
+    }, new Map<string, (typeof groups)[0]>());
   }, [groups]);
 
   // 渲染单个API Key项 - 使用useCallback和groupMap优化性能
-  const renderApiKeyItem = useCallback((key: ApiKey, index: number) => {
-    const group = key.groupId ? groupMap.get(key.groupId) : undefined;
+  const renderApiKeyItem = useCallback(
+    (key: ApiKey, index: number) => {
+      const group = key.groupId ? groupMap.get(key.groupId) : undefined;
 
-    return (
-      <div className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-        index === 0 ? 'border-t' : ''
-      }`}>
-        {/* 名称 */}
-        <div className="col-span-3">
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            {key.name}
+      return (
+        <div
+          className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+            index === 0 ? "border-t" : ""
+          }`}
+        >
+          {/* 名称 */}
+          <div className="col-span-3">
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {key.name}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+              {key.description}
+            </div>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-            {key.description}
+
+          {/* 平台 */}
+          <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+            {key.platform || "-"}
+          </div>
+
+          {/* 分组 */}
+          <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+            {group ? group.name : "-"}
+          </div>
+
+          {/* 创建时间 */}
+          <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
+            {formatDateTime(key.createdAt)}
+          </div>
+
+          {/* 操作 */}
+          <div className="col-span-3 text-sm font-medium">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleCopyToClipboard(key.keyValue)}
+                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded"
+                disabled={isCopying}
+              >
+                {isCopying ? "Copying..." : "Copy"}
+              </button>
+              <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-2 py-1 rounded">
+                Edit
+              </button>
+              <button
+                onClick={() => deleteApiKey(key.id)}
+                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* 平台 */}
-        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
-          {key.platform || "-"}
-        </div>
-
-        {/* 分组 */}
-        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
-          {group ? group.name : "-"}
-        </div>
-
-        {/* 创建时间 */}
-        <div className="col-span-2 text-sm text-gray-500 dark:text-gray-400">
-          {formatDateTime(key.createdAt)}
-        </div>
-
-        {/* 操作 */}
-        <div className="col-span-3 text-sm font-medium">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handleCopyToClipboard(key.keyValue)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded"
-              disabled={isCopying}
-            >
-              {isCopying ? 'Copying...' : 'Copy'}
-            </button>
-            <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-2 py-1 rounded">
-              Edit
-            </button>
-            <button
-              onClick={() => deleteApiKey(key.id)}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }, [groupMap, handleCopyToClipboard, isCopying, deleteApiKey]);
+      );
+    },
+    [groupMap, handleCopyToClipboard, isCopying, deleteApiKey],
+  );
 
   // 计算项目高度（大约64px每行）
   const getItemHeight = () => 64;
 
   // 渲染分组筛选按钮 - 使用useMemo优化
-  const groupFilterButtons = useMemo(() => (
-    <div className="flex flex-wrap gap-2">
-      <button
-        onClick={() => setSelectedGroup(null)}
-        className={`px-3 py-1 rounded-full text-sm ${
-          selectedGroup === null
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-        }`}
-      >
-        All
-      </button>
-      {groups.map(group => (
+  const groupFilterButtons = useMemo(
+    () => (
+      <div className="flex flex-wrap gap-2">
         <button
-          key={group.id}
-          onClick={() => setSelectedGroup(group.id)}
+          onClick={() => setSelectedGroup(null)}
           className={`px-3 py-1 rounded-full text-sm ${
-            selectedGroup === group.id
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+            selectedGroup === null
+              ? "bg-blue-500 text-white"
+              : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
           }`}
         >
-          {group.name}
+          All
         </button>
-      ))}
-    </div>
-  ), [groups, selectedGroup]);
+        {groups.map((group) => (
+          <button
+            key={group.id}
+            onClick={() => setSelectedGroup(group.id)}
+            className={`px-3 py-1 rounded-full text-sm ${
+              selectedGroup === group.id
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+            }`}
+          >
+            {group.name}
+          </button>
+        ))}
+      </div>
+    ),
+    [groups, selectedGroup],
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -189,9 +203,7 @@ const KeyManagerComponent = () => {
       </div>
 
       {/* 分组筛选 */}
-      <div className="mb-6">
-        {groupFilterButtons}
-      </div>
+      <div className="mb-6">{groupFilterButtons}</div>
 
       {/* API Keys列表 - 使用虚拟滚动 */}
       {loading ? (

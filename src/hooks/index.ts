@@ -1,7 +1,4 @@
-import { useApiKeys } from './useApiKey';
-import { useSearch } from './useSearch';
+import { useApiKeys } from "./useApiKey";
+import { useSearch } from "./useSearch";
 
-export {
-  useApiKeys,
-  useSearch,
-};
+export { useApiKeys, useSearch };

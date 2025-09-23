@@ -1,17 +1,23 @@
 import { ApiKey } from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
-import { logSecureError, getUserFriendlyErrorMessage, OperationContext } from "./secureLogging";
+import {
+  logSecureError,
+  getUserFriendlyErrorMessage,
+  OperationContext,
+} from "./secureLogging";
 
 // 搜索服务
 export const searchService = {
   // 搜索API Key
-  async searchKeys(keyword: string): Promise<{ data: ApiKey[]; error?: string }> {
+  async searchKeys(
+    keyword: string,
+  ): Promise<{ data: ApiKey[]; error?: string }> {
     try {
       // 验证搜索关键词
-      if (typeof keyword !== 'string') {
+      if (typeof keyword !== "string") {
         return { data: [], error: "搜索关键词必须是字符串" };
       }
-      
+
       console.log("SearchService: Attempting to search with keyword:", keyword);
 
       // 直接调用Tauri后端命令，不进行环境检测
@@ -23,7 +29,10 @@ export const searchService = {
       logSecureError(OperationContext.API_KEY_SEARCH, error);
 
       // 作为回退，返回空数组而不是模拟数据
-      return { data: [], error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH) };
+      return {
+        data: [],
+        error: getUserFriendlyErrorMessage(OperationContext.API_KEY_SEARCH),
+      };
 
       /*
       // 如果需要模拟数据作为回退，取消注释以下代码

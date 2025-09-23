@@ -15,7 +15,7 @@ export default {
     loading: "Загрузка...",
     error: "Ошибка",
     success: "Успех",
-    warning: "Предупреждение"
+    warning: "Предупреждение",
   },
 
   floatingToolbar: {
@@ -24,7 +24,7 @@ export default {
     more: "Ещё",
     settings: "Настройки",
     exit: "Выйти из приложения",
-    loadingPlatforms: "Загрузка платформ..."
+    loadingPlatforms: "Загрузка платформ...",
   },
 
   settings: {
@@ -33,11 +33,11 @@ export default {
     language: "Язык",
     shortcuts: "Горячие клавиши",
     aboutTitle: "О приложении",
-    
+
     themeOptions: {
       light: "Светлая",
       dark: "Тёмная",
-      system: "Система"
+      system: "Система",
     },
 
     shortcutsToggle: "Показать/Скрыть",
@@ -45,8 +45,9 @@ export default {
     about: {
       title: "API Key Manager",
       version: "v1.0.0",
-      description: "Современный инструмент управления ключами API для безопасного хранения и управления ключами API разработчиками."
-    }
+      description:
+        "Современный инструмент управления ключами API для безопасного хранения и управления ключами API разработчиками.",
+    },
   },
 
   apiKey: {
@@ -66,10 +67,11 @@ export default {
       delete: "Удалить",
       copy: "Копировать",
       copySuccess: "Скопировано в буфер обмена",
-      copyWarning: "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
+      copyWarning:
+        "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
       deleteConfirm: "Вы уверены, что хотите удалить?",
       deleteSuccess: "Ключ API удалён из системы",
-      editSuccess: "Успешно обновлено"
+      editSuccess: "Успешно обновлено",
     },
 
     form: {
@@ -84,8 +86,8 @@ export default {
       tagsLabel: "Теги",
       tagsPlaceholder: "Введите теги через запятую",
       submit: "Сохранить",
-      cancel: "Отмена"
-    }
+      cancel: "Отмена",
+    },
   },
 
   searchResults: {
@@ -100,7 +102,8 @@ export default {
     delete: "Удалить",
     copy: "Копировать",
     copySuccess: "Копирование успешно",
-    copySuccessMessage: "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
+    copySuccessMessage:
+      "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
     copyFailed: "Ошибка копирования",
     copyFailedMessage: "Не удалось скопировать ключ API в буфер обмена",
     editSuccess: "Редактирование успешно",
@@ -112,49 +115,50 @@ export default {
     deleteFailed: "Ошибка удаления",
     deleteFailedMessage: "Не удалось удалить ключ API",
     unknownError: "Произошла неизвестная ошибка",
-    close: "Закрыть"
+    close: "Закрыть",
   },
 
   radialMenu: {
-    loading: "Загрузка платформ..."
+    loading: "Загрузка платформ...",
   },
 
   modal: {
     copySuccess: {
       title: "Копирование успешно",
-      message: "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
-      confirm: "ОК"
+      message:
+        "Ключ API скопирован в буфер обмена. Пожалуйста, учитывайте риски безопасности. Система очистит буфер обмена через 30 секунд.",
+      confirm: "ОК",
     },
     copyError: {
       title: "Ошибка копирования",
       message: "Не удалось скопировать ключ API в буфер обмена",
-      close: "Закрыть"
+      close: "Закрыть",
     },
     editSuccess: {
       title: "Редактирование успешно",
       message: "Успешно обновлено",
-      confirm: "ОК"
+      confirm: "ОК",
     },
     editError: {
       title: "Ошибка редактирования",
       message: "Не удалось обновить ключ API",
-      close: "Закрыть"
+      close: "Закрыть",
     },
     deleteSuccess: {
       title: "Удаление успешно",
       message: "Ключ API удалён из системы",
-      confirm: "ОК"
+      confirm: "ОК",
     },
     deleteError: {
       title: "Ошибка удаления",
       message: "Не удалось удалить ключ API",
-      close: "Закрыть"
+      close: "Закрыть",
     },
     genericError: {
       title: "Ошибка",
       message: "Произошла неизвестная ошибка",
-      close: "Закрыть"
-    }
+      close: "Закрыть",
+    },
   },
 
   errors: {
@@ -163,22 +167,24 @@ export default {
     database: "Произошла ошибка базы данных",
     validation: "Произошла ошибка проверки",
     permission: "Доступ запрещён",
-    notFound: "Ресурс не найден"
+    notFound: "Ресурс не найден",
   },
 
   addApiKeyDialog: {
     title: "Добавить ключ API",
     batchImport: "Пакетный импорт",
-    batchImportInstructions: "Используйте шаблон Excel для пакетного импорта ключей API. Пожалуйста, сначала скачайте шаблон, заполните данные, а затем загрузите.",
+    batchImportInstructions:
+      "Используйте шаблон Excel для пакетного импорта ключей API. Пожалуйста, сначала скачайте шаблон, заполните данные, а затем загрузите.",
     downloadTemplate: "Скачать шаблон",
     selectExcelFile: "Выбрать файл Excel",
     supportedFormats: "Поддерживаемые форматы: файлы Excel (.xlsx)",
-    requiredColumns: "Обязательные столбцы: Имя | Ключ API | Платформа | Описание",
+    requiredColumns:
+      "Обязательные столбцы: Имя | Ключ API | Платформа | Описание",
     savedToDownloads: "Сохранено в папку загрузок",
     openFile: "Открыть файл",
     back: "Назад",
     submitting: "Отправка…",
-    
+
     form: {
       nameLabel: "Имя",
       namePlaceholder: "Пожалуйста, введите имя ключа API",
@@ -187,22 +193,24 @@ export default {
       platformLabel: "Платформа",
       platformPlaceholder: "напр.: OpenAI, Claude, Gemini...",
       descriptionLabel: "Описание",
-      descriptionPlaceholder: "Необязательное описание..."
+      descriptionPlaceholder: "Необязательное описание...",
     },
 
     errors: {
       nameRequired: "Имя обязательно",
       keyRequired: "Ключ API обязателен",
-      keyInvalid: "Формат ключа API недействителен"
+      keyInvalid: "Формат ключа API недействителен",
     },
 
     previewNotAvailable: "Предпросмотр недоступен",
-    previewNotAvailableMessage: "Пожалуйста, используйте функцию предпросмотра в настольной среде",
+    previewNotAvailableMessage:
+      "Пожалуйста, используйте функцию предпросмотра в настольной среде",
     previewWindowError: "Ошибка окна предпросмотра",
     error: "Ошибка",
-    
+
     importSuccess: "Импорт успешен",
-    importSuccessMessage: "Успешно импортировано {{succeeded}} ключей API, {{failed}} с ошибками",
+    importSuccessMessage:
+      "Успешно импортировано {{succeeded}} ключей API, {{failed}} с ошибками",
     importFailed: "Ошибка импорта",
     importFailedMessage: "Произошла ошибка во время импорта",
     importProcessError: "Произошла ошибка во время обработки импорта",
@@ -219,20 +227,22 @@ export default {
     parseProcessError: "Произошла ошибка во время анализа",
 
     tauriPluginNotInitialized: "Плагин Tauri не инициализирован",
-    tauriEnvironmentRequired: "Пожалуйста, убедитесь, что вы работаете в настольной среде Tauri",
+    tauriEnvironmentRequired:
+      "Пожалуйста, убедитесь, что вы работаете в настольной среде Tauri",
     fileSelectionFailed: "Ошибка выбора файла",
     cannotOpenFileDialog: "Не удалось открыть диалоговое окно файла",
     downloadFailed: "Ошибка скачивания",
     downloadProcessError: "Произошла ошибка во время скачивания шаблона",
     openFileFailed: "Ошибка открытия файла",
     cannotOpenDownloadedFile: "Не удалось открыть скачанный файл",
-    
+
     templateDownloadSuccess: "Скачивание шаблона успешно",
     downloadedToBrowser: "Файл скачан в место скачивания по умолчанию браузера",
-    templateSavedMessage: "Файл шаблона Excel \"{{fileName}}\" был сохранён в вашу папку загрузок",
-    
+    templateSavedMessage:
+      'Файл шаблона Excel "{{fileName}}" был сохранён в вашу папку загрузок',
+
     info: "Информация",
-    fileSavedTo: "Файл сохранён в: {{filePath}}"
+    fileSavedTo: "Файл сохранён в: {{filePath}}",
   },
 
   themeToggle: {
@@ -244,6 +254,6 @@ export default {
     followSystem: "Следовать системной теме",
     system: "Система",
     dark: "Тёмная",
-    light: "Светлая"
-  }
+    light: "Светлая",
+  },
 };

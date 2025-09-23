@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { toastService, ToastMessage } from '../services/toastService';
+import { useState, useEffect, useCallback } from "react";
+import { toastService, ToastMessage } from "../services/toastService";
 
 interface UseToastReturn {
   // Toast actions
@@ -25,14 +25,14 @@ export const useToast = (): UseToastReturn => {
   // Subscribe to toast service updates
   useEffect(() => {
     const unsubscribe = toastService.subscribe((toast) => {
-      setToasts(currentToasts => {
+      setToasts((currentToasts) => {
         // Check if this is a removal signal (empty title)
         if (!toast.title) {
-          return currentToasts.filter(t => t.id !== toast.id);
+          return currentToasts.filter((t) => t.id !== toast.id);
         }
 
         // Check if toast already exists
-        const existingIndex = currentToasts.findIndex(t => t.id === toast.id);
+        const existingIndex = currentToasts.findIndex((t) => t.id === toast.id);
         if (existingIndex >= 0) {
           // Update existing toast
           const updatedToasts = [...currentToasts];
@@ -99,20 +99,20 @@ export const useApiToast = () => {
 
   return {
     // API Key specific toasts
-    showCopySuccess: () => toast.success('Copied to clipboard'),
-    showCopyError: () => toast.error('Copy failed'),
-    showDeleteSuccess: () => toast.success('Delete successful'),
-    showDeleteError: (error?: string) => toast.error('Delete failed', error),
-    showAddSuccess: () => toast.success('Add successful'),
-    showAddError: (error?: string) => toast.error('Add failed', error),
-    showEditSuccess: () => toast.success('Edit successful'),
-    showEditError: (error?: string) => toast.error('Edit failed', error),
+    showCopySuccess: () => toast.success("Copied to clipboard"),
+    showCopyError: () => toast.error("Copy failed"),
+    showDeleteSuccess: () => toast.success("Delete successful"),
+    showDeleteError: (error?: string) => toast.error("Delete failed", error),
+    showAddSuccess: () => toast.success("Add successful"),
+    showAddError: (error?: string) => toast.error("Add failed", error),
+    showEditSuccess: () => toast.success("Edit successful"),
+    showEditError: (error?: string) => toast.error("Edit failed", error),
 
     // Clipboard specific toasts
-    showImportSuccess: () => toast.success('API Key imported successfully!'),
-    showImportError: () => toast.error('API Key import failed!'),
-    showAnalyzeSuccess: () => toast.success('Analysis completed'),
-    showAnalyzeError: () => toast.error('Analysis failed'),
+    showImportSuccess: () => toast.success("API Key imported successfully!"),
+    showImportError: () => toast.error("API Key import failed!"),
+    showAnalyzeSuccess: () => toast.success("Analysis completed"),
+    showAnalyzeError: () => toast.error("Analysis failed"),
 
     // Generic success/error methods
     success: toast.success,

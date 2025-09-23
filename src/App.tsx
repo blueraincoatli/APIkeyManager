@@ -10,7 +10,7 @@ import "./styles/theme.css";
 import "./i18n";
 
 // 检查是否在Tauri环境中
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
 
 function App() {
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(true);
@@ -18,14 +18,15 @@ function App() {
   // 检测backdrop-filter支持
   useEffect(() => {
     const checkBackdropFilterSupport = () => {
-      const testElement = document.createElement('div');
-      testElement.style.backdropFilter = 'blur(10px)';
-      testElement.style.webkitBackdropFilter = 'blur(10px)';
+      const testElement = document.createElement("div");
+      testElement.style.backdropFilter = "blur(10px)";
+      testElement.style.webkitBackdropFilter = "blur(10px)";
 
-      const supportsBackdropFilter = testElement.style.backdropFilter !== '';
-      const supportsWebkitBackdropFilter = testElement.style.webkitBackdropFilter !== '';
+      const supportsBackdropFilter = testElement.style.backdropFilter !== "";
+      const supportsWebkitBackdropFilter =
+        testElement.style.webkitBackdropFilter !== "";
 
-      console.log('Backdrop-filter support details:', {
+      console.log("Backdrop-filter support details:", {
         backdropFilter: supportsBackdropFilter,
         webkitBackdropFilter: supportsWebkitBackdropFilter,
         testElementBackdropFilter: testElement.style.backdropFilter,
@@ -33,14 +34,14 @@ function App() {
         userAgent: navigator.userAgent,
         isTauri: isTauri,
         protocol: window.location.protocol,
-        href: window.location.href
+        href: window.location.href,
       });
 
       // 添加CSS类来标识支持情况
       if (supportsBackdropFilter || supportsWebkitBackdropFilter) {
-        document.body.classList.add('supports-backdrop-filter');
+        document.body.classList.add("supports-backdrop-filter");
       } else {
-        document.body.classList.add('no-backdrop-filter');
+        document.body.classList.add("no-backdrop-filter");
       }
     };
 
@@ -114,24 +115,23 @@ function App() {
   return (
     <ErrorBoundary>
       <LocaleProvider>
-        <div
-          className="app-container floating-toolbar-window"
-          id="app-bg"
-        >
+        <div className="app-container floating-toolbar-window" id="app-bg">
           {/* 渲染浮动工具条 */}
           {showFloatingToolbar && (
-            <FloatingToolbar onClose={async () => {
-              setShowFloatingToolbar(false);
-              // 仅在Tauri环境中调用
-              if (isTauri) {
-                try {
-                  const window = getCurrentWebviewWindow();
-                  await window.hide();
-                } catch (error) {
-                  console.warn("Failed to hide window:", error);
+            <FloatingToolbar
+              onClose={async () => {
+                setShowFloatingToolbar(false);
+                // 仅在Tauri环境中调用
+                if (isTauri) {
+                  try {
+                    const window = getCurrentWebviewWindow();
+                    await window.hide();
+                  } catch (error) {
+                    console.warn("Failed to hide window:", error);
+                  }
                 }
-              }
-            }} />
+              }}
+            />
           )}
 
           {/* Toast 通知容器 */}

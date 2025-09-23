@@ -4,7 +4,13 @@ import { ApiKey } from "../../types/apiKey";
 import { searchService } from "../../services/searchService";
 import { RadialMenu } from "../RadialMenu/RadialMenu";
 import { SearchResults } from "../SearchResults/SearchResults";
-import { SearchIcon, PlusIcon, EllipsisIcon, GearIcon, CloseIcon } from "../Icon/Icon";
+import {
+  SearchIcon,
+  PlusIcon,
+  EllipsisIcon,
+  GearIcon,
+  CloseIcon,
+} from "../Icon/Icon";
 import { PROVIDERS, matchProvider } from "../../constants/providers";
 import { AddApiKeyDialog } from "../AddApiKey/AddApiKeyDialog";
 import { invoke } from "@tauri-apps/api/core";
@@ -16,11 +22,11 @@ import { apiKeyService } from "../../services/apiKeyService";
 import "./FloatingToolbar.css";
 
 // 检查是否在Tauri环境中 - 更可靠的检测方法
-const isTauri = typeof window !== 'undefined' && (
-  '__TAURI__' in window ||
-  '__TAURI_INTERNALS__' in window ||
-  window.location.protocol === 'tauri:'
-);
+const isTauri =
+  typeof window !== "undefined" &&
+  ("__TAURI__" in window ||
+    "__TAURI_INTERNALS__" in window ||
+    window.location.protocol === "tauri:");
 
 interface FloatingToolbarProps {
   onClose: () => void;
@@ -30,7 +36,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<ApiKey[]>([]);
-  const [providerLabel, setProviderLabel] = useState<string | undefined>(undefined);
+  const [providerLabel, setProviderLabel] = useState<string | undefined>(
+    undefined,
+  );
   const [showRadialMenu, setShowRadialMenu] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -39,14 +47,16 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
+  const [providerCounts, setProviderCounts] = useState<Record<string, number>>(
+    {},
+  );
   // 新增：用于管理从数据库获取的platform数据
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(false);
 
   // 新增：用于管理当前显示的面板类型
-  type ActivePanel = 'none' | 'radial' | 'search' | 'add' | 'settings';
-  const [activePanel, setActivePanel] = useState<ActivePanel>('none');
+  type ActivePanel = "none" | "radial" | "search" | "add" | "settings";
+  const [activePanel, setActivePanel] = useState<ActivePanel>("none");
 
   // 记住径向菜单打开前的窗口状态，用于恢复位置
   const [originalWindowState, setOriginalWindowState] = useState<{
@@ -54,16 +64,23 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     size: { width: number; height: number };
   } | null>(null);
 
-
-
   useEffect(() => {
     inputRef.current?.focus();
 
     // 调试信息
     console.log("Tauri environment check:");
-    console.log("- window.__TAURI__:", typeof window !== 'undefined' && '__TAURI__' in window);
-    console.log("- window.__TAURI_INTERNALS__:", typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window);
-    console.log("- window.location.protocol:", typeof window !== 'undefined' ? window.location.protocol : 'undefined');
+    console.log(
+      "- window.__TAURI__:",
+      typeof window !== "undefined" && "__TAURI__" in window,
+    );
+    console.log(
+      "- window.__TAURI_INTERNALS__:",
+      typeof window !== "undefined" && "__TAURI_INTERNALS__" in window,
+    );
+    console.log(
+      "- window.location.protocol:",
+      typeof window !== "undefined" ? window.location.protocol : "undefined",
+    );
     console.log("- isTauri result:", isTauri);
 
     // 测试数据库连接
@@ -106,11 +123,13 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
           // 计算位置：水平居中，垂直在屏幕上1/3处
           const centerX = (screenWidth / scaleFactor - windowWidth) / 2;
-          const upperThirdY = (screenHeight / scaleFactor) / 3 - windowHeight / 2;
+          const upperThirdY = screenHeight / scaleFactor / 3 - windowHeight / 2;
 
           await window.setPosition(new LogicalPosition(centerX, upperThirdY));
-          console.log(`Window positioned at: x=${centerX}, y=${upperThirdY} (screen: ${screenWidth}x${screenHeight})`);
-          
+          console.log(
+            `Window positioned at: x=${centerX}, y=${upperThirdY} (screen: ${screenWidth}x${screenHeight})`,
+          );
+
           // 位置设置完成后显示窗口
           await window.show();
           console.log("Window shown after positioning");
@@ -156,18 +175,18 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     // 使用CSS pointer-events控制，不需要额外逻辑
   };
 
-
-
   // 拖拽：整个工具条可拖拽
   const handleDragStart = async (e: React.MouseEvent) => {
     if (e.button !== 0) return; // 只响应左键
 
     // 检查是否点击在交互元素上
     const target = e.target as HTMLElement;
-    if (target.closest('.floating-toolbar-search-container') ||
-        target.closest('.floating-toolbar-buttons') ||
-        target.closest('.floating-toolbar-radial-menu') ||
-        target.closest('.radial-menu-overlay')) {
+    if (
+      target.closest(".floating-toolbar-search-container") ||
+      target.closest(".floating-toolbar-buttons") ||
+      target.closest(".floating-toolbar-radial-menu") ||
+      target.closest(".radial-menu-overlay")
+    ) {
       return; // 不处理交互元素的拖拽
     }
 
@@ -208,7 +227,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setProviderLabel(undefined);
     if (term.trim() === "") {
       setSearchResults([]);
-      setActivePanel('none');
+      setActivePanel("none");
       return;
     }
     const results = await searchService.searchKeys(term);
@@ -217,7 +236,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setShowRadialMenu(false);
     setShowAddDialog(false);
     setShowSettingsPanel(false);
-    setActivePanel('search');
+    setActivePanel("search");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -236,13 +255,13 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
       // 检查点击是否在任何面板内
       const panelSelectors = [
-        '.settings-panel-container',
-        '.add-api-key-dialog-container',
-        '.radial-menu-overlay',
-        '.search-results-container'
+        ".settings-panel-container",
+        ".add-api-key-dialog-container",
+        ".radial-menu-overlay",
+        ".search-results-container",
       ];
 
-      const isClickInPanel = panelSelectors.some(selector => {
+      const isClickInPanel = panelSelectors.some((selector) => {
         const panel = document.querySelector(selector);
         return panel && panel.contains(target);
       });
@@ -253,7 +272,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         setShowRadialMenu(false);
         setShowAddDialog(false);
         setShowSettingsPanel(false);
-        setActivePanel('none');
+        setActivePanel("none");
       }
     };
 
@@ -265,7 +284,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
 
   const copyToClipboard = async (key: ApiKey) => {
     // 仅记录一次复制行为（不再折叠面板，避免打断子组件的模态提示）
-    try { await apiKeyService.copyToClipboard(key.id); } catch (_) {}
+    try {
+      await apiKeyService.copyToClipboard(key.id);
+    } catch (_) {}
     // 保持当前面板，交由 SearchResults 内部模态框提示与自动清空
   };
 
@@ -276,11 +297,13 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setProviderLabel(label);
     // 先按标签关键词检索，随后以 platform/name/tags 进行精确过滤（与数据结构对齐）
     const res = await searchService.searchKeys(label);
-    const filtered = (res.data || []).filter((k) => matchProvider(k.name, k.platform, k.tags, id));
+    const filtered = (res.data || []).filter((k) =>
+      matchProvider(k.name, k.platform, k.tags, id),
+    );
     setSearchResults(filtered.length ? filtered : res.data);
     // 隐藏环形菜单，显示搜索结果
     setShowRadialMenu(false);
-    setActivePanel('search');
+    setActivePanel("search");
   };
 
   // 处理platform选择
@@ -291,7 +314,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     setSearchResults(res.data || []);
     // 隐藏环形菜单，显示搜索结果
     setShowRadialMenu(false);
-    setActivePanel('search');
+    setActivePanel("search");
   };
 
   // 创建径向菜单选项
@@ -300,16 +323,16 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     const displayPlatforms = platforms;
 
     // 将platforms转换为径向菜单选项格式，并添加计数
-    const platformOptions = displayPlatforms.map(platform => {
+    const platformOptions = displayPlatforms.map((platform) => {
       // 计算该platform的API key数量
       const count = providerCounts[platform] || 0;
       return {
         id: platform,
         label: platform,
-        count: count
+        count: count,
       };
     });
-    
+
     return platformOptions;
   }, [platforms, providerCounts]);
 
@@ -324,24 +347,28 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         if (res.success) {
           setPlatforms(res.data || []);
         }
-        
+
         // 统计各提供商的 key 数量并展示在按钮上
         const keysRes = await apiKeyService.listApiKeys();
         const keys = keysRes.success ? keysRes.data || [] : [];
         const counts: Record<string, number> = {};
-        
+
         // 统计静态PROVIDERS的数量
         for (const p of PROVIDERS) {
-          counts[p.id] = keys.filter(k => matchProvider(k.name, k.platform, k.tags, p.id)).length;
+          counts[p.id] = keys.filter((k) =>
+            matchProvider(k.name, k.platform, k.tags, p.id),
+          ).length;
         }
-        
+
         // 统计数据库中platform的数量
         if (res.success && res.data) {
           for (const platform of res.data) {
-            counts[platform] = keys.filter(k => k.platform === platform).length;
+            counts[platform] = keys.filter(
+              (k) => k.platform === platform,
+            ).length;
           }
         }
-        
+
         setProviderCounts(counts);
       } catch (error) {
         console.error("Failed to load platforms:", error);
@@ -352,7 +379,12 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     loadPlatforms();
   }, [showRadialMenu]); // 添加依赖数组
 
-  const adjustWindowSizeWithAnchor = async (newWidth: number, newHeight: number, anchorType: 'center' | 'top-left', saveOriginalState: boolean = false) => {
+  const adjustWindowSizeWithAnchor = async (
+    newWidth: number,
+    newHeight: number,
+    anchorType: "center" | "top-left",
+    saveOriginalState: boolean = false,
+  ) => {
     if (!isTauri) return;
     try {
       const window = getCurrentWebviewWindow();
@@ -366,27 +398,30 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       const currentLogicalWidth = currentSize.width / scaleFactor;
       const currentLogicalHeight = currentSize.height / scaleFactor;
 
-      if (anchorType === 'center') {
+      if (anchorType === "center") {
         // Per user feedback, the window should always move up by the same amount
         // when opening the radial menu, regardless of the previous state.
-        // This amount is calculated based on the transition from the BASE state (80px height).
+        
         const baseHeight = 120; // 与配置文件中的初始高度保持一致
         const heightDiff = newHeight - baseHeight; // Always calculate diff from base height
         const newLogicalY = currentLogicalY - heightDiff / 2;
 
-        // Only save state if coming from the small, non-top-positioned state.
-        const isTopPositioned = wrapperRef.current?.classList.contains('top-positioned');
+        
+        const isTopPositioned =
+          wrapperRef.current?.classList.contains("top-positioned");
         if (saveOriginalState && !isTopPositioned) {
           setOriginalWindowState({
             position: { x: currentLogicalX, y: currentLogicalY },
-            size: { width: currentLogicalWidth, height: currentLogicalHeight }
+            size: { width: currentLogicalWidth, height: currentLogicalHeight },
           });
         }
 
-        await window.setPosition(new LogicalPosition(currentLogicalX, newLogicalY));
+        await window.setPosition(
+          new LogicalPosition(currentLogicalX, newLogicalY),
+        );
         await window.setSize(new LogicalSize(newWidth, newHeight));
-
-      } else { // 'top-left'
+      } else {
+        // 'top-left'
         await window.setSize(new LogicalSize(newWidth, newHeight));
       }
     } catch (error) {
@@ -407,8 +442,18 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
       console.log("Restoring original window state:", originalWindowState);
 
       // 先恢复位置，再恢复尺寸
-      await window.setPosition(new LogicalPosition(originalWindowState.position.x, originalWindowState.position.y));
-      await window.setSize(new LogicalSize(originalWindowState.size.width, originalWindowState.size.height));
+      await window.setPosition(
+        new LogicalPosition(
+          originalWindowState.position.x,
+          originalWindowState.position.y,
+        ),
+      );
+      await window.setSize(
+        new LogicalSize(
+          originalWindowState.size.width,
+          originalWindowState.size.height,
+        ),
+      );
 
       console.log("Original window state restored successfully");
 
@@ -424,34 +469,41 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
     const adjustWindowSize = async () => {
       if (!isTauri) return;
 
-      if (activePanel === 'radial') {
-        await adjustWindowSizeWithAnchor(640, 300, 'center', true);
-      } else if (activePanel === 'search' || activePanel === 'add' || activePanel === 'settings') {
-        await adjustWindowSizeWithAnchor(460, 600, 'top-left');
+      if (activePanel === "radial") {
+        await adjustWindowSizeWithAnchor(640, 300, "center", true);
+      } else if (
+        activePanel === "search" ||
+        activePanel === "add" ||
+        activePanel === "settings"
+      ) {
+        await adjustWindowSizeWithAnchor(460, 600, "top-left");
       } else {
         if (originalWindowState) {
           await restoreOriginalWindowState();
         } else {
-          await adjustWindowSizeWithAnchor(460, 120, 'top-left'); // 与配置文件保持一致
+          await adjustWindowSizeWithAnchor(460, 120, "top-left"); // 与配置文件保持一致
         }
       }
     };
     adjustWindowSize();
   }, [activePanel]);
 
-
-
   return (
     <>
-      <div ref={wrapperRef} className={`floating-toolbar-wrapper ${
-        activePanel === 'search' || activePanel === 'add' || activePanel === 'settings'
-          ? 'top-positioned'
-          : ''
-      }`}>
+      <div
+        ref={wrapperRef}
+        className={`floating-toolbar-wrapper ${
+          activePanel === "search" ||
+          activePanel === "add" ||
+          activePanel === "settings"
+            ? "top-positioned"
+            : ""
+        }`}
+      >
         {/* 工具条本体（无全屏遮罩） */}
         <div
           ref={toolbarRef}
-          className={`floating-toolbar-container ${isDragging ? 'dragging' : ''}`}
+          className={`floating-toolbar-container ${isDragging ? "dragging" : ""}`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onMouseDown={handleDragStart}
@@ -467,7 +519,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t('floatingToolbar.searchPlaceholder')}
+              placeholder={t("floatingToolbar.searchPlaceholder")}
               className="floating-toolbar-search-input"
             />
           </div>
@@ -483,9 +535,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setShowSettingsPanel(false);
                 // 显示添加对话框
                 setShowAddDialog(true);
-                setActivePanel('add');
+                setActivePanel("add");
               }}
-              aria-label={t('floatingToolbar.addApiKey')}
+              aria-label={t("floatingToolbar.addApiKey")}
             >
               <PlusIcon />
             </button>
@@ -501,10 +553,10 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setShowSettingsPanel(false);
                 // 显示径向菜单
                 setShowRadialMenu(true);
-                setActivePanel('radial');
+                setActivePanel("radial");
               }}
               ref={moreBtnRef}
-              aria-label={t('floatingToolbar.more')}
+              aria-label={t("floatingToolbar.more")}
             >
               <EllipsisIcon />
             </button>
@@ -520,9 +572,9 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                 setShowRadialMenu(false);
                 // 显示设置面板
                 setShowSettingsPanel(true);
-                setActivePanel('settings');
+                setActivePanel("settings");
               }}
-              aria-label={t('floatingToolbar.settings')}
+              aria-label={t("floatingToolbar.settings")}
             >
               <GearIcon />
             </button>
@@ -532,20 +584,22 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
               type="button"
               className="floating-toolbar-button"
               onClick={handleExitClick}
-              aria-label={t('floatingToolbar.exit')}
-              title={t('floatingToolbar.exit')}
+              aria-label={t("floatingToolbar.exit")}
+              title={t("floatingToolbar.exit")}
             >
               <CloseIcon />
             </button>
           </div>
 
           {/* 拖拽说明：点击输入框或按钮不会触发拖拽 */}
-          
+
           {/* 环形菜单 */}
-          {activePanel === 'radial' && (
+          {activePanel === "radial" && (
             <div className="floating-toolbar-radial-menu">
               {isLoadingPlatforms ? (
-                <div className="loading-indicator">{t('floatingToolbar.loadingPlatforms')}</div>
+                <div className="loading-indicator">
+                  {t("floatingToolbar.loadingPlatforms")}
+                </div>
               ) : (
                 <RadialMenu
                   options={radialMenuOptions}
@@ -559,7 +613,7 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
                   }}
                   onClose={() => {
                     setShowRadialMenu(false);
-                    setActivePanel('none');
+                    setActivePanel("none");
                   }}
                 />
               )}
@@ -568,14 +622,14 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         </div>
 
         {/* 结果面板（统一组件） */}
-        {activePanel === 'search' && searchResults.length > 0 && (
+        {activePanel === "search" && searchResults.length > 0 && (
           <SearchResults
             results={searchResults}
             onCopy={copyToClipboard}
             providerLabel={providerLabel}
             onCopyConfirmed={() => {
               setSearchResults([]);
-              setActivePanel('none');
+              setActivePanel("none");
             }}
             onRefresh={async () => {
               // 重新搜索以刷新结果
@@ -588,35 +642,34 @@ export function FloatingToolbar({ onClose }: FloatingToolbarProps) {
         )}
       </div>
 
-      {activePanel === 'add' && showAddDialog && (
+      {activePanel === "add" && showAddDialog && (
         <AddApiKeyDialog
           open={showAddDialog}
           onClose={() => {
             setShowAddDialog(false);
-            setActivePanel('none');
+            setActivePanel("none");
           }}
-          onAdded={async()=>{
+          onAdded={async () => {
             if (searchTerm) {
               const res = await searchService.searchKeys(searchTerm);
               setSearchResults(res.data);
-              setActivePanel('search');
+              setActivePanel("search");
             } else {
-              setActivePanel('none');
+              setActivePanel("none");
             }
           }}
         />
       )}
 
-      {activePanel === 'settings' && showSettingsPanel && (
+      {activePanel === "settings" && showSettingsPanel && (
         <SettingsPanel
           open={showSettingsPanel}
           onClose={() => {
             setShowSettingsPanel(false);
-            setActivePanel('none');
+            setActivePanel("none");
           }}
         />
       )}
     </>
   );
-
 }

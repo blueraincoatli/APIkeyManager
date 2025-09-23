@@ -31,3 +31,14 @@ src-tauri/Cargo.lock
 # Local exports and data dumps
 exports/
 export/
+
+# Temporary and test files
+*.bat
+*.ps1
+test-api-keys.csv
+build-release.*
+
+# Development cache
+.cache/
+.temp/
+*.tmp

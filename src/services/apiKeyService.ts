@@ -1,13 +1,25 @@
-import { ApiKey, Group, UsageHistory, BatchApiKey, BatchImportResult } from "../types/apiKey";
+import {
+  ApiKey,
+  Group,
+  UsageHistory,
+  BatchApiKey,
+  BatchImportResult,
+} from "../types/apiKey";
 import { invoke } from "@tauri-apps/api/core";
-import { validateAndSanitizeApiKey, validateAndSanitizeGroup, validateId, type ApiKeyInput, type GroupInput } from "./inputValidation";
+import {
+  validateAndSanitizeApiKey,
+  validateAndSanitizeGroup,
+  validateId,
+  type ApiKeyInput,
+  type GroupInput,
+} from "./inputValidation";
 import { OperationContext } from "./secureLogging";
 import {
   ServiceResult,
   ErrorCode,
   createSuccessResult,
   createErrorResult,
-  wrapServiceOperation
+  wrapServiceOperation,
 } from "./errors";
 
 /**
@@ -20,7 +32,7 @@ import {
 async function executeOperation<T>(
   operation: () => Promise<T>,
   context: OperationContext,
-  _errorContext?: Record<string, unknown>
+  _errorContext?: Record<string, unknown>,
 ): Promise<ServiceResult<T>> {
   return wrapServiceOperation(async () => {
     const result = await operation();
@@ -38,7 +50,7 @@ function validateAndHandleId(id: string): ServiceResult<string> {
   if (!validation.isValid) {
     return createErrorResult(
       ErrorCode.INVALID_INPUT,
-      validation.error || "Invalid ID"
+      validation.error || "Invalid ID",
     );
   }
   return createSuccessResult(id);
@@ -65,7 +77,7 @@ function mapContextToErrorCode(context: OperationContext): ErrorCode {
     [OperationContext.KEY_DECRYPTION]: ErrorCode.DECRYPTION_ERROR,
     [OperationContext.CLIPBOARD_ANALYZE]: ErrorCode.CLIPBOARD_ERROR,
     [OperationContext.OLLAMA_CHECK]: ErrorCode.NETWORK_ERROR,
-    [OperationContext.THEME_ANALYSIS]: ErrorCode.UNKNOWN_ERROR
+    [OperationContext.THEME_ANALYSIS]: ErrorCode.UNKNOWN_ERROR,
   };
 
   return errorMap[context] || ErrorCode.UNKNOWN_ERROR;
@@ -78,13 +90,15 @@ export const apiKeyService = {
    * @param apiKey - API key data without system-generated fields
    * @returns Promise<ServiceResult<ApiKey>> - Result containing the created API key or error information
    */
-  async addApiKey(apiKey: Omit<ApiKey, "id" | "createdAt" | "updatedAt">): Promise<ServiceResult<ApiKey>> {
+  async addApiKey(
+    apiKey: Omit<ApiKey, "id" | "createdAt" | "updatedAt">,
+  ): Promise<ServiceResult<ApiKey>> {
     // 验证和清理输入
     const validation = validateAndSanitizeApiKey(apiKey);
     if (!validation.isValid) {
       return createErrorResult(
         ErrorCode.VALIDATION_FAILED,
-        validation.errors.join("; ")
+        validation.errors.join("; "),
       );
     }
 
@@ -105,15 +119,12 @@ export const apiKeyService = {
 
     return executeOperation(
       () => invoke("add_api_key", { apiKey: newApiKey }) as Promise<boolean>,
-      OperationContext.API_KEY_ADD
-    ).then(result => {
+      OperationContext.API_KEY_ADD,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(newApiKey);
       } else {
-        return createErrorResult(
-          ErrorCode.API_KEY_INVALID,
-          "添加API Key失败"
-        );
+        return createErrorResult(ErrorCode.API_KEY_INVALID, "添加API Key失败");
       }
     });
   },
@@ -130,7 +141,7 @@ export const apiKeyService = {
     if (!validation.isValid) {
       return createErrorResult(
         ErrorCode.VALIDATION_FAILED,
-        validation.errors.join("; ")
+        validation.errors.join("; "),
       );
     }
 
@@ -150,16 +161,14 @@ export const apiKeyService = {
     };
 
     return executeOperation(
-      () => invoke("edit_api_key", { apiKey: updatedApiKey }) as Promise<boolean>,
-      OperationContext.API_KEY_EDIT
-    ).then(result => {
+      () =>
+        invoke("edit_api_key", { apiKey: updatedApiKey }) as Promise<boolean>,
+      OperationContext.API_KEY_EDIT,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(updatedApiKey);
       } else {
-        return createErrorResult(
-          ErrorCode.API_KEY_INVALID,
-          "编辑API Key失败"
-        );
+        return createErrorResult(ErrorCode.API_KEY_INVALID, "编辑API Key失败");
       }
     });
   },
@@ -176,20 +185,20 @@ export const apiKeyService = {
     if (!idValidation.success) {
       return createErrorResult(
         ErrorCode.INVALID_INPUT,
-        idValidation.error?.message || "Invalid ID"
+        idValidation.error?.message || "Invalid ID",
       );
     }
 
     return executeOperation(
       () => invoke("delete_api_key", { keyId: id }) as Promise<boolean>,
-      OperationContext.API_KEY_DELETE
-    ).then(result => {
+      OperationContext.API_KEY_DELETE,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(true);
       } else {
         return createErrorResult(
           ErrorCode.API_KEY_NOT_FOUND,
-          "删除API Key失败"
+          "删除API Key失败",
         );
       }
     });
@@ -204,7 +213,7 @@ export const apiKeyService = {
     return executeOperation(
       () => invoke("list_api_keys") as Promise<ApiKey[]>,
       OperationContext.API_KEY_SEARCH,
-      { operation: 'list_keys' }
+      { operation: "list_keys" },
     );
   },
 
@@ -216,10 +225,10 @@ export const apiKeyService = {
    */
   async searchKeys(keyword: string): Promise<ServiceResult<ApiKey[]>> {
     // 验证和清理搜索关键词
-    if (typeof keyword !== 'string') {
+    if (typeof keyword !== "string") {
       return createErrorResult(
         ErrorCode.INVALID_INPUT,
-        "搜索关键词必须是字符串"
+        "搜索关键词必须是字符串",
       );
     }
 
@@ -228,21 +237,24 @@ export const apiKeyService = {
     if (sanitizedKeyword.length === 0) {
       return createErrorResult(
         ErrorCode.SEARCH_INVALID_QUERY,
-        "搜索关键词不能为空"
+        "搜索关键词不能为空",
       );
     }
 
     if (sanitizedKeyword.length > 200) {
       return createErrorResult(
         ErrorCode.SEARCH_INVALID_QUERY,
-        "搜索关键词不能超过200个字符"
+        "搜索关键词不能超过200个字符",
       );
     }
 
     return executeOperation(
-      () => invoke("search_api_keys", { keyword: sanitizedKeyword }) as Promise<ApiKey[]>,
+      () =>
+        invoke("search_api_keys", { keyword: sanitizedKeyword }) as Promise<
+          ApiKey[]
+        >,
       OperationContext.API_KEY_SEARCH,
-      { operation: 'search_keys' }
+      { operation: "search_keys" },
     );
   },
 
@@ -255,7 +267,7 @@ export const apiKeyService = {
     return executeOperation(
       () => invoke("get_all_platforms") as Promise<string[]>,
       OperationContext.API_KEY_SEARCH,
-      { operation: 'get_platforms' }
+      { operation: "get_platforms" },
     );
   },
 
@@ -271,20 +283,20 @@ export const apiKeyService = {
     if (!idValidation.success) {
       return createErrorResult(
         ErrorCode.INVALID_INPUT,
-        idValidation.error?.message || "Invalid ID"
+        idValidation.error?.message || "Invalid ID",
       );
     }
 
     return executeOperation(
       () => invoke("copy_to_clipboard", { keyId: id }) as Promise<boolean>,
-      OperationContext.API_KEY_COPY
-    ).then(result => {
+      OperationContext.API_KEY_COPY,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(true);
       } else {
         return createErrorResult(
           ErrorCode.CLIPBOARD_ERROR,
-          "复制API Key到剪贴板失败"
+          "复制API Key到剪贴板失败",
         );
       }
     });
@@ -302,7 +314,7 @@ export const groupService = {
     return executeOperation(
       () => invoke("list_groups") as Promise<Group[]>,
       OperationContext.API_KEY_SEARCH,
-      { operation: 'list_groups' }
+      { operation: "list_groups" },
     );
   },
 
@@ -312,13 +324,15 @@ export const groupService = {
    * @param group - Group data without system-generated fields
    * @returns Promise<ServiceResult<Group>> - Result containing the created group or error information
    */
-  async addGroup(group: Omit<Group, "id" | "createdAt" | "updatedAt">): Promise<ServiceResult<Group>> {
+  async addGroup(
+    group: Omit<Group, "id" | "createdAt" | "updatedAt">,
+  ): Promise<ServiceResult<Group>> {
     // 验证和清理输入
     const validation = validateAndSanitizeGroup(group);
     if (!validation.isValid) {
       return createErrorResult(
         ErrorCode.VALIDATION_FAILED,
-        validation.errors.join("; ")
+        validation.errors.join("; "),
       );
     }
 
@@ -328,22 +342,20 @@ export const groupService = {
     const newGroup: Group = {
       id: generateId(),
       name: (sanitizedGroup as GroupInput).name || group.name || "",
-      description: (sanitizedGroup as GroupInput).description || group.description,
+      description:
+        (sanitizedGroup as GroupInput).description || group.description,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
 
     return executeOperation(
       () => invoke("add_group", { group: newGroup }) as Promise<boolean>,
-      OperationContext.GROUP_ADD
-    ).then(result => {
+      OperationContext.GROUP_ADD,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(newGroup);
       } else {
-        return createErrorResult(
-          ErrorCode.VALIDATION_FAILED,
-          "添加分组失败"
-        );
+        return createErrorResult(ErrorCode.VALIDATION_FAILED, "添加分组失败");
       }
     });
   },
@@ -363,7 +375,7 @@ export const usageHistoryService = {
     if (!keyIdValidation.success) {
       return createErrorResult(
         ErrorCode.INVALID_INPUT,
-        keyIdValidation.error?.message || "Invalid ID"
+        keyIdValidation.error?.message || "Invalid ID",
       );
     }
 
@@ -375,14 +387,14 @@ export const usageHistoryService = {
 
     return executeOperation(
       () => invoke("record_usage", { history }) as Promise<boolean>,
-      OperationContext.USAGE_RECORD
-    ).then(result => {
+      OperationContext.USAGE_RECORD,
+    ).then((result) => {
       if (result.success && result.data) {
         return createSuccessResult(history);
       } else {
         return createErrorResult(
           ErrorCode.API_KEY_NOT_FOUND,
-          "记录使用历史失败"
+          "记录使用历史失败",
         ) as ServiceResult<UsageHistory>;
       }
     });
@@ -400,21 +412,23 @@ export const usageHistoryService = {
     if (!keyIdValidation.success) {
       return createErrorResult(
         ErrorCode.INVALID_INPUT,
-        keyIdValidation.error?.message || "Invalid ID"
+        keyIdValidation.error?.message || "Invalid ID",
       ) as ServiceResult<UsageHistory[]>;
     }
 
     return executeOperation(
       () => invoke("get_usage_history", { keyId }) as Promise<UsageHistory[]>,
       OperationContext.USAGE_RECORD,
-      { operation: 'get_history' }
+      { operation: "get_history" },
     );
   },
 };
 
 // 生成唯一ID的辅助函数（使用更安全的方法）
 function generateId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
 // 批量导入相关服务
@@ -424,13 +438,12 @@ export const batchImportService = {
    * @param keys - 要导入的API Key数组
    * @returns Promise<ServiceResult<BatchImportResult>> - 包含导入结果或错误信息的结果
    */
-  async importApiKeysBatch(keys: BatchApiKey[]): Promise<ServiceResult<BatchImportResult>> {
+  async importApiKeysBatch(
+    keys: BatchApiKey[],
+  ): Promise<ServiceResult<BatchImportResult>> {
     // 验证输入
     if (!Array.isArray(keys) || keys.length === 0) {
-      return createErrorResult(
-        ErrorCode.INVALID_INPUT,
-        "导入数据不能为空"
-      );
+      return createErrorResult(ErrorCode.INVALID_INPUT, "导入数据不能为空");
     }
 
     // 验证每个API Key
@@ -443,17 +456,23 @@ export const batchImportService = {
         name: key.name,
         keyValue: key.keyValue,
         platform: key.platform,
-        description: key.description
+        description: key.description,
       });
 
       if (!validation.isValid) {
-        validationErrors.push(`第${i + 1}条记录: ${validation.errors.join("; ")}`);
+        validationErrors.push(
+          `第${i + 1}条记录: ${validation.errors.join("; ")}`,
+        );
       } else {
         validatedKeys.push({
           name: (validation.sanitized as ApiKeyInput)?.name || key.name,
-          keyValue: (validation.sanitized as ApiKeyInput)?.keyValue || key.keyValue,
-          platform: (validation.sanitized as ApiKeyInput)?.platform || key.platform,
-          description: (validation.sanitized as ApiKeyInput)?.description || key.description
+          keyValue:
+            (validation.sanitized as ApiKeyInput)?.keyValue || key.keyValue,
+          platform:
+            (validation.sanitized as ApiKeyInput)?.platform || key.platform,
+          description:
+            (validation.sanitized as ApiKeyInput)?.description ||
+            key.description,
         });
       }
     }
@@ -461,15 +480,17 @@ export const batchImportService = {
     if (validationErrors.length > 0) {
       return createErrorResult(
         ErrorCode.VALIDATION_FAILED,
-        `数据验证失败: ${validationErrors.join(" | ")}`
+        `数据验证失败: ${validationErrors.join(" | ")}`,
       );
     }
 
     return executeOperation(
-      () => invoke("import_api_keys_batch", { keys: validatedKeys }) as Promise<BatchImportResult>,
+      () =>
+        invoke("import_api_keys_batch", {
+          keys: validatedKeys,
+        }) as Promise<BatchImportResult>,
       OperationContext.API_KEY_ADD,
-      { operation: 'batch_import', count: validatedKeys.length }
+      { operation: "batch_import", count: validatedKeys.length },
     );
-  }
+  },
 };
-

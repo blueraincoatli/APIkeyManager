@@ -29,23 +29,23 @@ export const DEFAULT_CLIPBOARD_SECURITY_CONFIG: ClipboardSecurityConfig = {
   enableAuditLogging: true,
   enablePasteValidation: true,
   requireAuthorization: true,
-  defaultExpirationMs: 60000 // 1 minute
+  defaultExpirationMs: 60000, // 1 minute
 };
 
 // Types of clipboard operations
 export enum ClipboardOperation {
-  COPY = 'copy',
-  PASTE = 'paste',
-  CLEAR = 'clear',
-  READ = 'read'
+  COPY = "copy",
+  PASTE = "paste",
+  CLEAR = "clear",
+  READ = "read",
 }
 
 // Clipboard content security level
 export enum ClipboardSecurityLevel {
-  PUBLIC = 'public',      // Non-sensitive data
-  SENSITIVE = 'sensitive', // User data that needs protection
-  CONFIDENTIAL = 'confidential', // API keys, passwords
-  CRITICAL = 'critical'    // Highly sensitive secrets
+  PUBLIC = "public", // Non-sensitive data
+  SENSITIVE = "sensitive", // User data that needs protection
+  CONFIDENTIAL = "confidential", // API keys, passwords
+  CRITICAL = "critical", // Highly sensitive secrets
 }
 
 // Clipboard content metadata
@@ -115,8 +115,8 @@ export interface ClipboardEncryptionConfig {
 }
 
 export const DEFAULT_CLIPBOARD_ENCRYPTION_CONFIG: ClipboardEncryptionConfig = {
-  algorithm: 'AES-GCM',
+  algorithm: "AES-GCM",
   keyLength: 256,
   ivLength: 96,
-  iterations: 100000
+  iterations: 100000,
 };

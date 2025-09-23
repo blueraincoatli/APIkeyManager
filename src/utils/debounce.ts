@@ -11,7 +11,7 @@
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: number;
 
@@ -36,7 +36,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: number | null = null;
   let lastExecTime = 0;
@@ -54,11 +54,14 @@ export function throttle<T extends (...args: any[]) => any>(
 
     // 否则，设置定时器在延迟后执行
     if (!timeoutId) {
-      timeoutId = window.setTimeout(() => {
-        lastExecTime = Date.now();
-        func.apply(context, args);
-        timeoutId = null;
-      }, delay - (currentTime - lastExecTime));
+      timeoutId = window.setTimeout(
+        () => {
+          lastExecTime = Date.now();
+          func.apply(context, args);
+          timeoutId = null;
+        },
+        delay - (currentTime - lastExecTime),
+      );
     }
   };
 }
@@ -71,7 +74,7 @@ export function throttle<T extends (...args: any[]) => any>(
  */
 export function debounced<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ) {
   let timeoutId: number;
 
@@ -90,6 +93,6 @@ export function debounced<T extends (...args: any[]) => any>(
 
   return {
     fn: debouncedFn,
-    cancel
+    cancel,
   };
 }
